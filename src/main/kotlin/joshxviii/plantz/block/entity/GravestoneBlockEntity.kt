@@ -23,6 +23,7 @@ import net.minecraft.world.level.LightLayer
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.AABB
+import net.minecraft.world.phys.Vec3
 
 class GravestoneBlockEntity(
     worldPosition: BlockPos,
@@ -77,15 +78,16 @@ class GravestoneBlockEntity(
     private fun canSpawn(level: ServerLevel, pos: BlockPos): Boolean {
         if ( !isDarkEnough(level) && !level.getBiome(pos).`is`(PazTags.Biomes.GRAVESTONE_IGNORE_BRIGHTNESS) ) return false
 
+        val center = Vec3.atCenterOf(pos)
         val nearbyPlayer = level.hasNearbyAlivePlayer(
-            pos.center.x,
-            pos.center.y,
-            pos.center.z,
+            center.x,
+            center.y,
+            center.z,
             PLAYER_RANGE.toDouble()
         )
         if (!nearbyPlayer) return false
 
-        val aabb = AABB.ofSize(pos.center, 32.0, 16.0, 32.0)
+        val aabb = AABB.ofSize(center, 32.0, 16.0, 32.0)
         val nearbyZombies = level.getEntitiesOfClass(Zombie::class.java, aabb) { zombie ->
             true
         }
@@ -114,18 +116,20 @@ class GravestoneBlockEntity(
 
         spawnDelay = Mth.randomBetweenInclusive(level.random, SPAWN_DELAY_MIN, SPAWN_DELAY_MAX)
         ticksSinceLastSpawn = 0
+        val posCenter = Vec3.atCenterOf(pos)
+        val spawnPosCenter = Vec3.atCenterOf(spawnPos)
         level.sendParticles(
             PazServerParticles.ZOMBIE_OMEN,
-            pos.center.x,
-            pos.center.y,
-            pos.center.z,
+            posCenter.x,
+            posCenter.y,
+            posCenter.z,
             4, 0.25, 0.125, 0.25, 0.0
         )
         level.sendParticles(
             PazServerParticles.ZOMBIE_OMEN,
-            spawnPos.center.x,
-            spawnPos.center.y,
-            spawnPos.center.z,
+            spawnPosCenter.x,
+            spawnPosCenter.y,
+            spawnPosCenter.z,
             3, 0.15, 0.0, 0.15, 0.0
         )
         level.playSound(null, pos, PazSounds.APPLY_ZOMBIE_OMEN, SoundSource.BLOCKS, 0.75f, 2.0f)

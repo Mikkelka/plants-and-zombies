@@ -1,16 +1,14 @@
 package joshxviii.plantz.mixin.client;
 
-import com.google.common.hash.HashCode;
 import joshxviii.plantz.PazEffects;
 import joshxviii.plantz.PazModels;
 import joshxviii.plantz.effect.PaintedMobEffect;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.Hud;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -26,11 +24,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * @author Josh
  */
-@Mixin(Gui.class)
+@Mixin(Hud.class)
 public abstract class GuiMixin {
-
-    @Shadow
-    protected abstract void extractTextureOverlay(GuiGraphicsExtractor graphics, Identifier texture, float alpha);
 
     @Shadow
     @Final

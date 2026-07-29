@@ -84,11 +84,11 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
         get() = this.entityData.get(ZOMBIE_STATE)
         set(value) { this.entityData.set(ZOMBIE_STATE, value) }
 
-    private val noMoveControl = object : MoveControl(this) {
+    private val noMoveControl = object : MoveControl<PazZombie>(this) {
         override fun getSpeedModifier(): Double = 0.0
     }
 
-    override fun getMoveControl(): MoveControl {
+    override fun getMoveControl(): MoveControl<*> {
         if (state == ZombieState.EMERGING) return noMoveControl
         return super.getMoveControl()
     }

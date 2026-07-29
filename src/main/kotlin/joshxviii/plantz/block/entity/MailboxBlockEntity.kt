@@ -37,6 +37,7 @@ import net.minecraft.world.level.block.entity.BaseContainerBlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.storage.ValueInput
 import net.minecraft.world.level.storage.ValueOutput
+import net.minecraft.world.phys.Vec3
 import kotlin.jvm.optionals.getOrDefault
 
 class MailboxBlockEntity(
@@ -88,7 +89,7 @@ class MailboxBlockEntity(
         val currentState = blockState.getValue(STATE)
         return when (currentState) {
             MailboxState.HAS_MAIL -> {
-                val dropPos = blockState.getValue(FACING).unitVec3.scale(0.75).add(blockPos.center)
+                val dropPos = blockState.getValue(FACING).unitVec3.scale(0.75).add(Vec3.atCenterOf(blockPos))
                 items.forEach {
                     Containers.dropItemStack(level!!, dropPos.x, dropPos.y, dropPos.z, it)
                 }

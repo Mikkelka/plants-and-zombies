@@ -85,9 +85,11 @@ class ZombieYeti(type: EntityType<out ZombieYeti>, level: Level) : PazZombie(typ
         if (isPathFinding && this.target!=null) {
             if (entity is LivingEntity && entity !is Zombie) {
                 val level = level() as? ServerLevel?: return
-                entity.hurtServer(level, this.damageSources().source(PazDamageTypes.ZOMBIE_TRAMPLE, this), 2.5f)
+                val source = this.damageSources().source(PazDamageTypes.ZOMBIE_TRAMPLE, this)
+                entity.hurtServer(level, source, 2.5f)
                 entity.knockback(
-                    0.2, position().x - entity.position().x, position().z - entity.position().z
+                    0.2, position().x - entity.position().x, position().z - entity.position().z,
+                    source, 2.5f
                 )
             }
         }
@@ -117,7 +119,7 @@ class ZombieYeti(type: EntityType<out ZombieYeti>, level: Level) : PazZombie(typ
             }
 
             if (random.nextFloat() < 0.001) {
-                val polarBear = EntityType.POLAR_BEAR.create(level(), EntitySpawnReason.JOCKEY)
+                val polarBear = EntityTypes.POLAR_BEAR.create(level(), EntitySpawnReason.JOCKEY)
                 if (polarBear != null) {
                     polarBear.snapTo(x, y, z, yRot, 0.0f)
                     polarBear.finalizeSpawn(level, difficulty, EntitySpawnReason.JOCKEY, null)

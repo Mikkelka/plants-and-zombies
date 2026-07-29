@@ -1,12 +1,12 @@
 package joshxviii.plantz.advancement
 
 import com.mojang.serialization.Codec
-import net.minecraft.advancements.criterion.ContextAwarePredicate
-import net.minecraft.advancements.criterion.SimpleCriterionTrigger
+import net.minecraft.advancements.predicates.ContextAwarePredicate
+import net.minecraft.advancements.triggers.SimpleCriterionTrigger
 import net.minecraft.server.level.ServerPlayer
 import java.util.Optional
 
-class SimpleCriterionTrigger<T, C : SimpleCriterionCondition<T>>(
+class PazSimpleCriterionTrigger<T, C : PazCriterionCondition<T>>(
     val codec: Codec<C>,
 ) : SimpleCriterionTrigger<C>() {
     override fun codec() = codec
@@ -18,7 +18,7 @@ class SimpleCriterionTrigger<T, C : SimpleCriterionCondition<T>>(
     }
 }
 
-abstract class SimpleCriterionCondition<T>(
+abstract class PazCriterionCondition<T>(
     val playerCtx: Optional<ContextAwarePredicate>
 ) : SimpleCriterionTrigger.SimpleInstance {
     override fun player() = playerCtx
