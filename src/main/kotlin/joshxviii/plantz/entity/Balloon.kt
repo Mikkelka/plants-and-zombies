@@ -29,6 +29,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.DyeColor
 import net.minecraft.world.level.Level
+import net.minecraft.world.level.levelgen.Heightmap
 import net.minecraft.world.level.storage.ValueInput
 import net.minecraft.world.level.storage.ValueOutput
 import net.minecraft.world.phys.Vec3
@@ -123,10 +124,13 @@ class Balloon(
         val verticalStretch = y - holder.y - leashElasticDistance()
         if (verticalStretch <= 0.0) return
 
+        val floorHeight = y - level().getHeight(Heightmap.Types.WORLD_SURFACE, blockPosition()).toDouble()
+        val heightLimitForce = (floorHeight / 64).coerceIn(0.0, 1.0)
+
         val crouchMultiplier = if (holder.isCrouching) 0.5 else 1.0
         val gravityLift = holder.getAttributeValue(Attributes.GRAVITY) * HOLDER_GRAVITY_LIFT_MULTIPLIER
         val springLift = verticalStretch * HOLDER_PULL_STIFFNESS
-        val totalLift = ((gravityLift + springLift) * crouchMultiplier)
+        val totalLift = ((gravityLift + springLift) * (crouchMultiplier - heightLimitForce))
             .coerceAtMost(MAX_HOLDER_PULL_FORCE)
 
         val currentYVelocity = holder.deltaMovement.y

@@ -49,6 +49,10 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
         super.tick()
         updateCapeState()
         //if (state == ZombieState.IDLE) state = ZombieState.FLYING
+        if (level() is ServerLevel && tickCount % 60 == 0) state = target?.let {
+            if(it.y > y + 6) ZombieState.FLYING
+            else ZombieState.IDLE
+        } ?: ZombieState.IDLE
     }
 
     override fun defineSynchedData(entityData: SynchedEntityData.Builder) {

@@ -199,11 +199,11 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
             ZombieState.IDLE -> {
                 emergeAnimation.stop()
                 floatAnimation.stop()
-                if (serverLevel!=null && balloons.isNotEmpty()) state = ZombieState.FLYING
+                if (serverLevel!=null && this !is SuperBrainz && balloons.isNotEmpty()) state = ZombieState.FLYING
             }
             ZombieState.FLYING -> {
                 floatAnimation.startIfStopped(tickCount)
-                if (serverLevel!=null) {
+                if (serverLevel!=null && this !is SuperBrainz ) {
                     balloons.removeIf { !it.isAlive || it.leashHolder != this }
                     if (balloons.isEmpty()) state = ZombieState.IDLE
                 }
@@ -301,9 +301,7 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
             if (spawnReason != EntitySpawnReason.NATURAL) setDropChance(EquipmentSlot.LEGS, 0.0f)
             else setDropChance(EquipmentSlot.LEGS, 0.15f)
         }
-
-        if (random.nextFloat() < 0.5 && this is BrownCoat) spawnBalloons(3)
-
+        
         return data
     }
 }
