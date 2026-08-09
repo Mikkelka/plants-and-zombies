@@ -9,12 +9,12 @@ import net.minecraft.util.StringRepresentable
 import java.util.function.IntFunction
 
 /**
- * Zombie's state used for Animations and Behavior.
+ * Zombie's state used for Animations and some Behavior.
  */
 enum class ZombieState(val title: String, val id: Int) : StringRepresentable {
     IDLE("idle", 0),
     EMERGING("emerging", 1),
-    FLOATING("floating", 2);
+    FLYING("floating", 2);
     override fun getSerializedName(): String = this.title
     companion object {
         val CODEC: Codec<ZombieState> = StringRepresentable.fromEnum(ZombieState::values)

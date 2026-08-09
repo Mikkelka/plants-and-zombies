@@ -24,8 +24,6 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
 
     companion object {
         val DATA_VARIANT_ID: EntityDataAccessor<SuperBrainzVariant> = SynchedEntityData.defineId(SuperBrainz::class.java, SUPER_BRAINZ_VARIANT)
-        val IS_FLYING_ID: EntityDataAccessor<Boolean> = SynchedEntityData.defineId(SuperBrainz::class.java, EntityDataSerializers.BOOLEAN)
-
     }
 
     init {
@@ -46,27 +44,16 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
         get() = this.entityData.get(DATA_VARIANT_ID)
         set(value) = this.entityData.set(DATA_VARIANT_ID, value)
 
-    var isFlying: Boolean
-        get() = this.entityData.get(IS_FLYING_ID)
-        set(value) = this.entityData.set(IS_FLYING_ID, value)
 
     override fun tick() {
         super.tick()
         updateCapeState()
-    }
-
-    override fun createNavigation(level: Level): PathNavigation {
-        return if (isFlying) FlyingPathNavigation(this, level) else super.createNavigation(level)
-    }
-
-    override fun getMoveControl(): MoveControl {
-        return if (isFlying) flyControl else super.getMoveControl()
+        //if (state == ZombieState.IDLE) state = ZombieState.FLYING
     }
 
     override fun defineSynchedData(entityData: SynchedEntityData.Builder) {
         super.defineSynchedData(entityData)
         entityData.define(DATA_VARIANT_ID, SuperBrainzVariant.getDefault())
-        entityData.define(IS_FLYING_ID, false)
     }
 
     override fun addAdditionalSaveData(output: ValueOutput) {

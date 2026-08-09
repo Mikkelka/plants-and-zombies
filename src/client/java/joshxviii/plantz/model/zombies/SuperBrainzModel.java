@@ -1,5 +1,6 @@
 package joshxviii.plantz.model.zombies;
 
+import joshxviii.plantz.ai.ZombieState;
 import joshxviii.plantz.animation.zombies.SuperBrainzAnimation;
 import joshxviii.plantz.renderer.entity.PazZombieRenderState;
 import joshxviii.plantz.renderer.entity.RoboZombieRenderState;
@@ -95,7 +96,7 @@ public class SuperBrainzModel extends PazZombieModel {
         SuperBrainzRenderState superBrainzState = (SuperBrainzRenderState) state;
         float animationPos = state.walkAnimationPos;
         float animationSpeed = state.walkAnimationSpeed;
-        if (superBrainzState.isFlying())
+        if (superBrainzState.getZombieState() == ZombieState.FLYING)
             flyAnimation.applyWalk(animationPos, animationSpeed, 2f, 2f);
         else
             walkAnimation.applyWalk(animationPos, animationSpeed, 2f, 2f);

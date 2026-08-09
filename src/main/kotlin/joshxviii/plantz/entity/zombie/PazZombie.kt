@@ -7,8 +7,8 @@ import joshxviii.plantz.PazEntities
 import joshxviii.plantz.PazItems
 import joshxviii.plantz.PazTags
 import joshxviii.plantz.ai.ZombieState
+import joshxviii.plantz.ai.goal.FlyingPathfindingGoal
 import joshxviii.plantz.entity.Balloon
-import joshxviii.plantz.entity.plant.Plant.Companion.PLANT_DAMAGE
 import net.minecraft.core.BlockPos
 import net.minecraft.core.particles.BlockParticleOption
 import net.minecraft.core.particles.ParticleTypes
@@ -91,6 +91,7 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
             val attackKnockback: Double = 0.4,
             val attackRange: Double = 2.5,
             val movementSpeed: Double = ZOMBIE_SPEED,
+            val flyingSpeed: Double = ZOMBIE_SPEED * .5,
             val jumpStrength: Double = 0.42,
             val followRange: Double = 50.0,
             val armor: Double = 0.0,
@@ -100,7 +101,6 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
             val stepHeight: Double = 0.6,
             val interactionRange: Double = 1.7,
             val scale: Double = 1.0,
-            val flyingSpeed: Double = 1.0,
             val waterMovementEfficiency: Double = 0.0
         ) {
             fun apply(builder: AttributeSupplier.Builder): AttributeSupplier.Builder {
@@ -146,13 +146,13 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
     }
 
     override fun createNavigation(level: Level): PathNavigation {
-        return if (state == ZombieState.FLOATING) FlyingPathNavigation(this, level)
+        return if (state == ZombieState.FLYING) FlyingPathNavigation(this, level)
         else super.createNavigation(level)
     }
 
     override fun getMoveControl(): MoveControl {
         if (state == ZombieState.EMERGING) return noMoveControl
-        if (state == ZombieState.FLOATING) return flyControl
+        if (state == ZombieState.FLYING) return flyControl
         return super.getMoveControl()
     }
 
@@ -161,6 +161,7 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
 
     override fun registerGoals() {
         super.registerGoals()
+        this.goalSelector.addGoal(1, FlyingPathfindingGoal(this))
     }
 
     fun addBehaviourGoalsNoMelee() {
@@ -198,9 +199,9 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
             ZombieState.IDLE -> {
                 emergeAnimation.stop()
                 floatAnimation.stop()
-                if (serverLevel!=null && balloons.isNotEmpty()) state = ZombieState.FLOATING
+                if (serverLevel!=null && balloons.isNotEmpty()) state = ZombieState.FLYING
             }
-            ZombieState.FLOATING -> {
+            ZombieState.FLYING -> {
                 floatAnimation.startIfStopped(tickCount)
                 if (serverLevel!=null) {
                     balloons.removeIf { !it.isAlive || it.leashHolder != this }
@@ -301,7 +302,7 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
             else setDropChance(EquipmentSlot.LEGS, 0.15f)
         }
 
-        if (random.nextFloat() < 0.5) spawnBalloons(3)
+        if (random.nextFloat() < 0.5 && this is BrownCoat) spawnBalloons(3)
 
         return data
     }

@@ -105,9 +105,9 @@ object PazBlocks {
     )
 
     @JvmField val BLUE_GARDEN_GNOME: Block = registerBlock("blue_garden_gnome", gardenGnomeProperties(), ::GardenGnomeBlock)
-    @JvmField val GREEN_GARDEN_GNOME: Block = registerBlock("green_garden_gnome", gardenGnomeProperties(), ::GardenGnomeBlock)
-    @JvmField val RED_GARDEN_GNOME: Block = registerBlock("red_garden_gnome", gardenGnomeProperties(), ::GardenGnomeBlock)
-    @JvmField val YELLOW_GARDEN_GNOME: Block = registerBlock("yellow_garden_gnome", gardenGnomeProperties(), ::GardenGnomeBlock)
+    @JvmField val GREEN_GARDEN_GNOME: Block = registerBlock("green_garden_gnome", gardenGnomeProperties(MapColor.COLOR_GREEN), ::GardenGnomeBlock)
+    @JvmField val RED_GARDEN_GNOME: Block = registerBlock("red_garden_gnome", gardenGnomeProperties(MapColor.COLOR_RED), ::GardenGnomeBlock)
+    @JvmField val YELLOW_GARDEN_GNOME: Block = registerBlock("yellow_garden_gnome", gardenGnomeProperties(MapColor.COLOR_YELLOW), ::GardenGnomeBlock)
 
     @JvmField val MAILBOX: Block = registerBlock("mailbox", mailboxProperties(), ::MailboxBlock)
     @JvmField val LIGHT_GRAY_MAILBOX: Block = registerBlock("light_gray_mailbox", mailboxProperties(MapColor.COLOR_LIGHT_GRAY), {MailboxBlock(it, DyeColor.LIGHT_GRAY)})
@@ -324,7 +324,7 @@ object PazBlocks {
             .sound(SoundType.DECORATED_POT)
             .strength(1.8F)
             .noOcclusion()
-            .pushReaction(PushReaction.NORMAL)
+            .pushReaction(PushReaction.DESTROY)
     }
 
     private fun mailboxProperties(mapColor: MapColor = MapColor.SNOW): BlockBehaviour.Properties {
