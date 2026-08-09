@@ -12,6 +12,8 @@
     "AvatarRendererMixin",
     "GuiMixin",
     "HumanoidModelMixin",
-    "LivingEntityRendererMixin"
+    "LivingEntityRendererMixin",
+    "BossHealthOverlayMixin",
+    "BossHealthOverlayAccessor"
   ]
 }

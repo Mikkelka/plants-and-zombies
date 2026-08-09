@@ -20,6 +20,7 @@ import net.minecraft.world.level.dimension.DimensionType
 import net.minecraft.world.level.gamerules.GameRules
 import net.minecraft.world.level.saveddata.SavedData
 import net.minecraft.world.level.saveddata.SavedDataType
+import org.spongepowered.asm.mixin.Unique
 import java.util.*
 import java.util.function.Function
 
