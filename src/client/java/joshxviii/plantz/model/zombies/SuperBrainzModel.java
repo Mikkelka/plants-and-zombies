@@ -60,11 +60,11 @@ public class SuperBrainzModel extends PazZombieModel {
                 .texOffs(91, 16).addBox(-6.0F, -0.5F, 1.0F, 1.0F, 1.0F, 0.0F, new CubeDeformation(0.0F))
                 .texOffs(88, 9).addBox(-8.0F, -1.0F, 0.0F, 2.0F, 2.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -3.5F, 0.0F));
 
-        PartDefinition body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(57, 25).addBox(-5.0F, -6.0F, -2.0F, 10.0F, 6.0F, 5.0F, new CubeDeformation(0.0F))
-                .texOffs(0, 0).addBox(-8.0F, -17.0F, -3.0F, 16.0F, 11.0F, 7.0F, new CubeDeformation(0.0F))
-                .texOffs(39, 1).addBox(-2.0F, -15.0F, -5.0F, 4.0F, 4.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.0F, 0.0F));
+        PartDefinition body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(57, 25).addBox(-5.0F, 11.0F, -2.0F, 10.0F, 6.0F, 5.0F, new CubeDeformation(0.0F))
+                .texOffs(0, 0).addBox(-8.0F, 0.0F, -3.0F, 16.0F, 11.0F, 7.0F, new CubeDeformation(0.0F))
+                .texOffs(39, 1).addBox(-2.0F, 2.0F, -5.0F, 4.0F, 4.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -17.0F, 0.0F));
 
-        PartDefinition cape = body.addOrReplaceChild("cape", CubeListBuilder.create().texOffs(0, 77).addBox(-8.0F, 0.0F, 0.0F, 16.0F, 17.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -17.0F, 4.0F));
+        PartDefinition cape = body.addOrReplaceChild("cape", CubeListBuilder.create().texOffs(0, 77).addBox(-8.0F, 0.0F, 0.0F, 16.0F, 17.0F, 1.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.0F, 4.0F));
 
         PartDefinition left_arm = root.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(34, 49).addBox(0.0F, -2.0F, -3.0F, 6.0F, 9.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offset(8.0F, -15.0F, 0.0F));
 

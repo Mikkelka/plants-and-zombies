@@ -52,11 +52,11 @@ public class RoboZombieModel extends PazZombieModel {
                 .texOffs(92, 23).addBox(-4.0F, 0.0F, -5.0F, 8.0F, 2.0F, 5.0F, new CubeDeformation(0.0F))
                 .texOffs(74, 42).addBox(-4.0F, -6.0F, -5.0F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.5F)), PartPose.offset(0.0F, -0.9167F, -1.125F));
 
-        PartDefinition body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(34, 83).addBox(-5.0F, -5.0F, -3.0F, 10.0F, 5.0F, 6.0F, new CubeDeformation(0.0F))
-                .texOffs(0, 56).addBox(-7.0F, -16.0F, -4.0F, 14.0F, 11.0F, 9.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.0F, 0.0F));
+        PartDefinition body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(34, 83).addBox(-5.0F, 11.0F, -2.0F, 10.0F, 5.0F, 6.0F, new CubeDeformation(0.0F))
+                .texOffs(0, 56).addBox(-7.0F, 0.0F, -3.0F, 14.0F, 11.0F, 9.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -16.0F, -1.0F));
 
         PartDefinition rocket_pack = body.addOrReplaceChild("rocket_pack", CubeListBuilder.create().texOffs(60, 0).addBox(-3.0F, -9.3333F, 0.0F, 6.0F, 20.0F, 6.0F, new CubeDeformation(0.0F))
-                .texOffs(46, 56).addBox(-3.5F, -9.3333F, -0.5F, 7.0F, 20.0F, 7.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -10.6667F, 5.0F));
+                .texOffs(46, 56).addBox(-3.5F, -9.3333F, -0.5F, 7.0F, 20.0F, 7.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 5.3333F, 6.0F));
 
         PartDefinition left_arm = root.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(84, 0).addBox(0.0F, -2.0F, -2.5F, 5.0F, 18.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offset(7.0F, -14.0F, -0.5F));
 
