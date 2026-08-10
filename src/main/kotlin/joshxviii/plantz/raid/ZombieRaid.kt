@@ -11,11 +11,12 @@ import joshxviii.plantz.block.entity.FlagBlockEntity
 import joshxviii.plantz.block.entity.FlagBlockEntity.Companion.MAX_HEALTH
 import joshxviii.plantz.entity.zombie.BrownCoat
 import joshxviii.plantz.entity.zombie.BrownCoatVariant
+import joshxviii.plantz.entity.zombie.Gargantuar
+import joshxviii.plantz.entity.zombie.GargantuarVariant
 import joshxviii.plantz.entity.zombie.Imp
 import joshxviii.plantz.entity.zombie.ImpVariant
 import joshxviii.plantz.networking.ZombieRaidClientData
 import joshxviii.plantz.networking.ZombieRaidResponsePayload
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup.level
 import net.minecraft.SharedConstants
 import net.minecraft.ChatFormatting
 import net.minecraft.core.BlockPos
@@ -144,8 +145,9 @@ class ZombieRaid(
     }
 
     fun tick(level: ServerLevel) {
-        updateBossbar(level)
+        sendClientUpdate(level)
         if (!active) return
+        if (level.tickRateManager().isFrozen) return
         ticksActive++
         refreshRaidProfile(level)
 
@@ -228,9 +230,14 @@ class ZombieRaid(
     private fun updatePlayers(level: ServerLevel) {
         val currentPlayersInRaid: MutableSet<ServerPlayer> = Sets.newHashSet<ServerPlayer>(zombieRaidEvent.players)
         val newPlayersInRaid = level.getPlayers(validPlayer())
-        for (player in newPlayersInRaid) if (!currentPlayersInRaid.contains(player)) zombieRaidEvent.addPlayer(player)
-        for (player in currentPlayersInRaid) if (!newPlayersInRaid.contains(player)) zombieRaidEvent.removePlayer(player)
-        updateBossbar(level)
+        for (player in newPlayersInRaid) if (!currentPlayersInRaid.contains(player)) {
+            zombieRaidEvent.addPlayer(player)
+            sendClientUpdate(level)
+        }
+        for (player in currentPlayersInRaid) if (!newPlayersInRaid.contains(player)) {
+            zombieRaidEvent.removePlayer(player)
+            sendClientUpdate(level, true)
+        }
     }
 
     private fun updateZombieRaiders(level: ServerLevel) {
@@ -320,7 +327,7 @@ class ZombieRaid(
         for (zombies in waveZombieMap.values) {
             if (zombies.remove(zombie)) {
                 if (removeFromTotalHealth) totalZombieHealth -= zombie.health
-                updateBossbar(level)
+                sendClientUpdate(level)
                 setDirty(level)
                 break
             }
@@ -356,12 +363,8 @@ class ZombieRaid(
         zombies.add(zombie)
         totalZombieHealth += zombie.maxHealth
 
-        updateBossbar(level)
-        return true
-    }
-
-    fun updateBossbar(level: ServerLevel) {
         sendClientUpdate(level)
+        return true
     }
 
     fun sendClientUpdate(level: ServerLevel, terminate: Boolean = false) {
@@ -370,6 +373,7 @@ class ZombieRaid(
             id = zombieRaidEvent.id,
             status = status,
             wavesSpawned = wavesSpawned,
+            activeTime = ticksActive.toInt(),
             numWaves = numWaves,
             waveTimer = waveTimer,
             totalZombieHealth = totalZombieHealth,
@@ -474,7 +478,7 @@ class ZombieRaid(
     fun stop() {
         active = false
         val data = ZombieRaidClientData(id = zombieRaidEvent.id)
-        zombieRaidEvent.players.forEach { player ->
+        zombieRaidEvent.players.forEach { player ->// terminate raid connection
             player.connection.send(ClientboundCustomPayloadPacket(ZombieRaidResponsePayload(data, true)))
         }
         zombieRaidEvent.removeAllPlayers()
@@ -561,6 +565,7 @@ class ZombieRaid(
         }
     }
     private fun spawnPirateZombies(zombie: Zombie) {
+        if (zombie is Gargantuar) zombie.variant = GargantuarVariant.PIRATE
         if (zombie is Imp) zombie.variant = ImpVariant.PIRATE
         if (zombie is BrownCoat) {
             zombie.variant = BrownCoatVariant.BUCCANEER
@@ -638,11 +643,13 @@ class ZombieRaid(
             spawnFn = { raid, credits ->
                 val browncoatCount = 6 + raid.wavesSpawned * 2 + (raid.zombieRaidOmenLevel / 2)
                 val impCount = 3 + raid.wavesSpawned / 2 + (raid.zombieRaidOmenLevel / 2)
+                val gargantuarCount = if (credits) 1 else 0 + raid.wavesSpawned / 4 + (raid.zombieRaidOmenLevel / 4)
                 val captainCount = if (credits) 1 + raid.wavesSpawned / 3 + (raid.zombieRaidOmenLevel / 3) else 0
                 listOf(
                     WaveSpawnEntry(ZombieRaiderType.BROWN_COAT, browncoatCount.coerceAtLeast(5), raid::spawnPirateZombies),
                     WaveSpawnEntry(ZombieRaiderType.IMP, impCount.coerceAtLeast(2), raid::spawnPirateZombies),
-                    WaveSpawnEntry(ZombieRaiderType.PIRATE_CAPTAIN, captainCount)
+                    WaveSpawnEntry(ZombieRaiderType.PIRATE_CAPTAIN, captainCount),
+                    WaveSpawnEntry(ZombieRaiderType.GARGANTUAR, gargantuarCount, raid::spawnPirateZombies)
                 )
             }
         ),

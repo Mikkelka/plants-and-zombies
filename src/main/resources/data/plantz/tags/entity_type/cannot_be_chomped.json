@@ -13,6 +13,9 @@
     "minecraft:giant",
     "minecraft:camel",
     "minecraft:camel_husk",
+    "plantz:zombie_yeti",
+    "plantz:robo_zombie",
+    "plantz:super_brainz",
     "plantz:gargantuar",
     {
       "id": "#c:bosses",

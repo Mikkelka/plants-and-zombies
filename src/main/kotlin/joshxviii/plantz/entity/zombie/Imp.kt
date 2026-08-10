@@ -95,34 +95,38 @@ class Imp(type: EntityType<out Imp> = PazEntities.IMP, level: Level) : PazZombie
             val level = level()
             target?.let {
                 if (distanceToSqr(it) < 1.0) {
-                    applyImpulse(0.0, 1.0, 0.0, 1f, 0.5f)
-                    level.explode(
-                        this,
-                        damageSources().source(PazDamageTypes.ZOMBIE_EXPLODE, this),
-                        BARREL_DAMAGE_CALCULATOR, x, y, z,
-                        2.0f,
-                        false,
-                        Level.ExplosionInteraction.MOB,
-                        ParticleTypes.LARGE_SMOKE,
-                        ParticleTypes.EXPLOSION,
-                        WeightedList.of(),
-                        SoundEvents.GENERIC_EXPLODE
-                    )
-                    if (level is ServerLevel) {
-                        level.sendParticles(NukeWaveParticleOptions(color = 0xD0370D, scale = 2f),
-                            x, y, z, 1, 0.0, 0.0, 0.0, 0.0
-                        )
-                        level.sendParticles(NukeBlastParticleOptions(color = 0xFFE88D, scale = 1f),
-                            x, y, z, 1, 0.0, 0.0, 0.0, 0.0
-                        )
-                        level.sendParticles(NukeSmokeParticleOptions(color = 0xB87878, scale = 0.7f),
-                            x, y+1, z, 16, 0.0, 0.5, 0.0, 0.0
-                        )
-                    }
-                    hasBarrel = false
+
                 }
             }
         }
+    }
+
+    fun explode(level: ServerLevel) {
+        applyImpulse(0.0, 1.0, 0.0, 1f, 0.5f)
+        level.explode(
+            this,
+            damageSources().source(PazDamageTypes.ZOMBIE_EXPLODE, this),
+            BARREL_DAMAGE_CALCULATOR, x, y+0.5, z,
+            2.0f,
+            false,
+            Level.ExplosionInteraction.MOB,
+            ParticleTypes.LARGE_SMOKE,
+            ParticleTypes.EXPLOSION,
+            WeightedList.of(),
+            SoundEvents.GENERIC_EXPLODE
+        )
+        if (level is ServerLevel) {
+            level.sendParticles(NukeWaveParticleOptions(color = 0xD0370D, scale = 2f),
+                x, y, z, 1, 0.0, 0.0, 0.0, 0.0
+            )
+            level.sendParticles(NukeBlastParticleOptions(color = 0xFFE88D, scale = 1f),
+                x, y, z, 1, 0.0, 0.0, 0.0, 0.0
+            )
+            level.sendParticles(NukeSmokeParticleOptions(color = 0xB87878, scale = 0.7f),
+                x, y+1, z, 16, 0.0, 0.5, 0.0, 0.0
+            )
+        }
+        hasBarrel = false
     }
 
     override fun isBaby(): Boolean = false
@@ -140,6 +144,9 @@ class Imp(type: EntityType<out Imp> = PazEntities.IMP, level: Level) : PazZombie
                 when (variant) {
                     ImpVariant.IMP -> {
                         entity.addEffect(MobEffectInstance(PazEffects.TOXIC, 200, 0), this)
+                    }
+                    ImpVariant.PIRATE -> {
+                        if (hasBarrel) explode(level)
                     }
                     else -> {}
                 }

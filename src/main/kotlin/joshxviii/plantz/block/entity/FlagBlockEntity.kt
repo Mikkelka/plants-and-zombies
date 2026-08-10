@@ -28,8 +28,9 @@ class FlagBlockEntity(
 ) : BlockEntity(PazBlocks.FLAG_BLOCK_ENTITY, worldPosition, blockState) {
 
     companion object {
-        const val MAX_HEALTH: Float = 300f
-        const val HEALTH_RESET_TIME = 80
+        const val MAX_HEALTH: Float = 400f
+        const val HEAL_COOLDOWN_TIME = 300
+        const val HEAL_TIME = 20
 
         const val MAX_FLAG_OMEN_DISTANCE = 24.0
     }
@@ -45,11 +46,11 @@ class FlagBlockEntity(
         if (resetTime > 0) {
             resetTime--
             if (resetTime == 0) {
-                health += MAX_HEALTH / 10
+                health += MAX_HEALTH * 0.02f
 
                 level.destroyBlockProgress(0, pos, healthToDestroyProgress())
                 if (health >= MAX_HEALTH) level.destroyBlockProgress(0, pos, -1)
-                else resetTime = HEALTH_RESET_TIME
+                else resetTime = HEAL_TIME
                 syncToClient()
             }
         }
@@ -86,7 +87,7 @@ class FlagBlockEntity(
     fun hurt(amount: Float) {
         health -= amount
         health = health.coerceAtLeast(0f)
-        resetTime = HEALTH_RESET_TIME
+        resetTime = HEAL_COOLDOWN_TIME
         setChanged()
         syncToClient()
         val l = level?: return
