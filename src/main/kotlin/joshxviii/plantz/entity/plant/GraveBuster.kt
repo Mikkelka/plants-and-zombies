@@ -75,7 +75,7 @@ class GraveBuster(type: EntityType<out Plant>, level: Level) : Plant(PazEntities
                     .create(LootContextParamSets.CHEST)
                 val lootTable: LootTable =
                     level.server.reloadableRegistries().getLootTable(PazLootTables.GRAVESTONE_TREASURE)
-                val items: ObjectArrayList<ItemStack> = lootTable.getRandomItems(params)
+                val items = lootTable.getRandomItems(params)
                 items.forEach { item ->
                     val entity = ItemEntity(level, graveBuster.x, graveBuster.y-1f, graveBuster.z, item)
                     level.addFreshEntity(entity)

@@ -4,6 +4,8 @@ import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import joshxviii.plantz.PazBlocks
 import joshxviii.plantz.PazCriteria
+import joshxviii.plantz.PazEffects
+import joshxviii.plantz.PazTags
 import joshxviii.plantz.block.entity.MailboxBlockEntity
 import joshxviii.plantz.block.entity.MailboxManager
 import joshxviii.plantz.inventory.MailboxMenu
@@ -79,7 +81,9 @@ class MailboxBlock(
         hitResult: BlockHitResult
     ): InteractionResult {
         val mailbox = getMailboxEntity(level, pos)?: return super.useItemOn(itemStack, state, level, pos, player, hand, hitResult)
-        val success = mailbox.tryToGetMail()
+        val isPlayerHero = player.getEffect(PazEffects.GARDEN_HERO) != null
+        val success = mailbox.tryToGetMail(isPlayerHero)
+        if (success && isPlayerHero) player.removeEffect(PazEffects.GARDEN_HERO)
         if (player is ServerPlayer) PazCriteria.SEND_MAIL.trigger(player, success)
         return if (success) InteractionResult.SUCCESS
         else InteractionResult.TRY_WITH_EMPTY_HAND

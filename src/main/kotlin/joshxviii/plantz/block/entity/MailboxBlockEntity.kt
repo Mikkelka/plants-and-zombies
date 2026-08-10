@@ -1,8 +1,10 @@
 package joshxviii.plantz.block.entity
 
 import com.mojang.serialization.Codec
+import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import joshxviii.plantz.MailboxData
 import joshxviii.plantz.PazBlocks
+import joshxviii.plantz.PazLootTables
 import joshxviii.plantz.PazServerParticles
 import joshxviii.plantz.block.MailboxBlock.Companion.FACING
 import joshxviii.plantz.block.MailboxBlock.Companion.STATE
@@ -28,6 +30,8 @@ import net.minecraft.world.Container
 import net.minecraft.world.ContainerHelper
 import net.minecraft.world.Containers
 import net.minecraft.world.SimpleContainer
+import net.minecraft.world.entity.Relative.position
+import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.item.DyeColor
@@ -37,6 +41,10 @@ import net.minecraft.world.level.block.entity.BaseContainerBlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.storage.ValueInput
 import net.minecraft.world.level.storage.ValueOutput
+import net.minecraft.world.level.storage.loot.LootParams
+import net.minecraft.world.level.storage.loot.LootTable
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams
 import kotlin.jvm.optionals.getOrDefault
 
 class MailboxBlockEntity(
@@ -84,11 +92,20 @@ class MailboxBlockEntity(
     override fun createMenu(containerId: Int, inventory: Inventory): AbstractContainerMenu = MailboxMenu(containerId, inventory, asMailBoxData())
     override fun getScreenOpeningData(player: ServerPlayer): MailboxData = asMailBoxData()
 
-    fun tryToGetMail(): Boolean {
+    fun tryToGetMail(isGardenHero: Boolean = false): Boolean {
         val currentState = blockState.getValue(STATE)
+        val dropPos = blockState.getValue(FACING).unitVec3.scale(0.75).add(blockPos.center)
+        if (isGardenHero) {
+            getHeroMail().forEach {
+                Containers.dropItemStack(level!!, dropPos.x, dropPos.y, dropPos.z, it)
+            }
+            updateMailboxState(MailboxState.EJECTING)
+            ejectTimer = 25
+            setChanged()
+            return true
+        }
         return when (currentState) {
             MailboxState.HAS_MAIL -> {
-                val dropPos = blockState.getValue(FACING).unitVec3.scale(0.75).add(blockPos.center)
                 items.forEach {
                     Containers.dropItemStack(level!!, dropPos.x, dropPos.y, dropPos.z, it)
                 }
@@ -100,6 +117,16 @@ class MailboxBlockEntity(
             }
             else -> false
         }
+    }
+
+    fun getHeroMail(): List<ItemStack> {
+        val level = level as? ServerLevel ?: return emptyList()
+        val params: LootParams = LootParams.Builder(level)
+            .withParameter(LootContextParams.ORIGIN, blockPos.center)
+            .create(LootContextParamSets.CHEST)
+        val lootTable: LootTable = level.server.reloadableRegistries().getLootTable(PazLootTables.GARDEN_HERO_MAIL)
+        val items = lootTable.getRandomItems(params)
+        return items
     }
 
     fun updateMailboxState(newState: MailboxState) {
