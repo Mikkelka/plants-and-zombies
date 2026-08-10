@@ -4,11 +4,30 @@ import joshxviii.plantz.inventory.MailboxMenu
 import joshxviii.plantz.networking.MailboxListResponsePayload
 import joshxviii.plantz.networking.SendMailResponsePayload
 import joshxviii.plantz.networking.ServerConfigResponsePayload
+import joshxviii.plantz.networking.ZombieRaidClientData
+import joshxviii.plantz.networking.ZombieRaidResponsePayload
+import joshxviii.plantz.raid.ZombieRaid
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import net.minecraft.core.BlockPos
+import java.util.UUID
 
 object PazClientNetwork {
 
+    object ZombieRaidClientCache {
+        val active = mutableMapOf<UUID, ZombieRaidClientData>()
+
+        fun get(id: UUID) = active[id]
+        fun put(data: ZombieRaidClientData) { active[data.id] = data }
+        fun remove(id: UUID) { active.remove(id) }
+        fun clear() { active.clear() }
+    }
+
     fun initialize() {
+        ClientPlayNetworking.registerGlobalReceiver(ZombieRaidResponsePayload.ID) { payload, context ->
+            ZombieRaidClientCache.put(payload.data)
+            if (payload.terminate) ZombieRaidClientCache.remove(payload.data.id)
+        }
+
         ClientPlayNetworking.registerGlobalReceiver(SendMailResponsePayload.ID) { payload, context ->
             context.client().execute {
                 val mc = context.client()

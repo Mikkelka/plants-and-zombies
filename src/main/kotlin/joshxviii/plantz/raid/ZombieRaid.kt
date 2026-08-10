@@ -8,10 +8,14 @@ import com.mojang.serialization.codecs.RecordCodecBuilder
 import joshxviii.plantz.*
 import joshxviii.plantz.advancement.ZombieRaidContext
 import joshxviii.plantz.block.entity.FlagBlockEntity
+import joshxviii.plantz.block.entity.FlagBlockEntity.Companion.MAX_HEALTH
 import joshxviii.plantz.entity.zombie.BrownCoat
 import joshxviii.plantz.entity.zombie.BrownCoatVariant
 import joshxviii.plantz.entity.zombie.Imp
 import joshxviii.plantz.entity.zombie.ImpVariant
+import joshxviii.plantz.networking.ZombieRaidClientData
+import joshxviii.plantz.networking.ZombieRaidResponsePayload
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup.level
 import net.minecraft.SharedConstants
 import net.minecraft.ChatFormatting
 import net.minecraft.core.BlockPos
@@ -35,6 +39,7 @@ import net.minecraft.util.StringRepresentable
 import net.minecraft.world.BossEvent
 import net.minecraft.world.Difficulty
 import net.minecraft.core.registries.Registries
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket
 import net.minecraft.world.entity.EntitySpawnReason
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.EquipmentSlot
@@ -57,7 +62,7 @@ class ZombieRaid(
     var wavesSpawned: Int = 0,
     var raidCooldownTicks: Int = PRE_RAID_TICKS,
     var postRaidTicks: Int = 0,
-    var totalHealth: Float = 0f,
+    var totalZombieHealth: Float = 0f,
     var numWaves: Int = 0,
     var waveTimer: Int = 0,
     var status: ZombieRaidStatus = ZombieRaidStatus.ONGOING,
@@ -85,7 +90,7 @@ class ZombieRaid(
                 Codec.INT.fieldOf("waves_spawned").forGetter<ZombieRaid> { it.wavesSpawned },
                 Codec.INT.fieldOf("cooldown_ticks").forGetter<ZombieRaid> { it.raidCooldownTicks },
                 Codec.INT.fieldOf("post_raid_ticks").forGetter<ZombieRaid> { it.postRaidTicks },
-                Codec.FLOAT.fieldOf("total_health").forGetter<ZombieRaid> { it.totalHealth },
+                Codec.FLOAT.fieldOf("total_health").forGetter<ZombieRaid> { it.totalZombieHealth },
                 Codec.INT.fieldOf("wave_count").forGetter<ZombieRaid> { it.numWaves },
                 Codec.INT.fieldOf("wave_timer").forGetter<ZombieRaid> { it.waveTimer },
                 ZombieRaidStatus.CODEC.fieldOf("status").forGetter<ZombieRaid> { it.status },
@@ -139,20 +144,12 @@ class ZombieRaid(
     }
 
     fun tick(level: ServerLevel) {
+        updateBossbar(level)
         if (!active) return
         ticksActive++
         refreshRaidProfile(level)
 
         if (SharedConstants.DEBUG_RAIDS) {// DEBUG INFO
-            val event: ServerBossEvent = zombieRaidEvent
-            val title = Component
-                .literal("Wave: $wavesSpawned/$numWaves")
-                .append(", Zombies Alive: ${getTotalZombiesAlive()}")
-                .append(", Health: ${getHealthOfZombies()}/$totalHealth")
-                .append(", Status: ${status.getSerializedName().uppercase()}")
-                .append(", Timer: ${waveTimer.tickTimeFormat()}")
-            event.setName(title)
-
             level.playSound(null, center, SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.05f, 1.5f)
 
             level.sendParticles(
@@ -178,12 +175,9 @@ class ZombieRaid(
             if (raidCooldownTicks <= 0) {
                 status = ZombieRaidStatus.ONGOING
                 raidCooldownTicks = PRE_RAID_TICKS
-                zombieRaidEvent.name = ZOMBIE_RAID_BAR
             }
             else {
                 status = ZombieRaidStatus.NEXT_WAVE
-                zombieRaidEvent.progress = (zombieRaidEvent.progress + 1f/PRE_RAID_TICKS).coerceAtMost(1.0f)
-                zombieRaidEvent.setName(Component.translatable("event.plantz.zombie_raid.wave", wavesSpawned, 0.tickTimeFormat()))
                 return
             }
         }
@@ -193,9 +187,6 @@ class ZombieRaid(
         // victory condition (all zombies dead and all waves completed)
         if (getTotalZombiesAlive() == 0 && wavesSpawned >= numWaves) {
             status = ZombieRaidStatus.VICTORY
-            zombieRaidEvent.progress = 1.0f
-            zombieRaidEvent.color = BossEvent.BossBarColor.YELLOW
-            zombieRaidEvent.name = ZOMBIE_RAID_BAR_VICTORY
             postRaidTicks = POST_RAID_TICKS
             zombieRaidEvent.players.forEach { player ->// advancement
                 PazCriteria.WIN_ZOMBIE_RAID.trigger(player, ZombieRaidContext(center))
@@ -205,9 +196,6 @@ class ZombieRaid(
         // lose condition (flag destroyed)
         else if (!level.getBlockState(center).`is`(PazBlocks.PLANTZ_FLAG)) {
             status = ZombieRaidStatus.LOSS
-            zombieRaidEvent.progress = 1.0f
-            zombieRaidEvent.color = BossEvent.BossBarColor.RED
-            zombieRaidEvent.name = ZOMBIE_RAID_BAR_DEFEAT
             postRaidTicks = POST_RAID_TICKS
             return
         }
@@ -218,13 +206,10 @@ class ZombieRaid(
         if (shouldSpawnNextWave()) {
             val spawnPos = findRandomSpawnPos(level, 20) ?: center
             spawnNextWave(level, spawnPos)
-            //raidCooldownTicks = 200 + random.nextInt(200)  // Delay next wave
         }
         else if (waveTimer <= 0) {// destroy flag when timer runs out
             (level.getBlockEntity(center) as? FlagBlockEntity)?.hurt(999f)
         }
-
-        updateBossbar()
 
         if (ticksActive % 20L == 0L) {
             updatePlayers(level)
@@ -245,6 +230,7 @@ class ZombieRaid(
         val newPlayersInRaid = level.getPlayers(validPlayer())
         for (player in newPlayersInRaid) if (!currentPlayersInRaid.contains(player)) zombieRaidEvent.addPlayer(player)
         for (player in currentPlayersInRaid) if (!newPlayersInRaid.contains(player)) zombieRaidEvent.removePlayer(player)
+        updateBossbar(level)
     }
 
     private fun updateZombieRaiders(level: ServerLevel) {
@@ -279,7 +265,7 @@ class ZombieRaid(
     private fun spawnNextWave(level: ServerLevel, pos: BlockPos) {
         waveTimer = WAVE_DURATION_TICKS
         var leaderSet = false
-        totalHealth = 0.0f
+        totalZombieHealth = 0.0f
         val creditsUnlocked = hasRaidStarterSeenCredits(level)
         val specialWave = pickSpecialWave(creditsUnlocked)
         if (specialWave != null) announceSpecialWave(specialWave)
@@ -312,7 +298,7 @@ class ZombieRaid(
         configure: (Zombie) -> Unit = {},
     ) {
         if (status != ZombieRaidStatus.ONGOING) return
-        val added = addWaveMob(zombie, waveNumber)
+        val added = addWaveMob(zombie, waveNumber, level)
         if (added) {
             if (!exists && pos != null) {
                 zombie.setPos(pos.x.toDouble() + 0.5, pos.y.toDouble() + 1.0, pos.z.toDouble() + 0.5)
@@ -333,8 +319,8 @@ class ZombieRaid(
     fun removeFromRaid(level: ServerLevel, zombie: Zombie, removeFromTotalHealth: Boolean = true) {
         for (zombies in waveZombieMap.values) {
             if (zombies.remove(zombie)) {
-                if (removeFromTotalHealth) totalHealth -= zombie.health
-                updateBossbar()
+                if (removeFromTotalHealth) totalZombieHealth -= zombie.health
+                updateBossbar(level)
                 setDirty(level)
                 break
             }
@@ -349,7 +335,7 @@ class ZombieRaid(
     }
     fun getLeader(wave: Int): Zombie? = waveToLeaderMap[wave]
 
-    fun addWaveMob(zombie: Zombie, wave: Int = wavesSpawned): Boolean {
+    fun addWaveMob(zombie: Zombie, wave: Int = wavesSpawned, level: ServerLevel): Boolean {
         waveZombieMap.computeIfAbsent(wave) { Sets.newHashSet<Zombie>() }
         val zombies = waveZombieMap[wave] as MutableSet<Zombie>
         if (zombies.contains(zombie)) return false
@@ -368,14 +354,35 @@ class ZombieRaid(
         }
 
         zombies.add(zombie)
-        totalHealth += zombie.maxHealth
+        totalZombieHealth += zombie.maxHealth
 
-        updateBossbar()
+        updateBossbar(level)
         return true
     }
 
-    fun updateBossbar() {
-        zombieRaidEvent.setProgress(if (totalHealth <= 0f) 0.0f else Mth.clamp(getHealthOfZombies() / totalHealth, 0.0f, 1.0f))
+    fun updateBossbar(level: ServerLevel) {
+        sendClientUpdate(level)
+    }
+
+    fun sendClientUpdate(level: ServerLevel, terminate: Boolean = false) {
+        val flag = level.getBlockEntity(center) as? FlagBlockEntity
+        val data = ZombieRaidClientData(
+            id = zombieRaidEvent.id,
+            status = status,
+            wavesSpawned = wavesSpawned,
+            numWaves = numWaves,
+            waveTimer = waveTimer,
+            totalZombieHealth = totalZombieHealth,
+            currentZombieHealth = getHealthOfZombies(),
+            flagHealth = flag?.health ?: 0f,
+            flagMaxHealth = MAX_HEALTH,
+            center = center
+        )
+
+        val packet = ZombieRaidResponsePayload(data, terminate)
+        zombieRaidEvent.players.forEach { player ->
+            player.connection.send(ClientboundCustomPayloadPacket(packet))
+        }
     }
 
     fun getTotalZombiesAlive(): Int = waveZombieMap.values.stream().mapToInt { it.map { z -> if (z.isAlive) 1 else 0 }.sum() }.sum()
@@ -466,6 +473,10 @@ class ZombieRaid(
 
     fun stop() {
         active = false
+        val data = ZombieRaidClientData(id = zombieRaidEvent.id)
+        zombieRaidEvent.players.forEach { player ->
+            player.connection.send(ClientboundCustomPayloadPacket(ZombieRaidResponsePayload(data, true)))
+        }
         zombieRaidEvent.removeAllPlayers()
         status = ZombieRaidStatus.STOPPED
     }
