@@ -80,7 +80,7 @@ open class PazZombieRenderer(
         state.customName = entity.customName?.string ?: ""
         state.textureExtra =
             when (entity) {
-                is Gargantuar -> if (entity.hasImp) "imp" else ""
+                is Gargantuar -> entity.variant.suffix + if (entity.hasImp) "_imp" else ""
                 is NewspaperZombie -> if (entity.isAngry()) "angry" else ""
                 is BrownCoat -> entity.variant.suffix
                 is Imp -> entity.variant.suffix

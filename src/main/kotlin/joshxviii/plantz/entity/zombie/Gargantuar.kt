@@ -1,6 +1,7 @@
 package joshxviii.plantz.entity.zombie
 
 import joshxviii.plantz.*
+import joshxviii.plantz.PazDataSerializers.GARGANTUAR_VARIANT
 import joshxviii.plantz.ai.ZombieState
 import joshxviii.plantz.entity.zombie.Gargantuar.SmashAttackGoal.Companion.ATTACK_DELAY_TIME
 import net.minecraft.core.BlockPos
@@ -28,12 +29,18 @@ import net.minecraft.world.level.ServerLevelAccessor
 import net.minecraft.world.level.SimpleExplosionDamageCalculator
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.gameevent.GameEvent
+import net.minecraft.world.level.storage.ValueInput
+import net.minecraft.world.level.storage.ValueOutput
 import net.minecraft.world.phys.Vec3
 import java.util.*
+import kotlin.jvm.optionals.getOrDefault
 
 class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(type, level) {
 
     companion object {
+
+        val DATA_VARIANT_ID: EntityDataAccessor<GargantuarVariant> = SynchedEntityData.defineId(Gargantuar::class.java, GARGANTUAR_VARIANT)
+
         val SMASH_ATTACK_TIME_ID: EntityDataAccessor<Int> = SynchedEntityData.defineId<Int>(Gargantuar::class.java, EntityDataSerializers.INT)
         val THROW_TIME_ID: EntityDataAccessor<Int> = SynchedEntityData.defineId<Int>(Gargantuar::class.java, EntityDataSerializers.INT)
         val HAS_IMP_ID: EntityDataAccessor<Boolean> = SynchedEntityData.defineId<Boolean>(Gargantuar::class.java, EntityDataSerializers.BOOLEAN)
@@ -47,6 +54,10 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
     val punchAttackAnimation : AnimationState = AnimationState()
     val throwImpAnimation : AnimationState = AnimationState()
 
+    var variant: GargantuarVariant
+        get() = this.entityData.get(DATA_VARIANT_ID)
+        set(value) = this.entityData.set(DATA_VARIANT_ID, value)
+
     var smashAttackTime: Int
         get() = this.entityData.get(SMASH_ATTACK_TIME_ID)
         set(value) = this.entityData.set(SMASH_ATTACK_TIME_ID, value)
@@ -59,9 +70,20 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
 
     override fun defineSynchedData(entityData: SynchedEntityData.Builder) {
         super.defineSynchedData(entityData)
+        entityData.define(DATA_VARIANT_ID, GargantuarVariant.getDefault())
         entityData.define(SMASH_ATTACK_TIME_ID, 0)
         entityData.define(THROW_TIME_ID, 0)
         entityData.define(HAS_IMP_ID, true)
+    }
+
+    override fun addAdditionalSaveData(output: ValueOutput) {
+        super.addAdditionalSaveData(output)
+        output.store("variant", GargantuarVariant.CODEC, variant)
+    }
+
+    override fun readAdditionalSaveData(input: ValueInput) {
+        super.readAdditionalSaveData(input)
+        variant = input.read("variant", GargantuarVariant.CODEC).getOrDefault(GargantuarVariant.getDefault())
     }
 
     override fun registerGoals() {
@@ -298,6 +320,7 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
                 val lookDirection = gargantuar.calculateViewVector(0f, gargantuar.yRot)
                 imp.snapTo(spawnPos, gargantuar.yRot, 0.0f)
                 imp.applyImpulse(lookDirection.x, lookDirection.y, lookDirection.z, 1.0f, 0f)
+                if (gargantuar.variant == GargantuarVariant.PIRATE) imp.variant = ImpVariant.PIRATE
                 gargantuar.target.let { if (it!=null) imp.setLastHurtMob(it) }
                 level.addFreshEntity(imp)
                 level.gameEvent(GameEvent.ENTITY_PLACE, spawnPos, GameEvent.Context.of(gargantuar))

@@ -62,6 +62,8 @@ public class GargantuarModel extends PazZombieModel {
 
 		PartDefinition left_leg2 = imp.addOrReplaceChild("left_leg2", CubeListBuilder.create().texOffs(57, 109).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 3.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(-2.5F, 6.0F, 0.3333F));
 
+		PartDefinition barrel = imp.addOrReplaceChild("barrel", CubeListBuilder.create().texOffs(13, 100).addBox(-4.5F, 30.0F, -14.1667F, 9.0F, 9.0F, 9.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -27.0F, 10.0F));
+
 		PartDefinition right_arm = root.addOrReplaceChild("right_arm", CubeListBuilder.create().texOffs(36, 25).addBox(-8.0F, -3.0F, -5.0F, 8.0F, 28.0F, 10.0F, new CubeDeformation(0.0F)), PartPose.offset(-10.0F, -18.0F, 0.0F));
 
 		PartDefinition left_arm = root.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(0, 25).addBox(0.0F, -3.0F, -5.0F, 8.0F, 28.0F, 10.0F, new CubeDeformation(0.0F)), PartPose.offset(10.0F, -18.0F, 0.0F));
