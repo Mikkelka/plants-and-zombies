@@ -19,7 +19,7 @@ class ZombieOmenMobEffect(
     particleOptions: ParticleOptions
 ) : MobEffect(category, color, particleOptions) {
     companion object {
-        const val MAX_FLAG_DISTANCE = 24
+        const val MAX_FLAG_DISTANCE = 64
     }
 
     override fun shouldApplyEffectTickThisTick(remainingDuration: Int, amplification: Int): Boolean {

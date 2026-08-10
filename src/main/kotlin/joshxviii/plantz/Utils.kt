@@ -1,30 +1,29 @@
 package joshxviii.plantz
 
-import joshxviii.plantz.PazEntities.MAGIC_NAMES
 import joshxviii.plantz.PazMain.MODID
-import joshxviii.plantz.entity.plant.Chomper
 import joshxviii.plantz.entity.plant.Plant
-import joshxviii.plantz.entity.zombie.BrownCoat
-import joshxviii.plantz.entity.zombie.DiscoZombie
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Vec3i
+import net.minecraft.core.component.DataComponents
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerEntityGetter
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
-import net.minecraft.server.packs.resources.ResourceManager
 import net.minecraft.util.Mth
 import net.minecraft.world.entity.*
 import net.minecraft.world.entity.Entity.MoveFunction
+import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.entity.ai.control.LookControl
 import net.minecraft.world.entity.ai.navigation.PathNavigation
 import net.minecraft.world.entity.ai.targeting.TargetingConditions
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.entity.projectile.Projectile
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.component.AttackRange
 import net.minecraft.world.level.pathfinder.Path
 import net.minecraft.world.phys.Vec3
+import kotlin.math.sqrt
 
 fun pazResource(path: String): Identifier = Identifier.fromNamespaceAndPath(MODID, path)
 
@@ -196,6 +195,15 @@ fun Path?.canReachTarget(target: BlockPos?): Boolean {
     return this?.endNode?.let {
         target.distSqr(Vec3i(it.x, it.y, it.z)) <= 2.25
     }?: false
+}
+
+fun Mob.attackRange(): Double {
+    val DEFAULT = sqrt(2.04) - 0.6;
+    val range: Double
+    val interactionRange = this.getAttribute(Attributes.ENTITY_INTERACTION_RANGE)?.value?: 0.0
+    val attackRange = Mth.absMax(this.getActiveItem().get(DataComponents.ATTACK_RANGE)?.effectiveMaxRange(this)?.toDouble() ?: DEFAULT, interactionRange)
+    val hitboxWidth = (this.boundingBox.xsize + this.boundingBox.ysize) / 2.0
+    return hitboxWidth + attackRange
 }
 
 fun Path?.getEndPos(): BlockPos? = this?.endNode?.let { BlockPos(it.x, it.y, it.z) }

@@ -46,7 +46,7 @@ class FlagBlockEntity(
         if (resetTime > 0) {
             resetTime--
             if (resetTime == 0) {
-                health += MAX_HEALTH * 0.02f
+                health += MAX_HEALTH * 0.01f
 
                 level.destroyBlockProgress(0, pos, healthToDestroyProgress())
                 if (health >= MAX_HEALTH) level.destroyBlockProgress(0, pos, -1)
