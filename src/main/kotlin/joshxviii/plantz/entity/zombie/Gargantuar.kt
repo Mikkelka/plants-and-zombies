@@ -79,11 +79,13 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
     override fun addAdditionalSaveData(output: ValueOutput) {
         super.addAdditionalSaveData(output)
         output.store("variant", GargantuarVariant.CODEC, variant)
+        output.putBoolean("hasImp", hasImp)
     }
 
     override fun readAdditionalSaveData(input: ValueInput) {
         super.readAdditionalSaveData(input)
         variant = input.read("variant", GargantuarVariant.CODEC).getOrDefault(GargantuarVariant.getDefault())
+        hasImp = input.getBooleanOr("hasImp", true)
     }
 
     override fun registerGoals() {
@@ -250,7 +252,7 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
             //TODO add electric attack on <.5 health
             level.explode(
                     gargantuar,
-                    DamageSource(level.registryAccess().get(PazDamageTypes.ZOMBIE_SMASH).get(), gargantuar),
+                    gargantuar.damageSources().source(PazDamageTypes.ZOMBIE_SMASH, gargantuar),
                     SMASH_DAMAGE_CALCULATOR, pos.x, pos.y, pos.z,
                     3.5f,
                     false,

@@ -83,7 +83,7 @@ open class PazZombieRenderer(
                 is Gargantuar -> entity.variant.suffix + if (entity.hasImp) "_imp" else ""
                 is NewspaperZombie -> if (entity.isAngry()) "angry" else ""
                 is BrownCoat -> entity.variant.suffix
-                is Imp -> entity.variant.suffix
+                is Imp -> entity.variant.suffix + if (entity.hasBarrel) "_barrel" else ""
                 is SuperBrainz -> entity.variant.suffix
                 else -> ""
             }
