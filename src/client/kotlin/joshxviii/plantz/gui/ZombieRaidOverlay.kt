@@ -84,7 +84,6 @@ object ZombieRaidOverlay {
             val waveText = "${raidEvent.wavesSpawned} / ${raidEvent.numWaves}"
             val waveX = screenWidth / 2 - font.width(waveText) / 2
             graphics.text(font, waveText, waveX, textY+32, -1)
-
         }
     }
 

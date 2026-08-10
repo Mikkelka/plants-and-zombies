@@ -41,6 +41,7 @@ import net.minecraft.world.BossEvent
 import net.minecraft.world.Difficulty
 import net.minecraft.core.registries.Registries
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket
+import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.entity.EntitySpawnReason
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.EquipmentSlot
@@ -169,8 +170,8 @@ class ZombieRaid(
         }
 
         if (
-            (getTotalZombiesAlive() == 0 && raidCooldownTicks > 0) ||
-            (waveTimer == 0 && wavesSpawned < numWaves)
+            ((getTotalZombiesAlive() == 0 && raidCooldownTicks > 0) ||
+            (waveTimer == 0 && wavesSpawned < numWaves)) && wavesSpawned < numWaves
         ) {
             raidCooldownTicks-- // pre-loading time
             waveTimer = 0
@@ -192,6 +193,7 @@ class ZombieRaid(
             postRaidTicks = POST_RAID_TICKS
             zombieRaidEvent.players.forEach { player ->// advancement
                 PazCriteria.WIN_ZOMBIE_RAID.trigger(player, ZombieRaidContext(center))
+                player.addEffect(MobEffectInstance(PazEffects.GARDEN_HERO, 18000, zombieRaidOmenLevel, false, true))
             }
             return
         }
@@ -263,7 +265,7 @@ class ZombieRaid(
 
     fun absorbRaidOmen(player: ServerPlayer): Boolean {
         val effect = player.getEffect(PazEffects.ZOMBIE_OMEN)?: return false
-        zombieRaidOmenLevel += effect.amplifier + 1
+        zombieRaidOmenLevel += effect.amplifier
         starterHasSeenCredits = starterHasSeenCredits || player.seenCredits
         return true
     }
@@ -703,8 +705,8 @@ class ZombieRaid(
         private val requiresCredits: Boolean = false,
     ) {
         // default spawns per wave
-        BROWN_COAT(PazEntities.BROWN_COAT,             intArrayOf(3,      6,      8,      10,     11,     16,     20,     20,     30,   25)),
-        NEWSPAPER_ZOMBIE(PazEntities.NEWSPAPER_ZOMBIE, intArrayOf(0,      1,      0,      1,      0,      1,      2,      1,      3,    2 )),
+        BROWN_COAT(PazEntities.BROWN_COAT,             intArrayOf(6,      8,      10,     12,     16,     20,     25,     25,     30,   25)),
+        NEWSPAPER_ZOMBIE(PazEntities.NEWSPAPER_ZOMBIE, intArrayOf(1,      1,      0,      1,      0,      1,      2,      1,      3,    2 )),
         DIGGER_ZOMBIE(PazEntities.DIGGER_ZOMBIE,       intArrayOf(0,      0,      1,      0,      4,      1,      1,      2,      3,    3 )),
         DISCO_ZOMBIE(PazEntities.DISCO_ZOMBIE,         intArrayOf(0,      0,      1,      2,      3,      3,      4,      2,      3,    5 )),
         ALL_STAR(PazEntities.ALL_STAR,                 intArrayOf(0,      0,      1,      3,      2,      4,      5,      3,      5,    5 )),

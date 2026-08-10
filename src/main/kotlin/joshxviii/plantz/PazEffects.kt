@@ -4,6 +4,7 @@ import joshxviii.plantz.effect.ButteredMobEffect
 import joshxviii.plantz.effect.ElectrifyMobEffect
 import joshxviii.plantz.effect.FreezeMobEffect
 import joshxviii.plantz.effect.HypnotizedMobEffect
+import joshxviii.plantz.effect.GardenHeroEffect
 import joshxviii.plantz.effect.PaintedMobEffect
 import joshxviii.plantz.effect.TangledMobEffect
 import joshxviii.plantz.effect.ToxicMobEffect
@@ -13,22 +14,17 @@ import net.fabricmc.fabric.impl.attachment.AttachmentRegistryImpl
 import net.minecraft.core.Holder
 import net.minecraft.core.Registry
 import net.minecraft.core.particles.BlockParticleOption
-import net.minecraft.core.particles.ColorParticleOption
-import net.minecraft.core.particles.ParticleOptions
-import net.minecraft.core.particles.ParticleType
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.world.effect.MobEffect
 import net.minecraft.world.effect.MobEffectCategory
 import net.minecraft.world.effect.MobEffectInstance
-import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.ai.attributes.AttributeModifier
 import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.entity.ai.goal.Goal
 import net.minecraft.world.item.DyeColor
 import net.minecraft.world.item.alchemy.Potion
 import net.minecraft.world.level.block.Blocks
-import org.jetbrains.annotations.Nullable
 
 object PazEffects {
 
@@ -44,6 +40,8 @@ object PazEffects {
     @JvmField val ZOMBIE_OMEN : Holder<MobEffect> = register("zombie_omen",
         ZombieOmenMobEffect(MobEffectCategory.NEUTRAL, 1297708, PazServerParticles.ZOMBIE_OMEN)
             .withSoundOnAdded(PazSounds.APPLY_ZOMBIE_OMEN))
+    @JvmField val GARDEN_HERO : Holder<MobEffect> = register("hero_of_the_garden",
+        GardenHeroEffect(MobEffectCategory.BENEFICIAL, 0x36AD55))
     @JvmField val ELECTRIFIED : Holder<MobEffect> = register("electrified",
         ElectrifyMobEffect(MobEffectCategory.HARMFUL, 0x87FFFB, PazServerParticles.ELECTRIFIED))
     @JvmField val PAINTED : Map<DyeColor, Holder<MobEffect>> = (
