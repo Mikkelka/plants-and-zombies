@@ -9,19 +9,22 @@
       "plantz:brainz_alloy"
     ],
     "+": [
-      "minecraft:netherite_ingot"
+      "plantz:brainzium"
     ],
     "*": [
       "minecraft:redstone"
+    ],
+    "=": [
+      "plantz:reinforced_brainz_alloy_block"
     ]
   },
   "pattern": [
     "#@#",
     "*+*",
-    "###"
+    "==="
   ],
   "result": {
-    "count": 0,
+    "count": 1,
     "id": "plantz:time_machine"
   }
 }

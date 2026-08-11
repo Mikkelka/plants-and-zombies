@@ -268,7 +268,7 @@ enum class WaveType(
     }
 
     fun isAvailable(raid: ZombieRaid, creditsUnlocked: Boolean): Boolean {
-        return raid.wavesSpawned in minWave..maxWave && (!creditsRequired || creditsUnlocked)
+        return raid.wavesSpawned+1 in minWave..maxWave && (!creditsRequired || creditsUnlocked)
     }
 
     fun weight(raid: ZombieRaid, creditsUnlocked: Boolean): Float = weightFn(raid, creditsUnlocked)

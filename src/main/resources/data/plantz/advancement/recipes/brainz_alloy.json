@@ -26,7 +26,7 @@
   ],
   "rewards": {
     "recipes": [
-      "plantz:brainz_alloy"
+      "plantz:brainz_alloy_by_block"
     ]
   }
 }

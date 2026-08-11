@@ -65,7 +65,7 @@ object PazItems {
         "sun_battery", ::SunBatteryItem,
         properties = Item.Properties()
             .stacksTo(1)
-            .rarity(Rarity.EPIC)
+            .rarity(Rarity.RARE)
             .component(PazComponents.STORED_SUN, StoredSun())
     )
     @JvmField
@@ -74,6 +74,11 @@ object PazItems {
         properties = Item.Properties()
             .stacksTo(1)
             .component(PazComponents.STORED_WATER, StoredWater())
+    )
+    @JvmField
+    val BRAINZIUM: Item = registerItem(
+        "brainzium",
+        properties = Item.Properties()
     )
     @JvmField
     val BRAINZ_ALLOY: Item = registerItem(

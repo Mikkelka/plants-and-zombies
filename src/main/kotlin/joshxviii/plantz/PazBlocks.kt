@@ -93,7 +93,9 @@ object PazBlocks {
             .noOcclusion()
             .pushReaction(PushReaction.BLOCK)
             .lightLevel(TimeMachineBlock.LIGHT_EMISSION),
-        ::TimeMachineBlock
+        ::TimeMachineBlock,
+        Item.Properties()
+            .rarity(Rarity.EPIC)
     )
     val TIME_MACHINE_ENTITY: BlockEntityType<TimeMachineBlockEntity> = registerBlockEntity(
         "time_machine",
