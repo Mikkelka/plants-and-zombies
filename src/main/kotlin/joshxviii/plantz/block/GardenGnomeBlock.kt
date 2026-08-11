@@ -113,7 +113,13 @@ class GardenGnomeBlock(
         random: RandomSource
     ): BlockState {
         if (state.getValue(WATERLOGGED)) ticks.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level))
-        return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random)
+        return if (!state.canSurvive(level, pos)) Blocks.AIR.defaultBlockState()
+        else super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random)
+    }
+
+    override fun canSurvive(state: BlockState, level: LevelReader, pos: BlockPos): Boolean {
+        val direction = Direction.DOWN
+        return canSupportCenter(level, pos.relative(direction), direction.opposite)
     }
 
     override fun codec(): MapCodec<out GardenGnomeBlock> { return CODEC }

@@ -5,7 +5,6 @@ import io.netty.buffer.ByteBuf
 import joshxviii.plantz.PazEntities
 import joshxviii.plantz.PazItems
 import joshxviii.plantz.PazLootTables
-import joshxviii.plantz.ai.PlantState
 import joshxviii.plantz.entity.zombie.BrownCoat
 import joshxviii.plantz.entity.zombie.BrownCoatVariant
 import joshxviii.plantz.entity.zombie.Gargantuar
@@ -13,7 +12,6 @@ import joshxviii.plantz.entity.zombie.GargantuarVariant
 import joshxviii.plantz.entity.zombie.Imp
 import joshxviii.plantz.entity.zombie.ImpVariant
 import joshxviii.plantz.raid.ZombieRaid.WaveSpawnEntry
-import joshxviii.plantz.raid.ZombieRaid.ZombieRaidStatus
 import net.minecraft.core.component.DataComponents
 import net.minecraft.core.registries.Registries
 import net.minecraft.network.chat.Component
@@ -38,9 +36,9 @@ enum class WaveType(
     private val creditsRequired: Boolean,
     private val weightFn: (ZombieRaid, Boolean) -> Float,
     private val spawnFn: (ZombieRaid, Boolean) -> List<WaveSpawnEntry>,
-    public val lootTable: ResourceKey<LootTable> = PazLootTables.GARDEN_HERO_MAIL
+    val lootTable: ResourceKey<LootTable> = PazLootTables.DEFAULT_MAIL_REWARD
 ): StringRepresentable {
-    REGULAR(
+    DEFAULT(
         minWave = 0,
         maxWave = 0,
         creditsRequired = false,
@@ -67,7 +65,7 @@ enum class WaveType(
                 WaveSpawnEntry(ZombieRaiderType.NEWSPAPER_ZOMBIE, newspaperZombie.coerceAtLeast(1), ::spawnBucketHeads),
             )
         },
-        lootTable = PazLootTables.SUN
+        lootTable = PazLootTables.BUCKET_MAIL_REWARD
     ),
     HALFTIME_SHOW(
         minWave = 3,
@@ -84,7 +82,7 @@ enum class WaveType(
                 WaveSpawnEntry(ZombieRaiderType.IMP, impCount.coerceAtLeast(1), ::spawnFootBallHelmets)
             )
         },
-        lootTable = PazLootTables.SUN
+        lootTable = PazLootTables.HALFTIME_MAIL_REWARD
     ),
     WINTER_WONDERLAND(
         minWave = 4,
@@ -103,7 +101,7 @@ enum class WaveType(
                 WaveSpawnEntry(ZombieRaiderType.ZOMBIE_YETI, yetiCount.coerceAtLeast(2))
             )
         },
-        lootTable = PazLootTables.SUN
+        lootTable = PazLootTables.WINTER_MAIL_REWARD
     ),
     PIRATE_INVASION(
         minWave = 5,
@@ -124,20 +122,7 @@ enum class WaveType(
                 WaveSpawnEntry(ZombieRaiderType.GARGANTUAR, gargantuarCount, ::spawnPirateZombies)
             )
         },
-        lootTable = PazLootTables.SUN
-    ),
-    LEAGUE_OF_AWESOMENESS(
-        minWave = 4,
-        maxWave = 10,
-        creditsRequired = true,
-        weightFn = { raid, credits ->
-            if (!credits) 0f else 0.05f + (raid.zombieRaidOmenLevel * 0.02f)
-        },
-        spawnFn = { raid, _ ->
-            val count = 1 + raid.wavesSpawned / 4 + (raid.zombieRaidOmenLevel / 3)
-            listOf(WaveSpawnEntry(ZombieRaiderType.SUPER_BRAINZ, count.coerceAtLeast(1)))
-        },
-        lootTable = PazLootTables.SUN
+        lootTable = PazLootTables.PIRATE_MAIL_REWARD
     ),
     ROBO_ARMY(
         minWave = 5,
@@ -156,8 +141,22 @@ enum class WaveType(
                 WaveSpawnEntry(ZombieRaiderType.SOLDIER_ZOMBIE, soldierCount.coerceAtLeast(2))
             )
         },
-        lootTable = PazLootTables.SUN
+        lootTable = PazLootTables.ARMY_MAIL_REWARD
+    ),
+    LEAGUE_OF_AWESOMENESS(
+        minWave = 4,
+        maxWave = 10,
+        creditsRequired = true,
+        weightFn = { raid, credits ->
+            if (!credits) 0f else 0.05f + (raid.zombieRaidOmenLevel * 0.02f)
+        },
+        spawnFn = { raid, _ ->
+            val count = 1 + raid.wavesSpawned / 4 + (raid.zombieRaidOmenLevel / 3)
+            listOf(WaveSpawnEntry(ZombieRaiderType.SUPER_BRAINZ, count.coerceAtLeast(1)))
+        },
+        lootTable = PazLootTables.LEAGUE_MAIL_REWARD
     );
+
 
     override fun getSerializedName(): String = name.lowercase()
 

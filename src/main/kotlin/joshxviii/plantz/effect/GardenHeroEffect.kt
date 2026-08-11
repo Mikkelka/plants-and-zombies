@@ -11,7 +11,7 @@ import net.minecraft.world.level.storage.loot.LootTable
 class GardenHeroEffect(
     category: MobEffectCategory,
     color: Int,
-    var lootTables: List<ResourceKey<LootTable>> = listOf(PazLootTables.GARDEN_HERO_MAIL)
+    var lootTables: List<ResourceKey<LootTable>> = listOf(PazLootTables.DEFAULT_MAIL_REWARD)
 ) : MobEffect(category, color) {
 
     override fun shouldApplyEffectTickThisTick(remainingDuration: Int, amplification: Int): Boolean {

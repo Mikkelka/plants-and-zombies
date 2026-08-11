@@ -5,18 +5,11 @@ import com.google.common.collect.Sets
 import com.mojang.serialization.Codec
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
-import io.netty.buffer.ByteBuf
 import joshxviii.plantz.*
 import joshxviii.plantz.advancement.ZombieRaidContext
 import joshxviii.plantz.block.entity.FlagBlockEntity
 import joshxviii.plantz.block.entity.FlagBlockEntity.Companion.MAX_HEALTH
 import joshxviii.plantz.effect.GardenHeroEffect
-import joshxviii.plantz.entity.zombie.BrownCoat
-import joshxviii.plantz.entity.zombie.BrownCoatVariant
-import joshxviii.plantz.entity.zombie.Gargantuar
-import joshxviii.plantz.entity.zombie.GargantuarVariant
-import joshxviii.plantz.entity.zombie.Imp
-import joshxviii.plantz.entity.zombie.ImpVariant
 import joshxviii.plantz.networking.ZombieRaidClientData
 import joshxviii.plantz.networking.ZombieRaidResponsePayload
 import net.minecraft.SharedConstants
@@ -29,7 +22,6 @@ import net.minecraft.network.chat.MutableComponent
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket
 import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket
 import net.minecraft.network.protocol.game.ClientboundSoundPacket
-import net.minecraft.core.component.DataComponents
 import net.minecraft.server.level.ServerBossEvent
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
@@ -41,17 +33,12 @@ import net.minecraft.util.RandomSource
 import net.minecraft.util.StringRepresentable
 import net.minecraft.world.BossEvent
 import net.minecraft.world.Difficulty
-import net.minecraft.core.registries.Registries
-import net.minecraft.network.codec.ByteBufCodecs
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket
 import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.entity.EntitySpawnReason
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.SpawnGroupData
 import net.minecraft.world.entity.monster.zombie.Zombie
-import net.minecraft.world.item.Items
-import net.minecraft.world.item.enchantment.Enchantments
-import net.minecraft.world.item.component.DyedItemColor
 import net.minecraft.world.level.levelgen.Heightmap
 import java.util.function.Predicate
 import java.util.Optional
@@ -283,7 +270,7 @@ class ZombieRaid(
         totalZombieHealth = 0.0f
         val creditsUnlocked = hasRaidStarterSeenCredits(level)
         val waveType = pickWaveType(creditsUnlocked)
-        if (waveType != WaveType.REGULAR) announceSpecialWave(waveType)
+        if (waveType != WaveType.DEFAULT) announceSpecialWave(waveType)
         waveTypes.add(waveType)
         val waveEntries = waveType.spawnEntries(this, creditsUnlocked)
 
@@ -433,7 +420,7 @@ class ZombieRaid(
     private fun pickWaveType(creditsUnlocked: Boolean): WaveType {
         val eligible = WaveType.entries.filter { it.isAvailable(this, creditsUnlocked) }
         val totalWeight = eligible.sumOf { it.weight(this, creditsUnlocked).toDouble() }.toFloat()
-        if (totalWeight <= 0f) return WaveType.REGULAR
+        if (totalWeight <= 0f) return WaveType.DEFAULT
 
         val roll = random.nextFloat() * totalWeight
         var runningWeight = 0f
@@ -441,7 +428,7 @@ class ZombieRaid(
             runningWeight += wave.weight(this, creditsUnlocked)
             if (roll < runningWeight) return wave
         }
-        return WaveType.REGULAR
+        return WaveType.DEFAULT
     }
 
     private fun findRandomSpawnPos(level: ServerLevel, maxTries: Int): BlockPos? {
