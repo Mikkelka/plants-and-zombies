@@ -22,7 +22,7 @@ object PazSpawnPlacements {
         registerSpawnPlacement(PazEntities.CACTUS, Cactus::checkCactusSpawnRules)
 
         addBiomeSpawn(PazTags.Biomes.HAS_LIGHTNING_REED, PazEntities.LIGHTNING_REED,
-            weight = 10, minGroupSize = 1, maxGroupSize = 2)
+            weight = 12, minGroupSize = 2, maxGroupSize = 3)
         registerSpawnPlacement(PazEntities.LIGHTNING_REED, LightningReed::checkLightningReedSpawnRules)
 
         addBiomeSpawn(PazTags.Biomes.HAS_CHERRYBOMB, PazEntities.CHERRY_BOMB,
@@ -74,7 +74,7 @@ object PazSpawnPlacements {
         registerSpawnPlacement(PazEntities.BONK_CHOY, Plant::checkPlantSpawnRules)
 
         addBiomeSpawn(PazTags.Biomes.HAS_TANGLE_KELP, PazEntities.TANGLE_KELP,
-            weight = 6, minGroupSize = 2, maxGroupSize = 5)
+            weight = 9, minGroupSize = 3, maxGroupSize = 5)
         registerSpawnPlacement(PazEntities.TANGLE_KELP, TangleKelp::checkTangleKelpSpawnRules, spawnPlacements = SpawnPlacementTypes.IN_WATER)
 
         addBiomeSpawn(PazTags.Biomes.HAS_PEASHOOTER, PazEntities.PEA_SHOOTER,
@@ -112,11 +112,15 @@ object PazSpawnPlacements {
         addBiomeSpawn(PazTags.Biomes.HAS_COFFEE_BEAN, PazEntities.COFFEE_BEAN,
             weight = 5, minGroupSize = 2, maxGroupSize = 5)
         registerSpawnPlacement(PazEntities.COFFEE_BEAN, CoffeeBean::checkCoffeeBeanSpawnRules, Heightmap.Types.MOTION_BLOCKING)
+
+        addBiomeSpawn(PazTags.Biomes.HAS_GRAVE_BUSTER, PazEntities.GRAVE_BUSTER,
+            weight = 15, minGroupSize = 1, maxGroupSize = 3)
+        registerSpawnPlacement(PazEntities.GRAVE_BUSTER, Plant::checkPlantSpawnRules)
         // endregion
 
         // region ZOMBIES
         addBiomeSpawn(PazTags.Biomes.HAS_BROWNCOAT, PazEntities.BROWN_COAT, category = MobCategory.MONSTER,
-            weight = 60, minGroupSize = 1, maxGroupSize = 4)
+            weight = 100, minGroupSize = 1, maxGroupSize = 5)
         addBiomeSpawn(PazTags.Biomes.WATER_SPAWNS, PazEntities.BROWN_COAT, category = MobCategory.MONSTER,
             weight = 10, minGroupSize = 1, maxGroupSize = 2)
         registerSpawnPlacement(PazEntities.BROWN_COAT, PazZombie::checkPazZombieSpawnRules, spawnPlacements = SpawnPlacementTypes.NO_RESTRICTIONS)

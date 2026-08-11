@@ -21,7 +21,6 @@ class ButteredMobEffect(
 
     override fun onEffectStarted(effectInstance: MobEffectInstance, entity: LivingEntity) {
         super.onEffectStarted(effectInstance, entity)
-        if (entity is Mob) entity.isNoAi
     }
 
     override fun onEffectRemoved(effectInstance: MobEffectInstance, entity: LivingEntity) {

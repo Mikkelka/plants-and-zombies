@@ -1,21 +1,21 @@
 package joshxviii.plantz.model.zombies;
 
-import joshxviii.plantz.PazZombieRenderState;
+import joshxviii.plantz.renderer.entity.PazZombieRenderState;
+import joshxviii.plantz.renderer.entity.GargantuarRenderState;
 import joshxviii.plantz.animation.zombies.GargantuarAnimation;
 import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
-import net.minecraft.client.renderer.entity.state.ZombieRenderState;
-import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 
 import static joshxviii.plantz.UtilsKt.pazResource;
 
 public class GargantuarModel extends PazZombieModel {
 	public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(pazResource("gargantuar"), "main");
-	private final KeyframeAnimation attackAnimation;
+	private final KeyframeAnimation walkAnimation;
+	private final KeyframeAnimation punchAnimation;
 	private final KeyframeAnimation smashAnimation;
 	private final KeyframeAnimation throwAnimation;
 
@@ -24,7 +24,8 @@ public class GargantuarModel extends PazZombieModel {
 			GargantuarAnimation.init.bake(root.getChild("root")),
 			root
 		);
-		this.attackAnimation = GargantuarAnimation.action.bake(root.getChild("root"));
+		this.walkAnimation = GargantuarAnimation.walk.bake(root.getChild("root"));
+		this.punchAnimation = GargantuarAnimation.action.bake(root.getChild("root"));
 		this.throwAnimation = GargantuarAnimation.toss.bake(root.getChild("root"));
 		this.smashAnimation = GargantuarAnimation.attack.bake(root.getChild("root"));
 	}
@@ -61,6 +62,8 @@ public class GargantuarModel extends PazZombieModel {
 
 		PartDefinition left_leg2 = imp.addOrReplaceChild("left_leg2", CubeListBuilder.create().texOffs(57, 109).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 3.0F, 2.0F, new CubeDeformation(0.0F)), PartPose.offset(-2.5F, 6.0F, 0.3333F));
 
+		PartDefinition barrel = imp.addOrReplaceChild("barrel", CubeListBuilder.create().texOffs(13, 100).addBox(-4.5F, 30.0F, -14.1667F, 9.0F, 9.0F, 9.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -27.0F, 10.0F));
+
 		PartDefinition right_arm = root.addOrReplaceChild("right_arm", CubeListBuilder.create().texOffs(36, 25).addBox(-8.0F, -3.0F, -5.0F, 8.0F, 28.0F, 10.0F, new CubeDeformation(0.0F)), PartPose.offset(-10.0F, -18.0F, 0.0F));
 
 		PartDefinition left_arm = root.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(0, 25).addBox(0.0F, -3.0F, -5.0F, 8.0F, 28.0F, 10.0F, new CubeDeformation(0.0F)), PartPose.offset(10.0F, -18.0F, 0.0F));
@@ -82,22 +85,21 @@ public class GargantuarModel extends PazZombieModel {
 	}
 
 	@Override
-	public void setupAnim(@NotNull ZombieRenderState state) {
-		state.isAggressive = false;
-		float tempAttackTime = state.attackTime;
-		state.attackTime = 0;
+	public void setupAnim(@NotNull PazZombieRenderState state) {
 		super.setupAnim(state);
+		this.resetPose();
+		this.head.xRot = state.xRot * (float) (Math.PI / 180.0);
+		this.head.yRot = state.yRot * (float) (Math.PI / 180.0);
 
 		float animationPos = state.walkAnimationPos;
 		float animationSpeed = state.walkAnimationSpeed;
-		if (state.attackTime<=0) this.rightArm.xRot = Mth.cos(animationPos * 0.6662F + (float) Math.PI) * 0.6F * animationSpeed * 0.5F / state.speedValue;
-		if (state.attackTime<=0) this.leftArm.xRot = Mth.cos(animationPos * 0.6662F) * 0.6F * animationSpeed * 0.5F / state.speedValue;
-		state.attackTime = tempAttackTime;
-		attackAnimation.applyWalk(state.attackTime*5f, 1.0f, 1.0f, 1.0f);
 
-		PazZombieRenderState pazState = (PazZombieRenderState) state;
-		initAnimation.apply(pazState.getInitAnimationState(), pazState.ageInTicks);
-		smashAnimation.apply(pazState.getActionAnimationState(), pazState.ageInTicks);
-		throwAnimation.apply(pazState.getSpecialAnimationState(), pazState.ageInTicks);
+		walkAnimation.applyWalk(animationPos, animationSpeed, 2.0f, 2.0f);
+
+		GargantuarRenderState gargState = (GargantuarRenderState) state;
+		initAnimation.apply(gargState.getEmergeAnimationState(), gargState.ageInTicks);
+		punchAnimation.apply(gargState.getPunchAnimationState(), gargState.ageInTicks);
+		smashAnimation.apply(gargState.getSmashAnimationState(), gargState.ageInTicks);
+		throwAnimation.apply(gargState.getThrowImpAnimationState(), gargState.ageInTicks);
 	}
 }

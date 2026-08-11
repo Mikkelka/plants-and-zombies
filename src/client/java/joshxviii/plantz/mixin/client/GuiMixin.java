@@ -9,6 +9,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.Hud;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -27,6 +28,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(Hud.class)
 public abstract class GuiMixin {
 
+    @Unique
+    private final Identifier FREEZE_OUTLINE_LOCATION = Identifier.withDefaultNamespace("textures/misc/powder_snow_outline.png");
+
     @Shadow
     @Final
     private Minecraft minecraft;
@@ -37,10 +41,13 @@ public abstract class GuiMixin {
         if (player == null) return;
         var effects = PaintedMobEffect.getPaintEffects(player, null);
         effects.forEach( it -> {
-            if (it.getEffect().value() instanceof PaintedMobEffect paintedMobEffect) {
+            var effect = it.getEffect().value();
+            if (effect instanceof PaintedMobEffect paintedMobEffect) {
                 extractPaintOverlay(graphics, paintedMobEffect.getRandomness(), paintedMobEffect.getPaintColor(), it.getAmplifier(), (it.getDuration()/80f));
             }
         });
+        var freezeEffect = player.getEffect(PazEffects.FREEZE);
+        if (freezeEffect != null) extractTextureOverlay(graphics, FREEZE_OUTLINE_LOCATION, freezeEffect.getDuration() / 20f);
     }
 
     @Unique
@@ -62,5 +69,11 @@ public abstract class GuiMixin {
         //graphics.fill(RenderPipelines.GUI, 0, 0, graphics.guiWidth(), top, -16777216);
         //graphics.fill(RenderPipelines.GUI, 0, top, left, bottom, -16777216);
         //graphics.fill(RenderPipelines.GUI, right, top, graphics.guiWidth(), bottom, -16777216);
+    }
+
+    @Unique
+    private void extractTextureOverlay(GuiGraphicsExtractor graphics, Identifier texture, float alpha) {
+        int color = ARGB.white(alpha);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, texture, 0, 0, 0.0F, 0.0F, graphics.guiWidth(), graphics.guiHeight(), graphics.guiWidth(), graphics.guiHeight(), color);
     }
 }

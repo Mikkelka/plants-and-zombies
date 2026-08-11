@@ -48,6 +48,7 @@ object PazTags {
     object DamageTypes {
         @JvmField val PLANT_PROJECTILE = tag("plant_projectile")
         @JvmField val IS_ELECTRIC = tag("is_electric")
+        @JvmField val IGNORED_BY_ZOMBIES = tag("ignored_by_zombies")
         private fun tag(name: String): TagKey<DamageType> = TagKey.create(Registries.DAMAGE_TYPE, pazResource(name))
     }
 
@@ -79,10 +80,14 @@ object PazTags {
         val HAS_DOOM_SHROOM = tag("plant/has_doomshroom")
         val HAS_SEA_SHROOM = tag("plant/has_seashroom")
         val HAS_SCAREDYSHROOM = tag("plant/has_scaredyshroom")
+        val HAS_GRAVE_BUSTER = tag("plant/has_grave_buster")
 
         val WATER_SPAWNS = tag("zombie/water_spawns")
         val DAY_SPAWNS = tag("zombie/day_spawns")
         val HAS_BROWNCOAT = tag("zombie/has_browncoat")
+        val HAS_BROWNCOAT_SNOW = tag("zombie/has_browncoat_snow")
+        val HAS_BROWNCOAT_DESERT = tag("zombie/has_browncoat_desert")
+        val HAS_BROWNCOAT_BEACH = tag("zombie/has_browncoat_beach")
         val HAS_NEWSPAPER_ZOMBIE = tag("zombie/has_newspaper_zombie")
         val HAS_DIGGER = tag("zombie/has_digger")
         val HAS_DIGGER_ALT = tag("zombie/has_digger_alt")

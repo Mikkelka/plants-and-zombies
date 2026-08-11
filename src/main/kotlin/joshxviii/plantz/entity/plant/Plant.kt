@@ -81,7 +81,9 @@ import kotlin.jvm.optionals.getOrNull
 abstract class Plant(type: EntityType<out Plant>, level: Level) : TamableAnimal(type, level) {
     companion object {
         val LOGGER: Logger = LoggerFactory.getLogger(Plant::class.java)
-
+        private const val NUTRIENT_SUPPLY_MAX = 160  // ticks before suffocating when on invalid ground
+        private const val FLAG_POWER_RANGE = 5
+        
         /**
          * Default plant spawn rules
          */
@@ -107,9 +109,6 @@ abstract class Plant(type: EntityType<out Plant>, level: Level) : TamableAnimal(
                     && blockAtPos.getCollisionShape(level, pos.above()).isEmpty) || EntitySpawnReason.isSpawner(spawnReason)
         }
 
-        private const val NUTRIENT_SUPPLY_MAX = 160  // ticks before suffocating when on invalid ground
-        private const val FLAG_POWER_RANGE = 3
-
         val PLANT_STATE: EntityDataAccessor<PlantState> = SynchedEntityData.defineId<PlantState>(Plant::class.java, DATA_PLANT_STATE)
         val COOLDOWN: EntityDataAccessor<Int> = SynchedEntityData.defineId<Int>(Plant::class.java, DATA_COOLDOWN)
         val COFFEE_BUFF: EntityDataAccessor<Int> = SynchedEntityData.defineId<Int>(Plant::class.java, DATA_COFFEE_BUFF)
@@ -122,9 +121,11 @@ abstract class Plant(type: EntityType<out Plant>, level: Level) : TamableAnimal(
 
         val ON_PLAYER_HEAD_EFFECTS: Identifier = pazResource("on_player_head_effects")
 
+        const val PLANT_DAMAGE = 1.0
+
         data class PlantAttributes(
             val maxHealth: Double = 20.0,
-            val attackDamage: Double = 1.0,
+            val attackDamage: Double = PLANT_DAMAGE,
             val attackKnockback: Double = 0.001,
             val attackRange: Double = 2.5,
             val movementSpeed: Double = 0.0,
@@ -195,11 +196,12 @@ abstract class Plant(type: EntityType<out Plant>, level: Level) : TamableAnimal(
         get() = this.entityData.get(ATTACHED_PLAYER).getOrNull()
         set(value) = this.entityData.set(ATTACHED_PLAYER, Optional.ofNullable(value))
 
-    var attachedEntity: LivingEntity? = null
+    var attachedEntity: LivingEntity?
         get() = EntityReference.getLivingEntity(attachedPlayerReference, this.level())
         private set(value) {
-            if (value==null && field!=null) removeOnHeadEffects()
-            else if (value!=null && field==null) applyOnHeadEffects()
+            val current = attachedEntity
+            if (value == null && current != null) removeOnHeadEffects()
+            else if (value != null && current == null) applyOnHeadEffects()
             attachedPlayerReference = EntityReference.of(value)
         }
 
@@ -214,6 +216,7 @@ abstract class Plant(type: EntityType<out Plant>, level: Level) : TamableAnimal(
     }
 
     var idleAnimationStartTick: Int = 0
+    var cooldownO: Int = 0
     val initAnimationState = AnimationState()
     val idleAnimationState = AnimationState()
     val actionAnimationState = AnimationState()
@@ -396,6 +399,7 @@ abstract class Plant(type: EntityType<out Plant>, level: Level) : TamableAnimal(
 
     override fun tick() {
         super.tick()
+        cooldownO = cooldown
         attachedEntity?.positionPlant(this)
         if (attachedEntity?.canWearPlant() == false) {
             if(dropAsSeedPacketItem(force = true)) playSound(SoundEvents.ROOTED_DIRT_BREAK)
@@ -585,6 +589,7 @@ abstract class Plant(type: EntityType<out Plant>, level: Level) : TamableAnimal(
     open fun sleepsDuringNight(): Boolean = false
     open fun sleepsDuringDay(): Boolean = this.`is`(PazTags.EntityTypes.MUSHROOM)
     open fun canSurviveOn(block: BlockState) : Boolean = block.`is`(PLANTABLE)
+    open fun canPlaceOn(block: BlockState) : Boolean = canSurviveOn(block)
     open fun cooldownFinished() {}
 
     private fun updatePlantPower(level: ServerLevel) {
@@ -739,7 +744,7 @@ abstract class Plant(type: EntityType<out Plant>, level: Level) : TamableAnimal(
 
     fun verifyOwner(player: Player): Boolean {
         if (!isTame || (player != owner && !PazConfig.COOP_PLANTING)) {
-            player.sendOverlayMessage(Component.translatable("message.plantz.not_yours", this.name).withStyle(ChatFormatting.RED))
+            player.sendOverlayMessage(Component.translatable("message.plantz.not_yours", name.copy().withStyle(ChatFormatting.BOLD)).withStyle(ChatFormatting.RED))
             return false
         }
         return true

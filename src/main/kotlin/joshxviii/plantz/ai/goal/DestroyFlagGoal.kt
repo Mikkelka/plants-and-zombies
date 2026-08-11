@@ -3,6 +3,7 @@ package joshxviii.plantz.ai.goal
 import joshxviii.plantz.PazBlocks.PLANTZ_FLAG
 import joshxviii.plantz.PazBlocks.PLANTZ_FLAG_POI
 import joshxviii.plantz.PazEffects
+import joshxviii.plantz.attackRange
 import joshxviii.plantz.block.entity.FlagBlockEntity
 import joshxviii.plantz.canReachTarget
 import joshxviii.plantz.lookAtBlockPos
@@ -84,7 +85,8 @@ class DestroyFlagGoal(
             ticksUntilNextPathRecalculation = adjustedTickDelay(ticksUntilNextPathRecalculation)
         }
 
-        if (flagPos.distSqr(mob.blockPosition()) < if (mob.navigation.path.canReachTarget(flagPos)) 3.0 else 10.0) {
+        val reach = mob.attackRange()
+        if (flagPos.distSqr(mob.blockPosition()) < if (mob.navigation.path.canReachTarget(flagPos)) reach else reach*reach) {
             if (!mob.swinging) {
                 damageFlag(flagPos)
                 mob.swing(mob.usedItemHand)

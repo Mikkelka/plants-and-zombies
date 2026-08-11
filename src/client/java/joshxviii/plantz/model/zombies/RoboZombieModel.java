@@ -1,20 +1,32 @@
 package joshxviii.plantz.model.zombies;
 
-import joshxviii.plantz.PazZombieRenderState;
+import joshxviii.plantz.renderer.entity.PazZombieRenderState;
+import joshxviii.plantz.animation.zombies.RoboZombieAnimation;
+import joshxviii.plantz.renderer.entity.RoboZombieRenderState;
+import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
-import net.minecraft.client.renderer.entity.state.ZombieRenderState;
 import org.jetbrains.annotations.NotNull;
 
 import static joshxviii.plantz.UtilsKt.pazResource;
 
 public class RoboZombieModel extends PazZombieModel {
     public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(pazResource("robo_zombie"), "main");
+    private final KeyframeAnimation meleeAttackAnimation;
+    private final KeyframeAnimation shootAnimation;
+    private final KeyframeAnimation walkAnimation;
+    private final KeyframeAnimation idleAnimation;
+    private final KeyframeAnimation tankIdleAnimation;
 
     public RoboZombieModel(final ModelPart root) {
         super(null, root);
+        this.meleeAttackAnimation = RoboZombieAnimation.attack.bake(root.getChild("root"));
+        this.shootAnimation = RoboZombieAnimation.missile.bake(root.getChild("root"));
+        this.walkAnimation = RoboZombieAnimation.walk.bake(root.getChild("root"));
+        this.idleAnimation = RoboZombieAnimation.idle.bake(root.getChild("root"));
+        this.tankIdleAnimation = RoboZombieAnimation.tank_idle.bake(root.getChild("root"));
     }
 
     public static LayerDefinition createBodyLayer() {
@@ -40,11 +52,11 @@ public class RoboZombieModel extends PazZombieModel {
                 .texOffs(92, 23).addBox(-4.0F, 0.0F, -5.0F, 8.0F, 2.0F, 5.0F, new CubeDeformation(0.0F))
                 .texOffs(74, 42).addBox(-4.0F, -6.0F, -5.0F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.5F)), PartPose.offset(0.0F, -0.9167F, -1.125F));
 
-        PartDefinition body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(34, 83).addBox(-5.0F, -5.0F, -3.0F, 10.0F, 5.0F, 6.0F, new CubeDeformation(0.0F))
-                .texOffs(0, 56).addBox(-7.0F, -16.0F, -4.0F, 14.0F, 11.0F, 9.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 0.0F, 0.0F));
+        PartDefinition body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(34, 83).addBox(-5.0F, 11.0F, -2.0F, 10.0F, 5.0F, 6.0F, new CubeDeformation(0.0F))
+                .texOffs(0, 56).addBox(-7.0F, 0.0F, -3.0F, 14.0F, 11.0F, 9.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -16.0F, -1.0F));
 
         PartDefinition rocket_pack = body.addOrReplaceChild("rocket_pack", CubeListBuilder.create().texOffs(60, 0).addBox(-3.0F, -9.3333F, 0.0F, 6.0F, 20.0F, 6.0F, new CubeDeformation(0.0F))
-                .texOffs(46, 56).addBox(-3.5F, -9.3333F, -0.5F, 7.0F, 20.0F, 7.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -10.6667F, 5.0F));
+                .texOffs(46, 56).addBox(-3.5F, -9.3333F, -0.5F, 7.0F, 20.0F, 7.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, 5.3333F, 6.0F));
 
         PartDefinition left_arm = root.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(84, 0).addBox(0.0F, -2.0F, -2.5F, 5.0F, 18.0F, 5.0F, new CubeDeformation(0.0F)), PartPose.offset(7.0F, -14.0F, -0.5F));
 
@@ -66,9 +78,18 @@ public class RoboZombieModel extends PazZombieModel {
     }
 
     @Override
-    public void setupAnim(@NotNull ZombieRenderState state) {
-        //super.setupAnim(state);
-        PazZombieRenderState pazState = (PazZombieRenderState) state;
+    public void setupAnim(@NotNull PazZombieRenderState state) {
+        super.setupAnim(state);
+        this.resetPose();
+        this.head.xRot = state.xRot * (float) (Math.PI / 180.0);
+        this.head.yRot = state.yRot * (float) (Math.PI / 180.0);
 
+        RoboZombieRenderState roboState = (RoboZombieRenderState) state;
+        float animationPos = state.walkAnimationPos;
+        float animationSpeed = state.walkAnimationSpeed;
+        walkAnimation.applyWalk(animationPos, animationSpeed, 2f, 2f);
+
+        if (roboState.isTankTransformation()) tankIdleAnimation.apply(roboState.getIdleAnimationState(), roboState.ageInTicks);
+        else idleAnimation.apply(roboState.getIdleAnimationState(), roboState.ageInTicks);
     }
 }

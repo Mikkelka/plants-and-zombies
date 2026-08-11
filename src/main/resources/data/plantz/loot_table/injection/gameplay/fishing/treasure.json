@@ -6,19 +6,17 @@
       "bonus_rolls": 0,
       "entries": [
         {
+          "type": "minecraft:item",
+          "name": "plantz:ducky_tube",
+          "weight": 10
+        },
+        {
           "type": "minecraft:group",
           "children": [
             {
               "type": "minecraft:item",
               "name": "plantz:watering_can",
-              "weight": 10
-            }
-          ],
-          "functions": [
-            {
-              "function": "minecraft:set_count",
-              "count": 1,
-              "add": false
+              "weight": 8
             }
           ]
         }
@@ -26,7 +24,7 @@
       "conditions": [
         {
           "condition": "minecraft:random_chance",
-          "chance": 0.175
+          "chance": 0.3
         }
       ]
     }

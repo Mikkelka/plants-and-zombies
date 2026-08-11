@@ -1,6 +1,7 @@
 package joshxviii.plantz.item
 
 import joshxviii.plantz.*
+import joshxviii.plantz.entity.plant.GraveBuster
 import joshxviii.plantz.entity.plant.Plant
 import net.minecraft.ChatFormatting
 import net.minecraft.core.BlockPos
@@ -28,10 +29,14 @@ import net.minecraft.world.item.context.UseOnContext
 import net.minecraft.world.level.ClipContext
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.LiquidBlock
+import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.minecraft.world.level.block.state.properties.Property
 import net.minecraft.world.level.gameevent.GameEvent
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.HitResult
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 class SeedPacketItem(properties: Properties) : Item(properties) {
 
@@ -51,7 +56,7 @@ class SeedPacketItem(properties: Properties) : Item(properties) {
     ): InteractionResult {
         if (player.cooldowns.isOnCooldown(itemStack)) return InteractionResult.PASS
         if (target is Plant) {
-            val result = processSeedPacketInteraction(player, target, itemStack)
+            val result = processSeedPacketInteraction(player, itemStack, target)
             if (result == PacketInteractionResult.SUCCESS) {
                 itemStack.consume(1, player)
                 applyCooldown(itemStack, player)
@@ -90,10 +95,13 @@ class SeedPacketItem(properties: Properties) : Item(properties) {
         if (level !is ServerLevel) return InteractionResult.SUCCESS
         else {
             val itemStack = context.itemInHand
+            val type = itemStack.get(DataComponents.ENTITY_DATA)?.type()
             val pos: BlockPos = context.clickedPos
-            val clickedFace: Direction = context.clickedFace
             val blockState = level.getBlockState(pos)
-            val spawnPos = if (blockState.getCollisionShape(level, pos).isEmpty) pos else pos.relative(clickedFace)
+            val clickedFace: Direction = if (blockState.`is`(PazTags.BlockTags.PLANT_POT)) Direction.UP else context.clickedFace
+            val spawnPos = if (blockState.getCollisionShape(level, pos).isEmpty) pos
+                            else if (blockState.`is`(PazBlocks.GRAVESTONE) && type == PazEntities.GRAVE_BUSTER) pos.above()
+                            else pos.relative(clickedFace)
 
             return tryPlant(level, context.player, itemStack, spawnPos, clickedFace, context.horizontalDirection)
         }
@@ -137,16 +145,23 @@ class SeedPacketItem(properties: Properties) : Item(properties) {
         if (entity is Plant) {
             val spawnBlockCollisionShape = level.getBlockState(spawnPos).getCollisionShape(level, spawnPos).let { if (it.isEmpty.not()) it.bounds() else null }
             val entityBox = entity.boundingBox.move(spawnPos.multiply(-1))
+            val blockBelow = level.getBlockState(spawnPos.below())
             if (
-                !(entity.canSurviveOn(level.getBlockState(spawnPos.below())) || checkWater)
+                !(entity.canPlaceOn(blockBelow) || checkWater)
                 || !(spawnBlockCollisionShape==null || !entityBox.intersects(spawnBlockCollisionShape))
             ) {
                 player.sendOverlayMessage(
-                    Component.translatable("message.plantz.cannot_survive").withStyle(ChatFormatting.RED)
+                    Component.translatable("message.plantz.cannot_place", entity.name.copy().withStyle(ChatFormatting.RED)).withStyle(ChatFormatting.DARK_RED)
                 )
                 return InteractionResult.FAIL
             }
-            val yaw = horizontalDir.opposite.toYRot()
+            val yaw =
+                if (blockBelow.`is`(PazTags.BlockTags.PLANT_POT) || (blockBelow.`is`(PazBlocks.GRAVESTONE) && entity is GraveBuster))
+                    blockBelow.getOptionalValue(BlockStateProperties.HORIZONTAL_FACING).getOrNull()?.toYRot()
+                        ?:
+                        horizontalDir.opposite.toYRot()
+                else
+                    horizontalDir.opposite.toYRot()
             entity.yHeadRot = yaw
             entity.yBodyRot = yaw
             entity.yRot = yaw
@@ -179,7 +194,7 @@ class SeedPacketItem(properties: Properties) : Item(properties) {
     }
 
     // seed packet interaction with plants
-    fun processSeedPacketInteraction(player: Player, plant: Plant, itemStack: ItemStack): PacketInteractionResult {
+    fun processSeedPacketInteraction(player: Player, itemStack: ItemStack, plant: Plant? = null, blockState: BlockState? = null): PacketInteractionResult {
         val type = itemStack.get(DataComponents.ENTITY_DATA)?.type()
         val availableSun = player.getTotalSun()
         val sunCost = itemStack.get(PazComponents.SUN_COST)?.getSunCost(type)?: 0
@@ -188,8 +203,9 @@ class SeedPacketItem(properties: Properties) : Item(properties) {
         val result = when (type) {
             PazEntities.COFFEE_BEAN -> {
                 when {
+                    plant == null -> PacketInteractionResult.FAIL
                     plant.isGrowingSeeds -> {
-                        player.sendOverlayMessage(Component.translatable("message.plantz.growing").withStyle(ChatFormatting.RED))
+                        player.sendOverlayMessage(Component.translatable("message.plantz.growing", plant.name.copy().withStyle(ChatFormatting.RED)).withStyle(ChatFormatting.DARK_RED))
                         PacketInteractionResult.FAIL
                     }
                     cantAfford -> PacketInteractionResult.CANT_AFFORD

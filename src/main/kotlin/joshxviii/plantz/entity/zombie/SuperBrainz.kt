@@ -1,7 +1,9 @@
 package joshxviii.plantz.entity.zombie
 
 import joshxviii.plantz.PazDataSerializers.SUPER_BRAINZ_VARIANT
+import joshxviii.plantz.ai.ZombieState
 import net.minecraft.network.syncher.EntityDataAccessor
+import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.sounds.SoundEvent
@@ -9,6 +11,9 @@ import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.DifficultyInstance
 import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.entity.*
+import net.minecraft.world.entity.ai.control.MoveControl
+import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation
+import net.minecraft.world.entity.ai.navigation.PathNavigation
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.ServerLevelAccessor
 import net.minecraft.world.level.storage.ValueInput
@@ -39,14 +44,20 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
         get() = this.entityData.get(DATA_VARIANT_ID)
         set(value) = this.entityData.set(DATA_VARIANT_ID, value)
 
+
     override fun tick() {
         super.tick()
         updateCapeState()
+        //if (state == ZombieState.IDLE) state = ZombieState.FLYING
+        if (level() is ServerLevel && tickCount % 60 == 0) state = target?.let {
+            if(it.y > y + 6) ZombieState.FLYING
+            else ZombieState.IDLE
+        } ?: ZombieState.IDLE
     }
 
     override fun defineSynchedData(entityData: SynchedEntityData.Builder) {
         super.defineSynchedData(entityData)
-        entityData.define(DATA_VARIANT_ID, SuperBrainzVariant.pickRandomVariant())
+        entityData.define(DATA_VARIANT_ID, SuperBrainzVariant.getDefault())
     }
 
     override fun addAdditionalSaveData(output: ValueOutput) {
@@ -56,7 +67,7 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
 
     override fun readAdditionalSaveData(input: ValueInput) {
         super.readAdditionalSaveData(input)
-        variant = input.read<SuperBrainzVariant>("variant", SuperBrainzVariant.CODEC).getOrDefault(SuperBrainzVariant.pickRandomVariant())
+        variant = input.read("variant", SuperBrainzVariant.CODEC).getOrDefault(SuperBrainzVariant.pickRandomVariant())
     }
 
     override fun registerGoals() {

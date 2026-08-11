@@ -1,15 +1,7 @@
 package joshxviii.plantz.entity.zombie
 
-import joshxviii.plantz.PazDataSerializers.DATA_DYE_COLOR
-import joshxviii.plantz.PazItems
-import joshxviii.plantz.PazSounds
 import joshxviii.plantz.ai.goal.ProjectileAttackGoal
-import joshxviii.plantz.entity.plant.Repeater
 import joshxviii.plantz.entity.projectile.Missile
-import joshxviii.plantz.entity.projectile.PaintBall
-import joshxviii.plantz.entity.zombie.Gargantuar.Companion.HAS_IMP_ID
-import joshxviii.plantz.entity.zombie.Gargantuar.Companion.SMASH_ATTACK_TIME_ID
-import joshxviii.plantz.entity.zombie.Gargantuar.Companion.THROW_TIME_ID
 import net.minecraft.network.syncher.EntityDataAccessor
 import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
@@ -19,22 +11,30 @@ import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.DifficultyInstance
 import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.entity.*
-import net.minecraft.world.item.DyeColor
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.ServerLevelAccessor
 
 class RoboZombie(type: EntityType<out RoboZombie>, level: Level) : PazZombie(type, level) {
 
     companion object {
-
+        val TANK_TRANSFORMATION: EntityDataAccessor<Boolean> = SynchedEntityData.defineId<Boolean>(RoboZombie::class.java, EntityDataSerializers.BOOLEAN)
     }
 
     init {
-        xpReward = 20
+        xpReward = 30
     }
+
+    var isTransformed: Boolean
+        get() = this.entityData.get(TANK_TRANSFORMATION)
+        set(value) = this.entityData.set(TANK_TRANSFORMATION, value)
+
+    val idleAnimation : AnimationState = AnimationState()
+    val meleeAttackAnimation : AnimationState = AnimationState()
+    val shootAnimation : AnimationState = AnimationState()
 
     override fun defineSynchedData(entityData: SynchedEntityData.Builder) {
         super.defineSynchedData(entityData)
+        entityData.define(TANK_TRANSFORMATION, false)
     }
 
     override fun registerGoals() {
@@ -43,15 +43,31 @@ class RoboZombie(type: EntityType<out RoboZombie>, level: Level) : PazZombie(typ
             usingEntity = this,
             projectileFactory =  { Missile(level(), this) },
             velocity = 1.3,
-            actionDelay = 8,
+            actionDelay = 50,
             soundEvent = null,
+            actionPredicate = {
+                false
+            },
             actionEndEffect = {
 
             }))
     }
 
     override fun addBehaviourGoals() {
-        behaviourGoalsNoMelee()
+        //addBehaviourGoalsNoMelee()
+        super.addBehaviourGoals()
+    }
+
+    override fun canEquipDuckyInWater(): Boolean = false
+    override fun canPickUpLoot(): Boolean = false
+
+    override fun tick() {
+        super.tick()
+        if (!this.isNoAi) { updateAnimationState() }
+    }
+
+    fun updateAnimationState() {
+        idleAnimation.startIfStopped(0)
     }
 
     //TODO custom sounds

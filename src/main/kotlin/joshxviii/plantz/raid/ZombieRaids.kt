@@ -20,6 +20,7 @@ import net.minecraft.world.level.dimension.DimensionType
 import net.minecraft.world.level.gamerules.GameRules
 import net.minecraft.world.level.saveddata.SavedData
 import net.minecraft.world.level.saveddata.SavedDataType
+import org.spongepowered.asm.mixin.Unique
 import java.util.*
 import java.util.function.Function
 
@@ -81,11 +82,12 @@ class ZombieRaids(
             if (!level.gameRules.get<Boolean>(GameRules.RAIDS)) return null
 
             val raid = getOrCreateRaid(level, flagPosition)
+            if (raid.startedBy == null) raid.startedBy = player.uuid
 
             if (!raid.started && !zombieRaidMap.containsValue(raid)) {
                 zombieRaidMap.put(uniqueId, raid)
                 level.players().filter { it.blockPosition().distSqr(flagPosition) < 96 } .forEach {
-                    it.sendSystemMessage(ZombieRaid.ZOMBIE_RAID_BAR_START)
+                    it.sendSystemMessage(ZombieRaid.getStartMessage(player.seenCredits))
                     raid.zombieRaidEvent.addPlayer(it)
                 }
             }
@@ -94,6 +96,7 @@ class ZombieRaids(
                 raid.absorbRaidOmen(player)
             }
 
+            raid.starterHasSeenCredits = raid.starterHasSeenCredits || player.seenCredits
             setDirty()
             return raid
         }
@@ -132,14 +135,12 @@ class ZombieRaids(
     @JvmRecord
     private data class ZombieRaidWithId(val id: Int, val raid: ZombieRaid) {
         companion object {
-            val CODEC: Codec<ZombieRaidWithId> = RecordCodecBuilder.create<ZombieRaidWithId>(
-                Function { i: RecordCodecBuilder.Instance<ZombieRaidWithId> ->
-                    i.group<Int, ZombieRaid>(
-                        Codec.INT.fieldOf("id").forGetter<ZombieRaidWithId>(ZombieRaidWithId::id),
-                        ZombieRaid.MAP_CODEC.forGetter<ZombieRaidWithId>(ZombieRaidWithId::raid)
-                    ).apply<ZombieRaidWithId>(i) { id: Int, raid: ZombieRaid -> ZombieRaidWithId(id, raid) }
-                }
-            )
+            val CODEC: Codec<ZombieRaidWithId> = RecordCodecBuilder.create<ZombieRaidWithId> { i: RecordCodecBuilder.Instance<ZombieRaidWithId> ->
+                i.group<Int, ZombieRaid>(
+                    Codec.INT.fieldOf("id").forGetter<ZombieRaidWithId>(ZombieRaidWithId::id),
+                    ZombieRaid.MAP_CODEC.forGetter<ZombieRaidWithId>(ZombieRaidWithId::raid)
+                ).apply<ZombieRaidWithId>(i) { id: Int, raid: ZombieRaid -> ZombieRaidWithId(id, raid) }
+            }
 
             fun from(entry: Int2ObjectMap.Entry<ZombieRaid>): ZombieRaidWithId = ZombieRaidWithId(entry.intKey, entry.value)
         }

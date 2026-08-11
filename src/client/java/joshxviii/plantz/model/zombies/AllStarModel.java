@@ -1,16 +1,12 @@
 package joshxviii.plantz.model.zombies;
 
-import joshxviii.plantz.PazEntities;
-import joshxviii.plantz.PazZombieRenderState;
+import joshxviii.plantz.renderer.entity.PazZombieRenderState;
 import joshxviii.plantz.animation.zombies.AllStarAnimation;
-import joshxviii.plantz.animation.zombies.DiscoZombieAnimation;
-import joshxviii.plantz.entity.zombie.AllStar;
 import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
-import net.minecraft.client.renderer.entity.state.ZombieRenderState;
 import org.jetbrains.annotations.NotNull;
 
 import static joshxviii.plantz.UtilsKt.pazResource;
@@ -35,7 +31,7 @@ public class AllStarModel extends PazZombieModel {
 
         PartDefinition hat = head.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.offset(0.0F, -8.0F, 0.5F));
 
-        PartDefinition body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 16).addBox(-4.0F, -6.0F, -2.0F, 8.0F, 12.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -0.5417F, 0.0833F));
+        PartDefinition body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 16).addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -6.5417F, 0.0833F));
 
         PartDefinition left_leg = root.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(0, 32).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, new CubeDeformation(0.0F)), PartPose.offset(2.0F, 5.4583F, 0.0833F));
 
@@ -51,9 +47,8 @@ public class AllStarModel extends PazZombieModel {
     }
 
     @Override
-    public void setupAnim(@NotNull ZombieRenderState state) {
+    public void setupAnim(@NotNull PazZombieRenderState state) {
         super.setupAnim(state);
-        PazZombieRenderState pazState = (PazZombieRenderState) state;
-        actionAnimation.apply(pazState.getActionAnimationState(),  pazState.ageInTicks);
+        actionAnimation.apply(state.getActionAnimationState(), state.ageInTicks);
     }
 }

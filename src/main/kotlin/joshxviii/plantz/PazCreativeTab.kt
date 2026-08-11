@@ -51,31 +51,28 @@ object PazCreativeTab {
                 output.accept(SeedPacketItem.stackFor(PazEntities.DOOM_SHROOM))
                 output.accept(SeedPacketItem.stackFor(PazEntities.SEA_SHROOM))
                 output.accept(SeedPacketItem.stackFor(PazEntities.COFFEE_BEAN))
+                output.accept(SeedPacketItem.stackFor(PazEntities.GRAVE_BUSTER))
 
                 // zombie spawn eggs
                 output.accept(PazItems.BROWN_COAT_SPAWN_EGG)
                 output.accept(PazItems.NEWSPAPER_ZOMBIE_SPAWN_EGG)
                 output.accept(PazItems.DIGGER_ZOMBIE_SPAWN_EGG)
                 output.accept(PazItems.ENGINEER_ZOMBIE_SPAWN_EGG)
-                output.accept(PazItems.ZOMBIE_YETI_SPAWN_EGG)
-                output.accept(PazItems.DISCO_ZOMBIE_SPAWN_EGG)
                 output.accept(PazItems.BACKUP_DANCER_SPAWN_EGG)
+                output.accept(PazItems.DISCO_ZOMBIE_SPAWN_EGG)
                 output.accept(PazItems.ALL_STAR_SPAWN_EGG)
+                output.accept(PazItems.ZOMBIE_YETI_SPAWN_EGG)
+                output.accept(PazItems.IMP_SPAWN_EGG)
                 output.accept(PazItems.SOLDIER_ZOMBIE_SPAWN_EGG)
                 output.accept(PazItems.ROBO_ZOMBIE_SPAWN_EGG)
+                output.accept(PazItems.PIRATE_CAPTAIN_SPAWN_EGG)
                 output.accept(PazItems.SUPER_BRAINZ_SPAWN_EGG)
-                output.accept(PazItems.IMP_SPAWN_EGG)
                 output.accept(PazItems.GARGANTUAR_SPAWN_EGG)
 
                 // gnome
                 if (parameters.hasPermissions()) output.accept(PazItems.GNOME_SPAWN_EGG)
 
-                //music
-                output.accept(PazItems.MUSIC_DISC_GRASSY_GROOVE)
-
                 // items
-                output.accept(PazItems.BRAINZ_ALLOY)
-                output.accept(PazBlocks.TIME_MACHINE)
                 output.accept(PazItems.SUN_BATTERY)
                 output.accept(PazItems.SUN)
                 output.accept(PazItems.SUN_BOTTLE)
@@ -92,19 +89,31 @@ object PazCreativeTab {
                 output.accept(PazBlocks.BRAINZ_FLAG)
                 output.accept(PazBlocks.PLANTZ_FLAG)
 
-                // balloons
-                PazItems.balloonByColor.forEach { output.accept(it.value) }
-
-                // mailboxes
-                PazBlocks.mailboxByColor.forEach { output.accept(it.value) }
-
                 // other
+                output.accept(PazItems.BRAINZ_ALLOY)
                 output.accept(PazBlocks.BRAINZ_ALLOY_BLOCK)
                 output.accept(PazBlocks.BRAINZ_ALLOY_STAIRS)
                 output.accept(PazBlocks.BRAINZ_ALLOY_SLAB)
                 output.accept(PazBlocks.TREADED_BRAINZ_ALLOY_BLOCK)
                 output.accept(PazBlocks.REINFORCED_BRAINZ_ALLOY_BLOCK)
+                output.accept(PazBlocks.BRAINZ_ALLOY_FENCE)
                 output.accept(PazBlocks.GRAVESTONE)
+                if (parameters.hasPermissions()) {
+                    output.accept(PazBlocks.BLUE_GARDEN_GNOME)
+                    output.accept(PazBlocks.GREEN_GARDEN_GNOME)
+                    output.accept(PazBlocks.RED_GARDEN_GNOME)
+                    output.accept(PazBlocks.YELLOW_GARDEN_GNOME)
+                    output.accept(PazBlocks.TIME_MACHINE)
+                }
+
+                //music
+                output.accept(PazItems.MUSIC_DISC_GRASSY_GROOVE)
+
+                // balloons
+                PazItems.balloonByColor.forEach { output.accept(it.value) }
+
+                // mailboxes
+                PazBlocks.mailboxByColor.forEach { output.accept(it.value) }
             }
             .build()
     )

@@ -1,0 +1,64 @@
+package joshxviii.plantz.networking
+
+import joshxviii.plantz.pazResource
+import joshxviii.plantz.raid.ZombieRaid
+import net.minecraft.core.BlockPos
+import net.minecraft.core.UUIDUtil
+import net.minecraft.network.RegistryFriendlyByteBuf
+import net.minecraft.network.chat.ComponentSerialization
+import net.minecraft.network.codec.ByteBufCodecs
+import net.minecraft.network.codec.StreamCodec
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload
+import java.util.UUID
+
+class ZombieRaidResponsePayload(
+    val data: ZombieRaidClientData,
+    val terminate: Boolean = false
+): CustomPacketPayload {
+    companion object {
+        val ID: CustomPacketPayload.Type<ZombieRaidResponsePayload> = CustomPacketPayload.Type(pazResource("zombie_raid_response"))
+
+        val STREAM_CODEC: StreamCodec<RegistryFriendlyByteBuf, ZombieRaidResponsePayload> =
+            StreamCodec.composite(
+                UUIDUtil.STREAM_CODEC, { it.data.id },
+                ByteBufCodecs.VAR_INT, { it.data.status.ordinal },
+                ByteBufCodecs.VAR_INT, { it.data.wavesSpawned },
+                ByteBufCodecs.VAR_INT, { it.data.numWaves },
+                ByteBufCodecs.VAR_INT, { it.data.waveTimer },
+                ByteBufCodecs.VAR_INT, { it.data.activeTime },
+                ByteBufCodecs.FLOAT,   { it.data.totalZombieHealth },
+                ByteBufCodecs.FLOAT,   { it.data.currentZombieHealth },
+                ByteBufCodecs.FLOAT,   { it.data.flagHealth },
+                ByteBufCodecs.FLOAT,   { it.data.flagMaxHealth },
+                BlockPos.STREAM_CODEC, { it.data.center },
+                ByteBufCodecs.BOOL,    { it.terminate },
+                { id, statusOrd, waves, num, timer, activeTime, totalH, curH, flagH, flagMax, center, terminate ->
+                    ZombieRaidResponsePayload(
+                        ZombieRaidClientData(
+                            id,
+                            ZombieRaid.ZombieRaidStatus.entries[statusOrd],
+                            waves, num, timer, activeTime, totalH, curH, flagH, flagMax, center
+                        ),
+                        terminate
+                    )
+                }
+            )
+    }
+
+    override fun type() = ID
+
+}
+
+data class ZombieRaidClientData(
+    val id: UUID = UUID.randomUUID(),
+    val status: ZombieRaid.ZombieRaidStatus = ZombieRaid.ZombieRaidStatus.STOPPED,
+    val wavesSpawned: Int = 0,
+    val numWaves: Int = 0,
+    val waveTimer: Int = 0,
+    val activeTime: Int = 0,
+    val totalZombieHealth: Float = 0f,
+    val currentZombieHealth: Float = 0f,
+    val flagHealth: Float = 0f,
+    val flagMaxHealth: Float = 0f,
+    val center: BlockPos = BlockPos.ZERO,
+)

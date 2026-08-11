@@ -1,11 +1,7 @@
 package joshxviii.plantz
 
 import joshxviii.plantz.block.*
-import joshxviii.plantz.block.entity.FlagBlockEntity
-import joshxviii.plantz.block.entity.GravestoneBlockEntity
-import joshxviii.plantz.block.entity.MailboxBlockEntity
-import joshxviii.plantz.block.entity.SunBatteryBlockEntity
-import joshxviii.plantz.block.entity.TimeMachineBlockEntity
+import joshxviii.plantz.block.entity.*
 import joshxviii.plantz.item.component.BlocksProjectileDamage
 import net.fabricmc.fabric.api.`object`.builder.v1.block.entity.FabricBlockEntityTypeBuilder
 import net.fabricmc.fabric.api.`object`.builder.v1.world.poi.PoiHelper
@@ -27,6 +23,7 @@ import net.minecraft.world.item.Rarity
 import net.minecraft.world.item.component.ItemAttributeModifiers
 import net.minecraft.world.item.equipment.Equippable
 import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.IronBarsBlock
 import net.minecraft.world.level.block.SlabBlock
 import net.minecraft.world.level.block.SoundType
 import net.minecraft.world.level.block.StairBlock
@@ -104,6 +101,19 @@ object PazBlocks {
         TIME_MACHINE
     )
 
+    @JvmField val BLUE_GARDEN_GNOME: Block = registerBlock("blue_garden_gnome", gardenGnomeProperties(), { GardenGnomeBlock(it, GardenGnomeColor.BLUE) })
+    @JvmField val GREEN_GARDEN_GNOME: Block = registerBlock("green_garden_gnome", gardenGnomeProperties(MapColor.COLOR_GREEN), { GardenGnomeBlock(it, GardenGnomeColor.GREEN) })
+    @JvmField val RED_GARDEN_GNOME: Block = registerBlock("red_garden_gnome", gardenGnomeProperties(MapColor.COLOR_RED), { GardenGnomeBlock(it, GardenGnomeColor.RED) })
+    @JvmField val YELLOW_GARDEN_GNOME: Block = registerBlock("yellow_garden_gnome", gardenGnomeProperties(MapColor.COLOR_YELLOW), { GardenGnomeBlock(it, GardenGnomeColor.YELLOW) })
+    val GARDEN_GNOME_ENTITY: BlockEntityType<GardenGnomeBlockEntity> = registerBlockEntity(
+        "garden_gnome",
+        ::GardenGnomeBlockEntity,
+        BLUE_GARDEN_GNOME,
+        GREEN_GARDEN_GNOME,
+        RED_GARDEN_GNOME,
+        YELLOW_GARDEN_GNOME
+    )
+
     @JvmField val MAILBOX: Block = registerBlock("mailbox", mailboxProperties(), ::MailboxBlock)
     @JvmField val LIGHT_GRAY_MAILBOX: Block = registerBlock("light_gray_mailbox", mailboxProperties(MapColor.COLOR_LIGHT_GRAY), {MailboxBlock(it, DyeColor.LIGHT_GRAY)})
     @JvmField val GRAY_MAILBOX: Block = registerBlock("gray_mailbox", mailboxProperties(MapColor.COLOR_GRAY), {MailboxBlock(it, DyeColor.GRAY)})
@@ -174,30 +184,41 @@ object PazBlocks {
 
     @JvmField val BRAINZ_ALLOY_BLOCK: Block = registerBlock(
         "brainz_alloy_block",
-        BlockBehaviour.Properties.of().sound(SoundType.COPPER).requiresCorrectToolForDrops().strength(2.0F),
-
+        BlockBehaviour.Properties.of().sound(SoundType.COPPER).requiresCorrectToolForDrops()
+            .strength(3.0F, 6.0F),
     )
     @JvmField val BRAINZ_ALLOY_STAIRS: Block = registerBlock(
         "brainz_alloy_stairs",
-        BlockBehaviour.Properties.of().sound(SoundType.COPPER).requiresCorrectToolForDrops().strength(2.0F),
+        BlockBehaviour.Properties.of().sound(SoundType.COPPER).requiresCorrectToolForDrops()
+            .strength(3.0F, 6.0F),
         { StairBlock(BRAINZ_ALLOY_BLOCK.defaultBlockState(), it) }
     )
     @JvmField val BRAINZ_ALLOY_SLAB: Block = registerBlock(
         "brainz_alloy_slab",
-        BlockBehaviour.Properties.of().sound(SoundType.COPPER).requiresCorrectToolForDrops().strength(2.0F),
+        BlockBehaviour.Properties.of().sound(SoundType.COPPER).requiresCorrectToolForDrops()
+            .strength(3.25F, 6.0F),
         ::SlabBlock
     )
     @JvmField val SMOOTH_BRAINZ_ALLOY_BLOCK: Block = registerBlock(
         "smooth_brainz_alloy_block",
-        BlockBehaviour.Properties.of().sound(SoundType.COPPER).requiresCorrectToolForDrops().strength(2.0F),
+        BlockBehaviour.Properties.of().sound(SoundType.COPPER).requiresCorrectToolForDrops()
+            .strength(3.25F, 6.0F),
     )
     @JvmField val TREADED_BRAINZ_ALLOY_BLOCK: Block = registerBlock(
         "treaded_brainz_alloy_block",
-        BlockBehaviour.Properties.of().sound(SoundType.COPPER).requiresCorrectToolForDrops().strength(2.0F),
+        BlockBehaviour.Properties.of().sound(SoundType.COPPER).requiresCorrectToolForDrops()
+            .strength(3.25F, 6.0F),
     )
     @JvmField val REINFORCED_BRAINZ_ALLOY_BLOCK: Block = registerBlock(
         "reinforced_brainz_alloy_block",
-        BlockBehaviour.Properties.of().sound(SoundType.COPPER).requiresCorrectToolForDrops().strength(3.5F),
+        BlockBehaviour.Properties.of().sound(SoundType.COPPER).requiresCorrectToolForDrops()
+            .strength(10.0F, 1200.0F),
+    )
+    @JvmField val BRAINZ_ALLOY_FENCE: Block = registerBlock(
+        "brainz_alloy_fence",
+        BlockBehaviour.Properties.of().sound(SoundType.COPPER).requiresCorrectToolForDrops()
+            .strength(3.0f, 6.0f).noOcclusion(),
+        ::IronBarsBlock
     )
 
     @JvmField val BRAINZ_FLAG: Block = registerBlock(
@@ -261,9 +282,9 @@ object PazBlocks {
         "gravestone",
         BlockBehaviour.Properties.of()
             .sound(SoundType.TUFF_BRICKS)
-            .strength(2.25F)
-            .requiresCorrectToolForDrops()
-            .pushReaction(PushReaction.BLOCK),
+            .strength(20.0F)
+            .pushReaction(PushReaction.BLOCK)
+            .requiresCorrectToolForDrops(),
         ::GravestoneBlock,
     )
     val GRAVESTONE_BLOCK_ENTITY: BlockEntityType<GravestoneBlockEntity> = registerBlockEntity(
@@ -306,6 +327,15 @@ object PazBlocks {
         val blockEntity = builder.build()
         Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, key, blockEntity)
         return blockEntity
+    }
+
+    private fun gardenGnomeProperties(mapColor: MapColor = MapColor.COLOR_BLUE): BlockBehaviour.Properties {
+        return BlockBehaviour.Properties.of()
+            .mapColor(mapColor)
+            .sound(SoundType.DECORATED_POT)
+            .strength(1.8F)
+            .noOcclusion()
+            .pushReaction(PushReaction.DESTROY)
     }
 
     private fun mailboxProperties(mapColor: MapColor = MapColor.SNOW): BlockBehaviour.Properties {

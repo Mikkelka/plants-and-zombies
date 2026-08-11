@@ -3,9 +3,12 @@ package joshxviii.plantz.entity.zombie
 import joshxviii.plantz.PazBlocks
 import joshxviii.plantz.PazDamageTypes
 import joshxviii.plantz.PazDataSerializers.DATA_ZOMBIE_STATE
+import joshxviii.plantz.PazEntities
 import joshxviii.plantz.PazItems
 import joshxviii.plantz.PazTags
 import joshxviii.plantz.ai.ZombieState
+import joshxviii.plantz.ai.goal.FlyingPathfindingGoal
+import joshxviii.plantz.entity.Balloon
 import net.minecraft.core.BlockPos
 import net.minecraft.core.particles.BlockParticleOption
 import net.minecraft.core.particles.ParticleTypes
@@ -19,12 +22,17 @@ import net.minecraft.world.Difficulty
 import net.minecraft.world.DifficultyInstance
 import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.entity.*
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier
+import net.minecraft.world.entity.ai.attributes.Attributes
+import net.minecraft.world.entity.ai.control.FlyingMoveControl
 import net.minecraft.world.entity.ai.control.MoveControl
 import net.minecraft.world.entity.ai.goal.MoveThroughVillageGoal
 import net.minecraft.world.entity.ai.goal.SpearUseGoal
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal
+import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation
+import net.minecraft.world.entity.ai.navigation.PathNavigation
 import net.minecraft.world.entity.animal.golem.IronGolem
 import net.minecraft.world.entity.animal.turtle.Turtle
 import net.minecraft.world.entity.monster.zombie.Zombie
@@ -36,10 +44,14 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.level.LevelReader
 import net.minecraft.world.level.ServerLevelAccessor
 import net.minecraft.world.level.material.Fluids
+import net.minecraft.world.level.storage.ValueInput
+import net.minecraft.world.level.storage.ValueOutput
+import kotlin.math.max
 
 abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie(type, level) {
 
     val emergeAnimation : AnimationState = AnimationState()
+    val floatAnimation : AnimationState = AnimationState()
 
     companion object {
         fun checkPazZombieSpawnRules(
@@ -71,6 +83,47 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
             return checkMobSpawnRules(type, level, spawnReason, pos, random)
         }
 
+        const val ZOMBIE_SPEED = 0.23
+
+        data class PazZombieAttributes(
+            val maxHealth: Double = 20.0,
+            val attackDamage: Double = 1.0,
+            val attackKnockback: Double = 0.4,
+            val attackRange: Double = 2.5,
+            val movementSpeed: Double = ZOMBIE_SPEED,
+            val flyingSpeed: Double = ZOMBIE_SPEED * .5,
+            val jumpStrength: Double = 0.42,
+            val followRange: Double = 50.0,
+            val armor: Double = 0.0,
+            val spawnReinforcementsChance: Double = 0.0,
+            val explosionKnockbackResistance: Double = 0.0,
+            val knockbackResistance: Double = 0.2,
+            val stepHeight: Double = 0.6,
+            val interactionRange: Double = 1.7,
+            val scale: Double = 1.0,
+            val waterMovementEfficiency: Double = 0.0
+        ) {
+            fun apply(builder: AttributeSupplier.Builder): AttributeSupplier.Builder {
+                return builder
+                    .add(Attributes.MAX_HEALTH, maxHealth)
+                    .add(Attributes.FOLLOW_RANGE, followRange)
+                    .add(Attributes.ATTACK_DAMAGE, attackDamage)
+                    .add(Attributes.ATTACK_KNOCKBACK, attackKnockback)
+                    .add(Attributes.ENTITY_INTERACTION_RANGE, attackRange)
+                    .add(Attributes.MOVEMENT_SPEED, movementSpeed)
+                    .add(Attributes.JUMP_STRENGTH, jumpStrength)
+                    .add(Attributes.SPAWN_REINFORCEMENTS_CHANCE, spawnReinforcementsChance)
+                    .add(Attributes.ARMOR, armor)
+                    .add(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE, explosionKnockbackResistance)
+                    .add(Attributes.KNOCKBACK_RESISTANCE, knockbackResistance)
+                    .add(Attributes.STEP_HEIGHT, stepHeight)
+                    .add(Attributes.ENTITY_INTERACTION_RANGE, interactionRange)
+                    .add(Attributes.SCALE, scale)
+                    .add(Attributes.FLYING_SPEED, flyingSpeed)
+                    .add(Attributes.WATER_MOVEMENT_EFFICIENCY, waterMovementEfficiency)
+            }
+        }
+
         val ZOMBIE_STATE: EntityDataAccessor<ZombieState> = SynchedEntityData.defineId<ZombieState>(PazZombie::class.java, DATA_ZOMBIE_STATE)
     }
 
@@ -88,16 +141,30 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
         override fun getSpeedModifier(): Double = 0.0
     }
 
+    val flyControl = object : FlyingMoveControl<PazZombie>(this, 20, true) {
+        override fun getSpeedModifier(): Double = 0.0
+    }
+
+    override fun createNavigation(level: Level): PathNavigation {
+        return if (state == ZombieState.FLYING) FlyingPathNavigation(this, level)
+        else super.createNavigation(level)
+    }
+
     override fun getMoveControl(): MoveControl<*> {
         if (state == ZombieState.EMERGING) return noMoveControl
+        if (state == ZombieState.FLYING) return flyControl
         return super.getMoveControl()
     }
 
+    var balloons : MutableList<Balloon> = mutableListOf()
+    var balloonCount = 0
+
     override fun registerGoals() {
         super.registerGoals()
+        this.goalSelector.addGoal(1, FlyingPathfindingGoal(this))
     }
 
-    fun behaviourGoalsNoMelee() {
+    fun addBehaviourGoalsNoMelee() {
         this.goalSelector.addGoal(2, SpearUseGoal<Zombie>(this, 1.0, 1.0, 10.0f, 2.0f))
         this.goalSelector.addGoal(6, MoveThroughVillageGoal(this, 1.0, true, 4) { this.canBreakDoors() })
         this.goalSelector.addGoal(7, WaterAvoidingRandomStrollGoal(this, 1.0))
@@ -111,33 +178,61 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
     var waterTime = -1
     override fun tick() {
         super.tick()
-        val level = level()
+        val serverLevel = level() as? ServerLevel
 
         if (isEyeInFluid(FluidTags.WATER)) {
             waterTime++
-            if (waterTime>=250 && canEquipDuckyInWater() && getItemBySlot(EquipmentSlot.LEGS).isEmpty) {
+            if (waterTime>=250 && canEquipDuckyInWater()) {
+                if(!getItemBySlot(EquipmentSlot.LEGS).isEmpty) {
+                    val currentLegs = getItemBySlot(EquipmentSlot.LEGS)
+                    val dropChance = dropChances.byEquipment(EquipmentSlot.LEGS)
+                    if (!currentLegs.isEmpty && max(this.random.nextFloat() - 0.1f, 0.0f).toDouble() < dropChance) {
+                        if (serverLevel!=null) spawnAtLocation(serverLevel, currentLegs)
+                    }
+                }
                 setItemSlot(EquipmentSlot.LEGS, PazItems.DUCKY_TUBE.defaultInstance)
                 setDropChance(EquipmentSlot.LEGS, 0.0f)
             }
         } else waterTime = -1
 
         when (state) {
+            ZombieState.IDLE -> {
+                emergeAnimation.stop()
+                floatAnimation.stop()
+                if (serverLevel!=null && this !is SuperBrainz && balloons.isNotEmpty()) state = ZombieState.FLYING
+            }
+            ZombieState.FLYING -> {
+                floatAnimation.startIfStopped(tickCount)
+                if (serverLevel!=null && this !is SuperBrainz ) {
+                    balloons.removeIf { !it.isAlive || it.leashHolder != this }
+                    if (balloons.isEmpty()) state = ZombieState.IDLE
+                }
+            }
             ZombieState.EMERGING -> {
-                isImmobile
                 emergeAnimation.startIfStopped(tickCount)
                 if (tickCount < 15) {
                     if(tickCount==1) playSound(SoundEvents.ROOTED_DIRT_HIT, 1.0f, 0.2f)
-                    if (level is ServerLevel) level.sendParticles(
-                        BlockParticleOption(ParticleTypes.BLOCK, level.getBlockState(blockPosition().below())),
+                    serverLevel?.sendParticles(
+                        BlockParticleOption(ParticleTypes.BLOCK, serverLevel.getBlockState(blockPosition().below())),
                         x, y + 0.05, z, 8, 0.25, 0.0, 0.25, 0.4
                     )
                 }
-                if (tickCount > emergingTime()) {
-                    emergeAnimation.stop()
-                    state = ZombieState.IDLE
-                }
+                if (tickCount > emergingTime()) state = ZombieState.IDLE
             }
-            else -> {}
+        }
+    }
+
+    fun spawnBalloons(count: Int = 2) {
+        val level = level() as? ServerLevel ?: return
+        for (i in 0 until count) {
+            val balloon = PazEntities.BALLOON.create(level, EntitySpawnReason.TRIGGERED) ?: return
+            val randomX = (random.nextDouble() - 0.5) * 2 + x
+            val randomZ = (random.nextDouble() - 0.5) * 2 + z
+            balloon.snapTo(randomX, eyeY + 1.0, randomZ)
+            level.addFreshEntity(balloon)
+            balloon.setLeashedTo(this, true)
+            balloons.add(balloon)
+            balloonCount++
         }
     }
 
@@ -150,14 +245,22 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
         entityData.define(ZOMBIE_STATE, ZombieState.IDLE)
     }
 
+    override fun addAdditionalSaveData(output: ValueOutput) {
+        super.addAdditionalSaveData(output)
+    }
+
+    override fun readAdditionalSaveData(input: ValueInput) {
+        super.readAdditionalSaveData(input)
+    }
+
     override fun hurtServer(level: ServerLevel, source: DamageSource, damage: Float): Boolean {
-        return if (source.`is`(PazDamageTypes.ZOMBIE_SMASH)) false else super.hurtServer(level, source, damage)
+        return if (source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES)) false else super.hurtServer(level, source, damage)
     }
     override fun hurtClient(source: DamageSource): Boolean {
-        return if (source.`is`(PazDamageTypes.ZOMBIE_SMASH)) false else super.hurtClient(source)
+        return if (source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES)) false else super.hurtClient(source)
     }
     override fun actuallyHurt(level: ServerLevel, source: DamageSource, damage: Float) {
-        if (source.`is`(PazDamageTypes.ZOMBIE_SMASH)) return
+        if (source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES)) return
         super.actuallyHurt(level, source, damage)
     }
 
@@ -198,7 +301,7 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
             if (spawnReason != EntitySpawnReason.NATURAL) setDropChance(EquipmentSlot.LEGS, 0.0f)
             else setDropChance(EquipmentSlot.LEGS, 0.15f)
         }
-
+        
         return data
     }
 }

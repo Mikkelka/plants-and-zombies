@@ -1,20 +1,31 @@
 # Changelog 1.5
 ### Additions
 #### General:   
-- Plantz Flag now reduces the cooldown of nearby plants by 20%.
-- Added Brainz Metal.
-  - Drops from the Rob Zombie, Super Brainz, and Zombie Bots built by the engineer.
-  - Used for crafting special zombie tech.
+- Plantz Flag now reduces the cooldown of nearby plants by 20%. This effect does not stack.
+- When placing plants in plant pots, their initial rotation will be orientated the same as the pot.
+- Added Brainz Alloy.
+  - Drops from the Grave Loot, Raid rewards, Rob Zombies, Super Brainz, Zombie Bots, and various other methods.
+  - Used for crafting blocks and special zombie tech.
+- Added Brainz Alloy block set.
+  - Blocks include: Brainz Alloy Block, Stairs, Slab, Treaded Brainz Alloy Block, Reinforced Brainz Alloy Block, and Brainz Alloy Fences.
+- Added Time Machine.
+  - ***Currently not obtainable outside of Creative mode.***
 - Added Dye Blaster
-- The dye blaster consumes dye as ammo.
-- Players and mobs shot with the blaster will be given the "painted" mob effect.
+  - Has a 40% chance to consume dye as ammo.
+  - Players and mobs shot with the blaster will be given the "painted" mob effect.
 - Added Balloons
-    - Balloons are attached to leads by default and can be tied to other mobs and fences.
-    - Balloons pull the holder upward slightly. By carrying enough balloons, you can negate fall damage or even begin to float.
+  - Balloons are attached to leads by default and can be tied to other mobs and fences.
+  - Balloons pull the holder upward slightly. By carrying enough balloons, you can negate fall damage or even begin to float.
 - Added Gravestone Block
-    - Zombies will emerge from the ground near the gravestone during the night.
-- Added The Graveyard biome
+  - Zombies will emerge from the ground near the gravestone during the night.
+- Added The Graveyard biome.
+- Added Garden Gnome Blocks.
 - The Football Helmet now gives increased speed and step height while sprinting. Nearby Mobs will also be knocked back.
+- Added Freeze Mob Effect.
+- Added "Hero of the Garden" Effect.
+  - Applies after defeating a raid.
+  - While the effect is active, interacting with a mailbox will grant loot for each completed wave in the raid.
+  - Special Waves will grant loot unique to that wave.
 #### Plants:
 - Added Electric Peashooter
   - Acquired by striking a peashooter with lightning.
@@ -24,6 +35,10 @@
   - Found in swamps and mangroves.
 - Added Explode-O-Nut
   - Acquired from Wall Nut zen-gardening.
+- Added Grave Buster
+  - Found in the Graveyard and Pale Garden biomes.
+  - Can be used on Gravestones to acquire Grave Loot.
+- Snow Peas will now apply the Freeze effect rather than Slowness and Weakness.
 - Added plant transformations
   - Some plants can be transformed into other plants under certain conditions.
 - Added Seed Packet Mutations
@@ -35,12 +50,17 @@
     - Repeater has a 60% chance to produce Peashooter seeds.
 - Repeaters no longer spawn naturally.
 #### Zombies:
+- Added Desert, Snow, and Pirate Variants for the Browncoat Zombie.
+- Added a Yeti and Pirate Variant for the Imp,
+  - Yeti Imps apply the Freeze effect.
+  - Pirate Imps spawn in an explosive barrel.
+- Added a Pirate Variant for Gargantuar.
 - Added Soldier Zombie
   - Spawns during a zombie raid.
   - Uses the dye blaster.
-- Added Robo Zombie
-  - Spawns during a zombie raid.
 - Added Engineer Zombie
+  - Spawns during a zombie raid.
+- Added Robo Zombie
   - Spawns during a zombie raid.
 - Added Super Brainz
   - Spawns during a zombie raid.
