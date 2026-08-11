@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.math.Axis
 import joshxviii.plantz.block.GardenGnomeBlock
 import joshxviii.plantz.block.GardenGnomeColor
+import joshxviii.plantz.block.GardenGnomePose
 import joshxviii.plantz.block.TimeMachineBlock
 import joshxviii.plantz.block.TimeMachineState
 import joshxviii.plantz.block.entity.GardenGnomeBlockEntity
@@ -27,7 +28,6 @@ import kotlin.math.pow
 class GardenGnomeBlockRenderer(
     val gnomeModel: GnomeModel<GnomeRenderState>,
 ) : BlockEntityRenderer<GardenGnomeBlockEntity, GardenGnomeBlockRenderState> {
-    val gnomeState: GnomeRenderState = GnomeRenderState()
     override fun createRenderState(): GardenGnomeBlockRenderState {
         return GardenGnomeBlockRenderState()
     }
@@ -46,7 +46,8 @@ class GardenGnomeBlockRenderer(
     ) {
         val blockState = blockEntity.blockState
         val dir = blockState.getValue(GardenGnomeBlock.FACING)
-        state.pose
+        val pose = blockState.getValue(GardenGnomeBlock.POSE)
+        state.pose = pose
         state.color = blockState.getValue(GardenGnomeBlock.COLOR)
         state.rotation = Direction.getYRot(dir)
         super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress)
@@ -62,14 +63,15 @@ class GardenGnomeBlockRenderer(
         poseStack.translate(0.5, 1.5, 0.5)
         poseStack.mulPose(Axis.XP.rotationDegrees(180.0f))
         poseStack.mulPose(Axis.YP.rotationDegrees(state.rotation))
+
         collector.submitModel(
             gnomeModel,
-            gnomeState,
+            GnomeRenderState(state.pose),
             poseStack,
             getTextureLocation(state),
             state.lightCoords,
             OverlayTexture.NO_OVERLAY,
-            gnomeState.outlineColor,
+            0,
             null
         )
         poseStack.popPose()
@@ -80,15 +82,7 @@ class GardenGnomeBlockRenderState : BlockEntityRenderState() {
     companion object {
         const val TEXTURE_PATH = "textures/block/garden_gnome"
     }
+    var pose: GardenGnomePose = GardenGnomePose.NONE
     var rotation: Float = 0f
     var color: GardenGnomeColor = GardenGnomeColor.BLUE
-    var pose: GardenGnomePose = GardenGnomePose.NONE
-}
-
-enum class GardenGnomePose {
-    NONE,
-    WAVE,
-    RELAX,
-    SIT,
-    THINK
 }

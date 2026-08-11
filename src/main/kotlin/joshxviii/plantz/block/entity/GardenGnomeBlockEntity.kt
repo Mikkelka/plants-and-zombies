@@ -31,4 +31,9 @@ class GardenGnomeBlockEntity(
 ) : BlockEntity(PazBlocks.GARDEN_GNOME_ENTITY, worldPosition, blockState) {
     companion object {
     }
+
+    override fun saveAdditional(output: ValueOutput) {
+        super.saveAdditional(output)
+
+    }
 }

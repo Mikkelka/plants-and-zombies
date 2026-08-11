@@ -2,7 +2,10 @@ package joshxviii.plantz.model;
 
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import joshxviii.plantz.animation.GnomeAnimation;
+import joshxviii.plantz.block.GardenGnomePose;
 import joshxviii.plantz.renderer.entity.GnomeRenderState;
+import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HeadedModel;
@@ -19,6 +22,11 @@ import static joshxviii.plantz.UtilsKt.pazResource;
 
 public class GnomeModel<T extends GnomeRenderState> extends EntityModel<T> implements ArmedModel<T>, HeadedModel {
 	public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(pazResource("gnome"), "main");
+	private final KeyframeAnimation waveAnimation;
+	private final KeyframeAnimation relaxAnimation;
+	private final KeyframeAnimation sitAnimation;
+	private final KeyframeAnimation thinkAnimation;
+
 	private final ModelPart body;
 	private final ModelPart torso;
 	private final ModelPart head;
@@ -48,6 +56,10 @@ public class GnomeModel<T extends GnomeRenderState> extends EntityModel<T> imple
 		this.legs = this.torso.getChild("legs");
 		this.leg_L = this.legs.getChild("leg_L");
 		this.leg_R = this.legs.getChild("leg_R");
+		waveAnimation = GnomeAnimation.hello.bake(root);
+		relaxAnimation = GnomeAnimation.relax.bake(root);
+		sitAnimation = GnomeAnimation.sit.bake(root);
+		thinkAnimation = GnomeAnimation.thinker.bake(root);
 	}
 
 	public static LayerDefinition createBodyLayer() {
@@ -89,6 +101,16 @@ public class GnomeModel<T extends GnomeRenderState> extends EntityModel<T> imple
 
 	@Override
 	public void setupAnim(@NotNull GnomeRenderState state) {
+		resetPose();
+		var pose = state.getGnomePose();
+		switch (pose) {
+			case NONE -> resetPose();
+            case WAVE -> waveAnimation.applyStatic();
+			case RELAX -> relaxAnimation.applyStatic();
+			case SIT -> sitAnimation.applyStatic();
+			case THINK -> thinkAnimation.applyStatic();
+        }
+		if (pose != GardenGnomePose.NONE) return;
 
         this.hat.visible = state.getHeadEquipment().isEmpty();
 

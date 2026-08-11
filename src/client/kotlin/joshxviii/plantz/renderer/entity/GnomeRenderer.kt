@@ -3,6 +3,7 @@ package joshxviii.plantz.renderer.entity
 import com.mojang.blaze3d.vertex.PoseStack
 import joshxviii.plantz.GnomeArmorSet
 import joshxviii.plantz.PazModels.ARMOR_LAYER_LOCATION
+import joshxviii.plantz.block.GardenGnomePose
 import joshxviii.plantz.entity.gnome.Gnome
 import joshxviii.plantz.entity.gnome.GnomeVariant
 import joshxviii.plantz.model.GnomeArmorModel
@@ -153,7 +154,9 @@ class GnomeArmorLayer(
     }
 }
 
-class GnomeRenderState : net.minecraft.client.renderer.entity.state.ArmedEntityRenderState() {
+class GnomeRenderState(
+    val gnomePose: GardenGnomePose = GardenGnomePose.NONE
+) : net.minecraft.client.renderer.entity.state.ArmedEntityRenderState() {
     var isPassenger: Boolean = false
     var isUsingItem: Boolean = false
     var variant: GnomeVariant = GnomeVariant.BLUE
