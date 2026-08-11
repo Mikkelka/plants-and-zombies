@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "plantz:block/garden_gnome/red"
+    "model": "plantz:item/garden_gnome/red"
   }
 }

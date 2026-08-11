@@ -101,10 +101,18 @@ object PazBlocks {
         TIME_MACHINE
     )
 
-    @JvmField val BLUE_GARDEN_GNOME: Block = registerBlock("blue_garden_gnome", gardenGnomeProperties(), ::GardenGnomeBlock)
-    @JvmField val GREEN_GARDEN_GNOME: Block = registerBlock("green_garden_gnome", gardenGnomeProperties(MapColor.COLOR_GREEN), ::GardenGnomeBlock)
-    @JvmField val RED_GARDEN_GNOME: Block = registerBlock("red_garden_gnome", gardenGnomeProperties(MapColor.COLOR_RED), ::GardenGnomeBlock)
-    @JvmField val YELLOW_GARDEN_GNOME: Block = registerBlock("yellow_garden_gnome", gardenGnomeProperties(MapColor.COLOR_YELLOW), ::GardenGnomeBlock)
+    @JvmField val BLUE_GARDEN_GNOME: Block = registerBlock("blue_garden_gnome", gardenGnomeProperties(), { GardenGnomeBlock(it, GardenGnomeColor.BLUE) })
+    @JvmField val GREEN_GARDEN_GNOME: Block = registerBlock("green_garden_gnome", gardenGnomeProperties(MapColor.COLOR_GREEN), { GardenGnomeBlock(it, GardenGnomeColor.GREEN) })
+    @JvmField val RED_GARDEN_GNOME: Block = registerBlock("red_garden_gnome", gardenGnomeProperties(MapColor.COLOR_RED), { GardenGnomeBlock(it, GardenGnomeColor.RED) })
+    @JvmField val YELLOW_GARDEN_GNOME: Block = registerBlock("yellow_garden_gnome", gardenGnomeProperties(MapColor.COLOR_YELLOW), { GardenGnomeBlock(it, GardenGnomeColor.YELLOW) })
+    val GARDEN_GNOME_ENTITY: BlockEntityType<GardenGnomeBlockEntity> = registerBlockEntity(
+        "garden_gnome",
+        ::GardenGnomeBlockEntity,
+        BLUE_GARDEN_GNOME,
+        GREEN_GARDEN_GNOME,
+        RED_GARDEN_GNOME,
+        YELLOW_GARDEN_GNOME
+    )
 
     @JvmField val MAILBOX: Block = registerBlock("mailbox", mailboxProperties(), ::MailboxBlock)
     @JvmField val LIGHT_GRAY_MAILBOX: Block = registerBlock("light_gray_mailbox", mailboxProperties(MapColor.COLOR_LIGHT_GRAY), {MailboxBlock(it, DyeColor.LIGHT_GRAY)})

@@ -1,11 +1,9 @@
 package joshxviii.plantz.block.entity
 
 import com.mojang.serialization.Codec
-import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import joshxviii.plantz.MailboxData
 import joshxviii.plantz.PazBlocks
 import joshxviii.plantz.PazEffects
-import joshxviii.plantz.PazLootTables
 import joshxviii.plantz.PazServerParticles
 import joshxviii.plantz.block.MailboxBlock.Companion.FACING
 import joshxviii.plantz.block.MailboxBlock.Companion.STATE
@@ -33,8 +31,6 @@ import net.minecraft.world.Container
 import net.minecraft.world.ContainerHelper
 import net.minecraft.world.Containers
 import net.minecraft.world.SimpleContainer
-import net.minecraft.world.entity.Relative.position
-import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.AbstractContainerMenu

@@ -1,6 +1,7 @@
 package joshxviii.plantz
 
 import joshxviii.plantz.block.entity.FlagBlockEntity
+import joshxviii.plantz.block.entity.GardenGnomeBlockEntity
 import joshxviii.plantz.block.entity.SunBatteryBlockEntity
 import joshxviii.plantz.block.entity.TimeMachineBlockEntity
 import joshxviii.plantz.model.BalloonModel
@@ -13,6 +14,8 @@ import joshxviii.plantz.model.zombies.*
 import joshxviii.plantz.renderer.entity.BalloonRenderer
 import joshxviii.plantz.renderer.FlagRenderState
 import joshxviii.plantz.renderer.FlagRenderer
+import joshxviii.plantz.renderer.GardenGnomeBlockRenderState
+import joshxviii.plantz.renderer.GardenGnomeBlockRenderer
 import joshxviii.plantz.renderer.entity.GnomeRenderer
 import joshxviii.plantz.renderer.entity.PazZombieRenderer
 import joshxviii.plantz.renderer.PlantPotMinecartRenderer
@@ -229,6 +232,7 @@ object PazModels {
         EntityRenderers.register(PazEntities.BALLOON) { BalloonRenderer(it, BalloonModel(it.bakeLayer(BalloonModel.LAYER_LOCATION))) }
 
         BlockEntityRenderers.register<FlagBlockEntity, FlagRenderState>(PazBlocks.FLAG_BLOCK_ENTITY) { FlagRenderer(FlagBlockModel(it.bakeLayer(FlagBlockModel.LAYER_LOCATION))) }
+        BlockEntityRenderers.register<GardenGnomeBlockEntity, GardenGnomeBlockRenderState>(PazBlocks.GARDEN_GNOME_ENTITY) { GardenGnomeBlockRenderer(GnomeModel(it.bakeLayer(GnomeModel.LAYER_LOCATION))) }
         BlockEntityRenderers.register<SunBatteryBlockEntity, SunBatteryRenderSate>(PazBlocks.SUN_BATTERY_BLOCK_ENTITY) { SunBatteryRenderer() }
         BlockEntityRenderers.register<TimeMachineBlockEntity, TimeMachineRenderSate>(PazBlocks.TIME_MACHINE_ENTITY) { TimeMachineRenderer() }
     }

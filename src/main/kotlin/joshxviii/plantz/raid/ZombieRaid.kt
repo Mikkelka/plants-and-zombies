@@ -244,8 +244,8 @@ class ZombieRaid(
             sendClientUpdate(level)
         }
         for (player in currentPlayersInRaid) if (!newPlayersInRaid.contains(player)) {
-            zombieRaidEvent.removePlayer(player)
             sendClientUpdate(level, true)
+            zombieRaidEvent.removePlayer(player)
         }
     }
 

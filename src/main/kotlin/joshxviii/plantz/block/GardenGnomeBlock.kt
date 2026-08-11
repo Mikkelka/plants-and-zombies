@@ -1,18 +1,23 @@
 package joshxviii.plantz.block
 
 import com.mojang.serialization.MapCodec
+import joshxviii.plantz.block.entity.GardenGnomeBlockEntity
+import joshxviii.plantz.block.entity.TimeMachineBlockEntity
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.util.RandomSource
+import net.minecraft.util.StringRepresentable
 import net.minecraft.util.Util
 import net.minecraft.world.item.context.BlockPlaceContext
 import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.LevelReader
 import net.minecraft.world.level.ScheduledTickAccess
+import net.minecraft.world.level.block.BaseEntityBlock
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.HorizontalDirectionalBlock
 import net.minecraft.world.level.block.Rotation
 import net.minecraft.world.level.block.SimpleWaterloggedBlock
+import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.StateDefinition
 import net.minecraft.world.level.block.state.properties.BlockStateProperties
@@ -26,18 +31,20 @@ import net.minecraft.world.phys.shapes.VoxelShape
 
 class GardenGnomeBlock(
     properties: Properties,
-) : HorizontalDirectionalBlock(properties), SimpleWaterloggedBlock {
+    color: GardenGnomeColor = GardenGnomeColor.BLUE
+) : BaseEntityBlock(properties), SimpleWaterloggedBlock {
     companion object {
         val CODEC: MapCodec<GardenGnomeBlock> = simpleCodec(::GardenGnomeBlock)
         val SHAPE: VoxelShape = Util.make {
             column(6.0, 0.0, 12.0)
         }
+        val COLOR: EnumProperty<GardenGnomeColor> = EnumProperty.create("color", GardenGnomeColor::class.java)
         val FACING: EnumProperty<Direction> = HorizontalDirectionalBlock.FACING
         val WATERLOGGED: BooleanProperty = BlockStateProperties.WATERLOGGED
     }
 
     init {
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(WATERLOGGED, false))
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(WATERLOGGED, false).setValue(COLOR, color))
     }
 
     override fun getShape(state: BlockState, level: BlockGetter, pos: BlockPos, context: CollisionContext): VoxelShape {
@@ -49,7 +56,7 @@ class GardenGnomeBlock(
     }
 
     override fun createBlockStateDefinition(builder: StateDefinition.Builder<Block, BlockState>) {
-        builder.add(FACING, WATERLOGGED)
+        builder.add(FACING, WATERLOGGED, COLOR)
     }
 
     override fun getFluidState(state: BlockState): FluidState {
@@ -80,4 +87,13 @@ class GardenGnomeBlock(
     }
 
     override fun codec(): MapCodec<out GardenGnomeBlock> { return CODEC }
+    override fun newBlockEntity(worldPosition: BlockPos, blockState: BlockState): BlockEntity = GardenGnomeBlockEntity(worldPosition, blockState)
+}
+
+enum class GardenGnomeColor: StringRepresentable {
+    RED,
+    GREEN,
+    BLUE,
+    YELLOW;
+    override fun getSerializedName(): String = this.name.lowercase()
 }
