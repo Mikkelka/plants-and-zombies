@@ -1,11 +1,7 @@
 package joshxviii.plantz
 
 import joshxviii.plantz.block.*
-import joshxviii.plantz.block.entity.FlagBlockEntity
-import joshxviii.plantz.block.entity.GravestoneBlockEntity
-import joshxviii.plantz.block.entity.MailboxBlockEntity
-import joshxviii.plantz.block.entity.SunBatteryBlockEntity
-import joshxviii.plantz.block.entity.TimeMachineBlockEntity
+import joshxviii.plantz.block.entity.*
 import joshxviii.plantz.item.component.BlocksProjectileDamage
 import net.fabricmc.fabric.api.`object`.builder.v1.block.entity.FabricBlockEntityTypeBuilder
 import net.fabricmc.fabric.api.`object`.builder.v1.world.poi.PoiHelper
@@ -27,6 +23,7 @@ import net.minecraft.world.item.Rarity
 import net.minecraft.world.item.component.ItemAttributeModifiers
 import net.minecraft.world.item.equipment.Equippable
 import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.IronBarsBlock
 import net.minecraft.world.level.block.SlabBlock
 import net.minecraft.world.level.block.SoundType
 import net.minecraft.world.level.block.StairBlock
@@ -208,6 +205,12 @@ object PazBlocks {
         "reinforced_brainz_alloy_block",
         BlockBehaviour.Properties.of().sound(SoundType.COPPER).requiresCorrectToolForDrops()
             .strength(10.0F, 1200.0F),
+    )
+    @JvmField val BRAINZ_ALLOY_FENCE: Block = registerBlock(
+        "brainz_alloy_fence",
+        BlockBehaviour.Properties.of().sound(SoundType.COPPER).requiresCorrectToolForDrops()
+            .strength(3.0f, 6.0f).noOcclusion(),
+        ::IronBarsBlock
     )
 
     @JvmField val BRAINZ_FLAG: Block = registerBlock(

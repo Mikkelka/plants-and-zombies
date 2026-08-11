@@ -96,6 +96,7 @@ object PazCreativeTab {
                 output.accept(PazBlocks.BRAINZ_ALLOY_SLAB)
                 output.accept(PazBlocks.TREADED_BRAINZ_ALLOY_BLOCK)
                 output.accept(PazBlocks.REINFORCED_BRAINZ_ALLOY_BLOCK)
+                output.accept(PazBlocks.BRAINZ_ALLOY_FENCE)
                 output.accept(PazBlocks.GRAVESTONE)
                 if (parameters.hasPermissions()) {
                     output.accept(PazBlocks.BLUE_GARDEN_GNOME)
