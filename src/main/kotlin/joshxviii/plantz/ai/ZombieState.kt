@@ -1,5 +1,6 @@
 package joshxviii.plantz.ai
 
+import com.mojang.datafixers.kinds.Representable
 import com.mojang.serialization.Codec
 import io.netty.buffer.ByteBuf
 import net.minecraft.network.codec.ByteBufCodecs

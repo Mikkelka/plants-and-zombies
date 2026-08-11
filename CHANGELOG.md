@@ -4,10 +4,10 @@
 - Plantz Flag now reduces the cooldown of nearby plants by 20%. This effect does not stack.
 - When placing plants in plant pots, their initial rotation will be orientated the same as the pot.
 - Added Brainz Alloy.
-  - Drops from the Grave Loot, Rob Zombies, Super Brainz, Zombie Bots, and various other methods.
+  - Drops from the Grave Loot, Raid rewards, Rob Zombies, Super Brainz, Zombie Bots, and various other methods.
   - Used for crafting blocks and special zombie tech.
 - Added Brainz Alloy block set.
-  - Blocks include: Brainz Alloy Block, Stairs, Slab, Treaded Brainz Alloy Block, and Reinforced Brainz Alloy Block.
+  - Blocks include: Brainz Alloy Block, Stairs, Slab, Treaded Brainz Alloy Block, Reinforced Brainz Alloy Block, and Brainz Alloy Fences.
 - Added Time Machine.
   - ***Currently not obtainable outside of Creative mode.***
 - Added Dye Blaster
@@ -22,6 +22,10 @@
 - Added Garden Gnome Blocks.
 - The Football Helmet now gives increased speed and step height while sprinting. Nearby Mobs will also be knocked back.
 - Added Freeze Mob Effect.
+- Added "Hero of the Garden" Effect.
+  - Applies after defeating a raid.
+  - While the effect is active, interacting with a mailbox will grant loot for each completed wave in the raid.
+  - Special Waves will grant loot unique to that wave.
 #### Plants:
 - Added Electric Peashooter
   - Acquired by striking a peashooter with lightning.
@@ -50,6 +54,7 @@
 - Added a Yeti and Pirate Variant for the Imp,
   - Yeti Imps apply the Freeze effect.
   - Pirate Imps spawn in an explosive barrel.
+- Added a Pirate Variant for Gargantuar.
 - Added Soldier Zombie
   - Spawns during a zombie raid.
   - Uses the dye blaster.

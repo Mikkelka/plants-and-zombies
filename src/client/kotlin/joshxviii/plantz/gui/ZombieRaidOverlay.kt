@@ -78,7 +78,7 @@ object ZombieRaidOverlay {
         val textY = y + 18
         graphics.outlineText(font, timer, textX, textY)
 
-        if (PazConfig.SHOW_DEBUG_INFO) {
+        if (true) {
             val textX = screenWidth / 2 - font.width(raidEvent.status.name) / 2
             graphics.text(font, raidEvent.status.name, textX, textY+16, -1)
             val waveText = "${raidEvent.wavesSpawned} / ${raidEvent.numWaves}"

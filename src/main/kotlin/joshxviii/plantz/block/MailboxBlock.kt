@@ -81,9 +81,7 @@ class MailboxBlock(
         hitResult: BlockHitResult
     ): InteractionResult {
         val mailbox = getMailboxEntity(level, pos)?: return super.useItemOn(itemStack, state, level, pos, player, hand, hitResult)
-        val isPlayerHero = player.getEffect(PazEffects.GARDEN_HERO) != null
-        val success = mailbox.tryToGetMail(isPlayerHero)
-        if (success && isPlayerHero) player.removeEffect(PazEffects.GARDEN_HERO)
+        val success = mailbox.tryToGetMail(player)
         if (player is ServerPlayer) PazCriteria.SEND_MAIL.trigger(player, success)
         return if (success) InteractionResult.SUCCESS
         else InteractionResult.TRY_WITH_EMPTY_HAND

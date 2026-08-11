@@ -4,11 +4,13 @@ import com.mojang.serialization.Codec
 import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import joshxviii.plantz.MailboxData
 import joshxviii.plantz.PazBlocks
+import joshxviii.plantz.PazEffects
 import joshxviii.plantz.PazLootTables
 import joshxviii.plantz.PazServerParticles
 import joshxviii.plantz.block.MailboxBlock.Companion.FACING
 import joshxviii.plantz.block.MailboxBlock.Companion.STATE
 import joshxviii.plantz.block.MailboxState
+import joshxviii.plantz.effect.GardenHeroEffect
 import joshxviii.plantz.inventory.MailboxMenu
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider
 import net.minecraft.core.BlockPos
@@ -21,6 +23,7 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.ComponentSerialization
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket
+import net.minecraft.resources.ResourceKey
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvent
@@ -33,6 +36,7 @@ import net.minecraft.world.SimpleContainer
 import net.minecraft.world.entity.Relative.position
 import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.entity.player.Inventory
+import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.item.DyeColor
 import net.minecraft.world.item.ItemStack
@@ -55,8 +59,11 @@ class MailboxBlockEntity(
     private var name: Component? = null
     private var ejectTimer: Int = 0
     private var tickCount : Int = 0
+    private var heroMailBuffer: List<ResourceKey<LootTable>> = emptyList()
+    private var heroMailIndex: Int = 0
 
     companion object {
+        const val HERO_MAIL_EJECT_DELAY = 12
         val DEFAULT_NAME = Component.translatable("item.plantz.mailbox");
 
         fun tick(level: Level, pos: BlockPos, state: BlockState, blockEntity: MailboxBlockEntity) {
@@ -70,6 +77,21 @@ class MailboxBlockEntity(
             }
 
             if (state.getValue(STATE) == MailboxState.EJECTING) {
+                if (blockEntity.heroMailBuffer.isNotEmpty()) {// Hero Mail Rewards
+                    val dropPos = blockEntity.blockState.getValue(FACING).unitVec3.scale(0.75).add(blockEntity.blockPos.center)
+                    if (blockEntity.ejectTimer % HERO_MAIL_EJECT_DELAY == 0) blockEntity.heroMailBuffer.getOrNull(blockEntity.heroMailIndex)?.let {
+                        val items = blockEntity.getHeroMail(it)
+                        items.forEach { item ->
+                            Containers.dropItemStack(level, dropPos.x, dropPos.y, dropPos.z, item)
+                        }
+                        blockEntity.playSound(SoundEvents.VAULT_EJECT_ITEM)
+                        blockEntity.heroMailIndex++
+                        if (blockEntity.heroMailIndex >= blockEntity.heroMailBuffer.size) {
+                            blockEntity.heroMailBuffer = emptyList()
+                            blockEntity.heroMailIndex = 0
+                        }
+                    }
+                }
                 if (blockEntity.ejectTimer > 0) {
                     blockEntity.ejectTimer--
                 } else {
@@ -92,15 +114,16 @@ class MailboxBlockEntity(
     override fun createMenu(containerId: Int, inventory: Inventory): AbstractContainerMenu = MailboxMenu(containerId, inventory, asMailBoxData())
     override fun getScreenOpeningData(player: ServerPlayer): MailboxData = asMailBoxData()
 
-    fun tryToGetMail(isGardenHero: Boolean = false): Boolean {
+    fun tryToGetMail(player: Player): Boolean {
         val currentState = blockState.getValue(STATE)
+        val heroEffect = player.getEffect(PazEffects.GARDEN_HERO)?.effect?.value() as? GardenHeroEffect
+
         val dropPos = blockState.getValue(FACING).unitVec3.scale(0.75).add(blockPos.center)
-        if (isGardenHero) {
-            getHeroMail().forEach {
-                Containers.dropItemStack(level!!, dropPos.x, dropPos.y, dropPos.z, it)
-            }
+        if (heroEffect != null) {
+            player.removeEffect(PazEffects.GARDEN_HERO)
+            heroMailBuffer = heroEffect.lootTables
             updateMailboxState(MailboxState.EJECTING)
-            ejectTimer = 25
+            ejectTimer = HERO_MAIL_EJECT_DELAY * heroMailBuffer.size
             setChanged()
             return true
         }
@@ -119,12 +142,12 @@ class MailboxBlockEntity(
         }
     }
 
-    fun getHeroMail(): List<ItemStack> {
+    fun getHeroMail(lootTable: ResourceKey<LootTable>): List<ItemStack> {
         val level = level as? ServerLevel ?: return emptyList()
         val params: LootParams = LootParams.Builder(level)
             .withParameter(LootContextParams.ORIGIN, blockPos.center)
             .create(LootContextParamSets.CHEST)
-        val lootTable: LootTable = level.server.reloadableRegistries().getLootTable(PazLootTables.GARDEN_HERO_MAIL)
+        val lootTable: LootTable = level.server.reloadableRegistries().getLootTable(lootTable)
         val items = lootTable.getRandomItems(params)
         return items
     }

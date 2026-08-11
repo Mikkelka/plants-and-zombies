@@ -135,14 +135,12 @@ class ZombieRaids(
     @JvmRecord
     private data class ZombieRaidWithId(val id: Int, val raid: ZombieRaid) {
         companion object {
-            val CODEC: Codec<ZombieRaidWithId> = RecordCodecBuilder.create<ZombieRaidWithId>(
-                Function { i: RecordCodecBuilder.Instance<ZombieRaidWithId> ->
-                    i.group<Int, ZombieRaid>(
-                        Codec.INT.fieldOf("id").forGetter<ZombieRaidWithId>(ZombieRaidWithId::id),
-                        ZombieRaid.MAP_CODEC.forGetter<ZombieRaidWithId>(ZombieRaidWithId::raid)
-                    ).apply<ZombieRaidWithId>(i) { id: Int, raid: ZombieRaid -> ZombieRaidWithId(id, raid) }
-                }
-            )
+            val CODEC: Codec<ZombieRaidWithId> = RecordCodecBuilder.create<ZombieRaidWithId> { i: RecordCodecBuilder.Instance<ZombieRaidWithId> ->
+                i.group<Int, ZombieRaid>(
+                    Codec.INT.fieldOf("id").forGetter<ZombieRaidWithId>(ZombieRaidWithId::id),
+                    ZombieRaid.MAP_CODEC.forGetter<ZombieRaidWithId>(ZombieRaidWithId::raid)
+                ).apply<ZombieRaidWithId>(i) { id: Int, raid: ZombieRaid -> ZombieRaidWithId(id, raid) }
+            }
 
             fun from(entry: Int2ObjectMap.Entry<ZombieRaid>): ZombieRaidWithId = ZombieRaidWithId(entry.intKey, entry.value)
         }
