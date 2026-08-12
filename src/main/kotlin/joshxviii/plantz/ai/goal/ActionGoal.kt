@@ -21,6 +21,8 @@ abstract class ActionGoal(
     val actionSuccessEffect: () -> Unit = {},
     val actionEndEffect: () -> Unit = {},
     val actionPredicate: Predicate<PathfinderMob> = Predicate { true },
+    val delayedEffectDelay: Int = 0,
+    val delayedEffect: () -> Unit = {},
     val cooldownVariationRange: IntRange = 0..0
 ): Goal() {
     var isDoingAction = false
@@ -50,6 +52,7 @@ abstract class ActionGoal(
         }
 
         if (actionTimer > 0) --actionTimer
+        if (actionTimer == delayedEffectDelay) delayedEffect()
         if (actionTimer == 0) {// do action
             if (actionPredicate.test(usingEntity)) if (doAction()) actionSuccessEffect()
             isDoingAction = false

@@ -199,7 +199,6 @@ fun Path?.canReachTarget(target: BlockPos?): Boolean {
 
 fun Mob.attackRange(): Double {
     val DEFAULT = sqrt(2.04) - 0.6;
-    val range: Double
     val interactionRange = this.getAttribute(Attributes.ENTITY_INTERACTION_RANGE)?.value?: 0.0
     val attackRange = Mth.absMax(this.getActiveItem().get(DataComponents.ATTACK_RANGE)?.effectiveMaxRange(this)?.toDouble() ?: DEFAULT, interactionRange)
     val hitboxWidth = (this.boundingBox.xsize + this.boundingBox.ysize) / 2.0

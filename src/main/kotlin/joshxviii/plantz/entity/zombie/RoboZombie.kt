@@ -1,5 +1,6 @@
 package joshxviii.plantz.entity.zombie
 
+import joshxviii.plantz.ai.goal.MeleeAttackActionGoal
 import joshxviii.plantz.ai.goal.ProjectileAttackGoal
 import joshxviii.plantz.entity.projectile.Missile
 import net.minecraft.network.syncher.EntityDataAccessor
@@ -54,8 +55,8 @@ class RoboZombie(type: EntityType<out RoboZombie>, level: Level) : PazZombie(typ
     }
 
     override fun addBehaviourGoals() {
-        //addBehaviourGoalsNoMelee()
         super.addBehaviourGoals()
+        addBehaviourGoalsNoMelee()
     }
 
     override fun canEquipDuckyInWater(): Boolean = false

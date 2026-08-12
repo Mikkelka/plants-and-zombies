@@ -27,17 +27,21 @@ class ProjectileAttackGoal(
     actionSuccessEffect: () -> Unit = {},
     actionEndEffect: () -> Unit = {},
     actionPredicate: Predicate<PathfinderMob> = Predicate { true },
+    delayedEffectDelay: Int = 0,
+    delayedEffect: () -> Unit = {},
+    val usePredicate: Predicate<PathfinderMob> = Predicate { true },
     val projectileFactory: () -> Entity,
     val velocity : Double = 0.9,
     val inaccuracy: Float = 0.8f,
     val attackRadius: Float = usingEntity.attributes.getValue(Attributes.FOLLOW_RANGE).toFloat(),
     val useHighArc: Boolean = false,
     val soundEvent: SoundEvent? = PazSounds.PROJECTILE_FIRE,
-) : ActionGoal(usingEntity, cooldownTime, actionDelay, actionStartEffect, actionSuccessEffect, actionEndEffect, actionPredicate) {
+) : ActionGoal(usingEntity, cooldownTime, actionDelay, actionStartEffect, actionSuccessEffect, actionEndEffect, actionPredicate, delayedEffectDelay, delayedEffect) {
     var distanceSqr: Double = 0.0
 
     override fun canUse(): Boolean = (
-        usingEntity.tickCount>cooldownTime
+        usePredicate.test(usingEntity)
+            && usingEntity.tickCount>cooldownTime
             && usingEntity.target?.isAlive == true
             && !(usingEntity is Plant && (usingEntity.isAsleep || usingEntity.isGrowingSeeds))
     )

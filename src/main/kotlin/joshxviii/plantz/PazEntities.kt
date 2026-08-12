@@ -512,7 +512,7 @@ object PazEntities {
             explosionKnockbackResistance = 0.7,
             scale = 1.33,
             stepHeight = 1.0,
-            interactionRange = 3.5,
+            interactionRange = 2.0,
             spawnReinforcementsChance = 0.0,
         )
     )
