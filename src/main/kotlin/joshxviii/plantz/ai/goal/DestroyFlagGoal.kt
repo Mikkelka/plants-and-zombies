@@ -47,7 +47,7 @@ class DestroyFlagGoal(
                 path = mob.getNavigation().createPath(flagPos, 0)
             }
         }
-        return targetFlagPos!=null && path != null && !mob.hasEffect(PazEffects.HYPNOTIZE)
+        return targetFlagPos!=null && !mob.hasEffect(PazEffects.HYPNOTIZE)
     }
 
     override fun canContinueToUse(): Boolean {
@@ -64,6 +64,9 @@ class DestroyFlagGoal(
 
     override fun start() {
         mob.isAggressive = true
+        targetFlagPos?.center?.let {
+            mob.moveControl.setWantedPosition(it.x, it.y, it.z, 1.0)
+        }
         mob.navigation.moveTo(path, 1.0)
     }
 
@@ -86,6 +89,7 @@ class DestroyFlagGoal(
         }
 
         val reach = mob.attackRange()
+        if (flagPos.distSqr(mob.blockPosition()) > reach) flagPos.center.let { mob.moveControl.setWantedPosition(it.x, it.y, it.z, 1.0) }
         if (flagPos.distSqr(mob.blockPosition()) < if (mob.navigation.path.canReachTarget(flagPos)) reach else reach*reach) {
             if (!mob.swinging) {
                 damageFlag(flagPos)

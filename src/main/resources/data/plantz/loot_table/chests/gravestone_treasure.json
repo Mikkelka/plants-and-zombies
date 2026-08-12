@@ -7,6 +7,21 @@
       "entries": [
         {
           "type": "minecraft:item",
+          "name": "minecraft:ominous_bottle",
+          "weight": 55,
+          "functions": [
+            {
+              "function": "minecraft:set_ominous_bottle_amplifier",
+              "amplifier": {
+                "type": "minecraft:uniform",
+                "min": 0,
+                "max": 4
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
           "name": "plantz:cone",
           "weight": 40,
           "conditions": []
@@ -43,7 +58,7 @@
       "conditions": [
         {
           "condition": "minecraft:random_chance",
-          "chance": 0.2
+          "chance": 0.25
         }
       ]
     },

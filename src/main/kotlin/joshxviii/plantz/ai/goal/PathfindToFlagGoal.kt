@@ -53,6 +53,9 @@ class PathfindToFlagGoal(
 
     override fun start() {
         //mob.isAggressive = true
+        targetFlagPos?.center?.let {
+            mob.moveControl.setWantedPosition(it.x, it.y, it.z, 1.0)
+        }
         mob.navigation.moveTo(path, 1.0)
     }
 

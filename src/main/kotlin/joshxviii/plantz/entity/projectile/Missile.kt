@@ -15,7 +15,7 @@ class Missile(
     owner: LivingEntity? = null,
     spawnOffset: Vec2 = Vec2.ZERO,
 ) : PazProjectile(PazEntities.MISSILE, level, owner, spawnOffset,
-    PazDamageTypes.PLANT
+    PazDamageTypes.ZOMBIE_EXPLODE
 ) {
     override fun tick() {
         super.tick()
