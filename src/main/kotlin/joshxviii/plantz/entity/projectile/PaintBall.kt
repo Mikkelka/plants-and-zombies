@@ -15,6 +15,8 @@ import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.animal.sheep.Sheep
 import net.minecraft.world.item.DyeColor
 import net.minecraft.world.level.Level
+import net.minecraft.world.level.storage.ValueInput
+import net.minecraft.world.level.storage.ValueOutput
 import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.HitResult
 import net.minecraft.world.phys.Vec2
@@ -24,9 +26,10 @@ class PaintBall(
     level: Level,
     owner: LivingEntity? = null,
     spawnOffset: Vec2 = Vec2.ZERO,
-    color: DyeColor = DyeColor.WHITE
+    color: DyeColor = DyeColor.WHITE,
+    damage: Float = 0.5f,
 ) : PazProjectile(PazEntities.PAINT_BALL, level, owner, spawnOffset,
-    PazDamageTypes.PAINT, damage = 0.5f, knockback = 0.01
+    PazDamageTypes.PAINT, damage, knockback = 0.01
 ) {
     companion object {
         val COLOR: EntityDataAccessor<Int> = SynchedEntityData.defineId(PaintBall::class.java, EntityDataSerializers.INT)
@@ -43,6 +46,16 @@ class PaintBall(
     override fun defineSynchedData(entityData: SynchedEntityData.Builder) {
         super.defineSynchedData(entityData)
         entityData.define(COLOR,  DyeColor.WHITE.id)
+    }
+
+    override fun addAdditionalSaveData(output: ValueOutput) {
+        super.addAdditionalSaveData(output)
+        output.store("dyeColor", DyeColor.CODEC, dyeColor)
+    }
+
+    override fun readAdditionalSaveData(input: ValueInput) {
+        super.readAdditionalSaveData(input)
+        input.read("dyeColor", DyeColor.CODEC).ifPresent { dyeColor -> this.dyeColor = dyeColor }
     }
 
     override fun tick() {

@@ -23,7 +23,7 @@ import net.minecraft.world.entity.ai.control.LookControl
 import net.minecraft.world.entity.ai.control.MoveControl
 import net.minecraft.world.entity.ai.goal.FloatGoal
 import net.minecraft.world.entity.ai.goal.Goal
-=import net.minecraft.world.entity.monster.zombie.Zombie
+import net.minecraft.world.entity.monster.zombie.Zombie
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat
 import net.minecraft.world.level.ExplosionDamageCalculator
 import net.minecraft.world.level.Level

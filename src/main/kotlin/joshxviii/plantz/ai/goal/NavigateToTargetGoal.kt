@@ -14,6 +14,7 @@ class NavigateToTargetGoal(
     val mob: PathfinderMob,
     val speedModifier: Double = 1.0,
     val keepAwayDistance: Double = 0.0,
+    val alwaysFaceTarget: Boolean = false,
     val followingTargetEvenIfNotSeen: Boolean = false,
 ) : Goal(){
     companion object {
@@ -27,6 +28,8 @@ class NavigateToTargetGoal(
     private var pathedTargetX = 0.0
     private var pathedTargetY = 0.0
     private var pathedTargetZ = 0.0
+    private var strafingTime = -1
+    private var strafingClockwise = true
 
     init {
         flags = EnumSet.of(Flag.MOVE, Flag.LOOK)
@@ -42,7 +45,7 @@ class NavigateToTargetGoal(
 
         if (keepAwayDistance > 0.0) {
             path = createPathToDesiredPosition(target)
-            return path != null || true
+            return true
         }
         path = createPathToDesiredPosition(target)
         return path != null || mob.isWithinMeleeAttackRange(target)
@@ -89,15 +92,26 @@ class NavigateToTargetGoal(
         super.tick()
 
         val target = mob.target ?: return
-        mob.getLookControl().setLookAt(target, 30.0f, 30.0f)
+        mob.lookControl.setLookAt(target, 30.0f, 30.0f)
 
         if (keepAwayDistance > 0.0) {
             val distance = mob.distanceTo(target)
 
-            if (distance in (keepAwayDistance - DISTANCE_TOLERANCE)..(keepAwayDistance + DISTANCE_TOLERANCE)) {
+            if (alwaysFaceTarget) {
+                if (distance < keepAwayDistance) {
+                    mob.navigation.stop()
+                    ++strafingTime
+                    if (strafingTime % 20 == 0 && mob.random.nextFloat()<0.3) strafingClockwise = !strafingClockwise
+                    mob.moveControl.strafe(-0.7f, if (strafingClockwise) 0.7f else -0.7f)
+                    mob.lookAt(target, 30.0f, 30.0f)
+                    return
+                }
+            }
+            else if (distance in keepAwayDistance - DISTANCE_TOLERANCE..keepAwayDistance + DISTANCE_TOLERANCE){
                 mob.navigation.stop()
                 return
             }
+
 
             recalculatePath(target)
 
@@ -123,6 +137,7 @@ class NavigateToTargetGoal(
     }
 
     private fun recalculatePath(target: LivingEntity) {
+        strafingTime = -1
         ticksUntilNextPathRecalculation = max(ticksUntilNextPathRecalculation - 1, 0)
 
         val needsRecalc =

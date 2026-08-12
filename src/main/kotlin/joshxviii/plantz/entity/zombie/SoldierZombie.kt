@@ -3,6 +3,7 @@ package joshxviii.plantz.entity.zombie
 import joshxviii.plantz.PazDataSerializers.DATA_DYE_COLOR
 import joshxviii.plantz.PazItems
 import joshxviii.plantz.PazSounds
+import joshxviii.plantz.ai.goal.NavigateToTargetGoal
 import joshxviii.plantz.ai.goal.ProjectileAttackGoal
 import joshxviii.plantz.entity.projectile.PaintBall
 import net.minecraft.network.syncher.EntityDataAccessor
@@ -16,6 +17,8 @@ import net.minecraft.world.entity.*
 import net.minecraft.world.item.DyeColor
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.ServerLevelAccessor
+import net.minecraft.world.level.storage.ValueInput
+import net.minecraft.world.level.storage.ValueOutput
 
 class SoldierZombie(type: EntityType<out SoldierZombie>, level: Level) : PazZombie(type, level) {
 
@@ -36,13 +39,24 @@ class SoldierZombie(type: EntityType<out SoldierZombie>, level: Level) : PazZomb
         entityData.define(DYE_COLOR, DyeColor.WHITE)
     }
 
+    override fun addAdditionalSaveData(output: ValueOutput) {
+        super.addAdditionalSaveData(output)
+        output.store("dyeColor", DyeColor.CODEC, dyeColor)
+    }
+
+    override fun readAdditionalSaveData(input: ValueInput) {
+        super.readAdditionalSaveData(input)
+        input.read("dyeColor", DyeColor.CODEC).ifPresent { dyeColor -> this.dyeColor = dyeColor }
+    }
+
     override fun registerGoals() {
         super.registerGoals()
+        this.goalSelector.addGoal(1, NavigateToTargetGoal(this, keepAwayDistance = 7.0, alwaysFaceTarget = true))
         this.goalSelector.addGoal(2, ProjectileAttackGoal(
             usingEntity = this,
-            projectileFactory =  { PaintBall(level(), this, color = dyeColor) },
-            velocity = 1.3,
-            actionDelay = 8,
+            projectileFactory =  { PaintBall(level(), this, color = dyeColor, damage = 2f) },
+            velocity = 1.1,
+            actionDelay = 22,
             soundEvent = null,
             actionEndEffect = {
 
