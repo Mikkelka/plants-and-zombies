@@ -113,16 +113,18 @@ class PlantRenderer(
                 is BonkChoy -> entity.useUppercut
                 else -> false
             }
-        state.textureExtra =
+        state.textureExtra = mutableListOf<String>().apply {
             when (entity) {
-                is WallNut, is ExplodeONut -> when {
+                is WallNut, is ExplodeONut -> add(when {
                     state.damagedAmount >= 0.75f -> "damage_medium"
-                    state.damagedAmount >= 0.5f  -> "damage_low"
+                    state.damagedAmount >= 0.5f -> "damage_low"
                     else -> ""
-                }
-                is KernelPult -> if (entity.hasButterShot) "butter" else ""
-                else -> ""
+                })
+
+                is KernelPult -> if (entity.hasButterShot) add("butter")
+                else -> {}
             }
+        }
     }
 
     override fun getTextureLocation(state: PlantRenderState): Identifier {
@@ -163,7 +165,7 @@ class PlantRenderState : net.minecraft.client.renderer.entity.state.LivingEntity
     var damagedAmount: Float = 0.0f
     var isAsleep: Boolean = false
     var customName: String = ""
-    var textureExtra: String = ""
+    var textureExtra: List<String> = listOf()
     var plantState: PlantState = PlantState.IDLE
     var useSpecialAction: Boolean = false
     val initAnimationState: AnimationState = AnimationState()
@@ -177,13 +179,13 @@ class PlantRenderState : net.minecraft.client.renderer.entity.state.LivingEntity
     fun getSuffixes(): MutableList<String> {
         val magicName = this.isMagicName(customName)
         val suffixes = mutableListOf<String>().apply {
-            if (textureExtra.isNotEmpty())      add(textureExtra)
+            textureExtra.forEach                { add(it) }
             if (magicName.isNotEmpty())         add(magicName)
             else {
-                if (isBaby)                         add("baby")
-                if (isAsleep)                       add("sleep")
+                if (isBaby)                     add("baby")
+                if (isAsleep)                   add("sleep")
             }
-        }
+        }.filter { it.isNotEmpty() }.toMutableList()
         return suffixes
     }
 }

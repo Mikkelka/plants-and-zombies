@@ -86,7 +86,7 @@ class ZombieRaids(
 
             if (!raid.started && !zombieRaidMap.containsValue(raid)) {
                 zombieRaidMap.put(uniqueId, raid)
-                level.players().filter { it.blockPosition().distSqr(flagPosition) < 96 } .forEach {
+                level.players().filter { it.blockPosition().distSqr(flagPosition) < 96*96 } .forEach {
                     it.sendSystemMessage(ZombieRaid.getStartMessage(player.seenCredits))
                     raid.zombieRaidEvent.addPlayer(it)
                 }

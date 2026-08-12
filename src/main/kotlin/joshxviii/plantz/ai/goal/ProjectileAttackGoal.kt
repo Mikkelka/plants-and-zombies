@@ -40,8 +40,7 @@ class ProjectileAttackGoal(
     var distanceSqr: Double = 0.0
 
     override fun canUse(): Boolean = (
-        usePredicate.test(usingEntity)
-            && usingEntity.tickCount>cooldownTime
+        usingEntity.tickCount>cooldownTime
             && usingEntity.target?.isAlive == true
             && !(usingEntity is Plant && (usingEntity.isAsleep || usingEntity.isGrowingSeeds))
     )
@@ -56,6 +55,7 @@ class ProjectileAttackGoal(
     override fun canDoAction(): Boolean {// check distance and line of sight
         val target = usingEntity.target ?: return false
         if (!target.isAlive) return false
+        if (!usePredicate.test(usingEntity)) return false
 
         distanceSqr = usingEntity.distanceToSqr(target)
 

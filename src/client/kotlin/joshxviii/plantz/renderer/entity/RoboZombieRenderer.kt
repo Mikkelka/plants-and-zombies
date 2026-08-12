@@ -21,6 +21,8 @@ class RoboZombieRenderer(
         (entity as RoboZombie)
         state.isTankTransformation = entity.isTransformed
         state.idleAnimationState.copyFrom(entity.idleAnimation)
+        state.shootAnimationState.copyFrom(entity.shootAnimation)
+        state.bashAnimationState.copyFrom(entity.bashAnimation)
     }
 
 }
@@ -28,4 +30,6 @@ class RoboZombieRenderer(
 class RoboZombieRenderState: PazZombieRenderState() {
     var isTankTransformation = false
     val idleAnimationState: AnimationState = AnimationState()
+    val shootAnimationState: AnimationState = AnimationState()
+    val bashAnimationState: AnimationState = AnimationState()
 }

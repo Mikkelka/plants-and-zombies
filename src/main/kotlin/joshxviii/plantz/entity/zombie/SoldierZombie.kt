@@ -54,7 +54,7 @@ class SoldierZombie(type: EntityType<out SoldierZombie>, level: Level) : PazZomb
         this.goalSelector.addGoal(1, NavigateToTargetGoal(this, keepAwayDistance = 7.0, alwaysFaceTarget = true))
         this.goalSelector.addGoal(2, ProjectileAttackGoal(
             usingEntity = this,
-            projectileFactory =  { PaintBall(level(), this, color = dyeColor, damage = 2f) },
+            projectileFactory =  { PaintBall(level(), this, color = dyeColor, damage = 1f) },
             velocity = 1.1,
             actionDelay = 22,
             soundEvent = null,

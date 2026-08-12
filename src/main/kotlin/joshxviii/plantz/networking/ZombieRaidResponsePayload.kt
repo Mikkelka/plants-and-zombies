@@ -30,14 +30,14 @@ class ZombieRaidResponsePayload(
                 ByteBufCodecs.FLOAT,   { it.data.currentZombieHealth },
                 ByteBufCodecs.FLOAT,   { it.data.flagHealth },
                 ByteBufCodecs.FLOAT,   { it.data.flagMaxHealth },
-                BlockPos.STREAM_CODEC, { it.data.center },
+                ByteBufCodecs.BOOL,    { it.data.seenCredits },
                 ByteBufCodecs.BOOL,    { it.terminate },
-                { id, statusOrd, waves, num, timer, activeTime, totalH, curH, flagH, flagMax, center, terminate ->
+                { id, statusOrd, waves, num, timer, activeTime, totalH, curH, flagH, flagMax, credits, terminate ->
                     ZombieRaidResponsePayload(
                         ZombieRaidClientData(
                             id,
                             ZombieRaid.ZombieRaidStatus.entries[statusOrd],
-                            waves, num, timer, activeTime, totalH, curH, flagH, flagMax, center
+                            waves, num, timer, activeTime, totalH, curH, flagH, flagMax, credits
                         ),
                         terminate
                     )
@@ -60,5 +60,5 @@ data class ZombieRaidClientData(
     val currentZombieHealth: Float = 0f,
     val flagHealth: Float = 0f,
     val flagMaxHealth: Float = 0f,
-    val center: BlockPos = BlockPos.ZERO,
+    val seenCredits: Boolean = false
 )
