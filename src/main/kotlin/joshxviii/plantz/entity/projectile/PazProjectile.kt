@@ -1,10 +1,17 @@
 package joshxviii.plantz.entity.projectile
 
+import joshxviii.plantz.NukeBlastParticleOptions
+import joshxviii.plantz.NukeSmokeParticleOptions
+import joshxviii.plantz.NukeWaveParticleOptions
 import joshxviii.plantz.PazConfig
 import joshxviii.plantz.PazDamageTypes
+import joshxviii.plantz.PazSounds
 import joshxviii.plantz.entity.plant.Plant
+import joshxviii.plantz.entity.zombie.Gargantuar.Companion.SMASH_DAMAGE_CALCULATOR
 import joshxviii.plantz.hasSameRootOwner
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Holder
+import net.minecraft.core.particles.BlockParticleOption
 import net.minecraft.core.particles.ParticleOptions
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket
@@ -16,6 +23,7 @@ import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundEvents
+import net.minecraft.util.random.WeightedList
 import net.minecraft.world.damagesource.DamageType
 import net.minecraft.world.entity.*
 import net.minecraft.world.entity.ai.attributes.Attributes
@@ -24,7 +32,9 @@ import net.minecraft.world.entity.projectile.Projectile
 import net.minecraft.world.entity.projectile.ProjectileDeflection
 import net.minecraft.world.entity.projectile.ProjectileUtil
 import net.minecraft.world.level.ClipContext
+import net.minecraft.world.level.ExplosionDamageCalculator
 import net.minecraft.world.level.Level
+import net.minecraft.world.level.SimpleExplosionDamageCalculator
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.*
@@ -49,6 +59,7 @@ abstract class PazProjectile(
     private val canHitPredicate: Predicate<Entity> = Predicate { entity -> this.canHitEntity(entity) }
 
     companion object {
+        val EXPLOSION_CALCULATOR: ExplosionDamageCalculator = SimpleExplosionDamageCalculator(false, true, Optional.of(1.0f), Optional.ofNullable(null))
         val PIERCE_LEVEL: EntityDataAccessor<Byte> = SynchedEntityData.defineId(PazProjectile::class.java, EntityDataSerializers.BYTE)
         val IN_GROUND: EntityDataAccessor<Boolean> = SynchedEntityData.defineId(PazProjectile::class.java, EntityDataSerializers.BOOLEAN)
     }
@@ -191,15 +202,19 @@ abstract class PazProjectile(
         )
     }
 
+    override fun getOwner(): LivingEntity? {
+        return super.getOwner().let {
+            if (it is OwnableEntity && PazConfig.PLAYER_CREDIT_FOR_PLANT_KILLS) it.rootOwner
+            else it as? LivingEntity
+        }
+    }
+
     override fun onHitEntity(hitResult: EntityHitResult) {
         super.onHitEntity(hitResult)
         val target = hitResult.entity
         val serverLevel = this.level() as? ServerLevel
         if (serverLevel != null) {
-            val owner = getOwner().let {
-                if (it is OwnableEntity && PazConfig.PLAYER_CREDIT_FOR_PLANT_KILLS) it.rootOwner
-                else it as? LivingEntity
-            }
+            val owner = getOwner()
             owner?.setLastHurtMob(target)
 
             // get damage from attribute
@@ -294,8 +309,31 @@ abstract class PazProjectile(
         }
     }
 
-    protected fun explode() {
-        
+    protected fun explode(radius: Float = 2.0f) {
+        val level = this.level()
+        level.explode(
+            getOwner(),
+            damageSources().source(damageType, getOwner()),
+            EXPLOSION_CALCULATOR, x, y, z,
+            radius,
+            false,
+            Level.ExplosionInteraction.MOB,
+            ParticleTypes.LARGE_SMOKE,
+            ParticleTypes.EXPLOSION,
+            WeightedList.of(),
+            PazSounds.PLANT_EXPLODE
+        )
+        if (level is ServerLevel) {
+            level.sendParticles(NukeWaveParticleOptions(color = 0xD0370D, scale = radius * 1f),
+                x, y, z, 1, 0.0, 0.0, 0.0, 0.0
+            )
+            level.sendParticles(NukeBlastParticleOptions(color = 0xFFE88D, scale = radius * 0.5f),
+                x, y, z, 1, 0.0, 0.0, 0.0, 0.0
+            )
+            level.sendParticles(NukeSmokeParticleOptions(color = 0xB87878, scale = radius * 0.3f),
+                x, y+1, z, 16, 0.0, 0.5, 0.0, 0.0
+            )
+        }
     }
 
     private fun applyInertia() {

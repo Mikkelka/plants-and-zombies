@@ -67,6 +67,8 @@ class PaintBall(
         )
     }
 
+    override fun getDefaultGravity(): Double { return 0.04 }
+
     override fun onHit(hitResult: HitResult) {
         super.onHit(hitResult)
         spawnParticle(
