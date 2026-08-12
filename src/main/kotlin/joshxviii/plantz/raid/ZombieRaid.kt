@@ -271,6 +271,7 @@ class ZombieRaid(
         val creditsUnlocked = hasRaidStarterSeenCredits(level)
         val waveType = pickWaveType(creditsUnlocked)
         if (waveType != WaveType.DEFAULT) announceSpecialWave(waveType)
+        waveTypes = waveTypes.toMutableList()
         waveTypes.add(waveType)
         val waveEntries = waveType.spawnEntries(this, creditsUnlocked)
 

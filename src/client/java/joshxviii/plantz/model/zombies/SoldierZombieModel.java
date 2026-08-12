@@ -6,6 +6,7 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.HumanoidArm;
 import org.jetbrains.annotations.NotNull;
 
 import static joshxviii.plantz.UtilsKt.pazResource;
@@ -61,7 +62,11 @@ public class SoldierZombieModel extends PazZombieModel {
         float animationSpeed = state.walkAnimationSpeed;
         if (state.attackTime<=0) this.rightArm.xRot = Mth.cos(animationPos * 0.6662F + Mth.PI) * 0.6F * animationSpeed * 0.5F / state.speedValue;
         if (state.attackTime<=0) this.leftArm.xRot = Mth.cos(animationPos * 0.6662F) * 0.6F * animationSpeed * 0.5F / state.speedValue;
-        if (state.isAggressive) this.rightArm.xRot = state.xRot * (Mth.PI / 180f) - Mth.HALF_PI;
+        var armRot = state.xRot * (Mth.PI / 180f) - Mth.HALF_PI;
+        if (state.isAggressive) {
+            if (state.mainArm == HumanoidArm.RIGHT) this.rightArm.xRot = armRot;
+            else this.leftArm.xRot = armRot;
+        }
         state.attackTime = tempAttackTime;
     }
 }

@@ -41,7 +41,7 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
 
     companion object {
         val SMASH_DAMAGE_CALCULATOR: ExplosionDamageCalculator = SimpleExplosionDamageCalculator(false, true, Optional.of(2.5f), Optional.ofNullable(null))
-        const val SMASH_DELAY_TIME = 100
+        const val SMASH_COOLDOWN_TIME = 100
 
         val DATA_VARIANT_ID: EntityDataAccessor<GargantuarVariant> = SynchedEntityData.defineId(Gargantuar::class.java, GARGANTUAR_VARIANT)
 
@@ -59,7 +59,7 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
     val punchAttackAnimation : AnimationState = AnimationState()
     val throwImpAnimation : AnimationState = AnimationState()
 
-    var smashDelayTime = 0
+    var smashCooldown = 0
 
     var variant: GargantuarVariant
         get() = this.entityData.get(DATA_VARIANT_ID)
@@ -109,13 +109,13 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
             damageType = DamageTypes.MOB_ATTACK,
             actionDelay = 16,
             usePredicate = {
-                this.smashAttackTime<=0 && this.throwTime<=0 && smashDelayTime<=0
+                smashAttackTime<=0 && throwTime<=0 && smashCooldown<=0
             },
             actionStartEffect = {
-                this.smashAttackTime=1
+                smashAttackTime=1
             },
             actionEndEffect = {
-                smashDelayTime = SMASH_DELAY_TIME + random.nextInt(10)
+                smashCooldown = SMASH_COOLDOWN_TIME + random.nextInt(10)
                 val target = target
                 val level = level()
                 val direction = calculateViewVector(0f, yBodyRotO-20).scale(3.5)
@@ -161,10 +161,10 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
             damageType = DamageTypes.MOB_ATTACK,
             actionDelay = 15,
             usePredicate = {
-                this.punchAttackTime<=0 && this.smashAttackTime<=0 && this.throwTime<=0
+                punchAttackTime<=0 && smashAttackTime<=0 && throwTime<=0
             },
             actionStartEffect = {
-                this.punchAttackTime=1
+                punchAttackTime=1
             }
         ))
     }
@@ -181,9 +181,6 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
         this.goalSelector.setControlFlag(Goal.Flag.LOOK, noController)
         this.goalSelector.setControlFlag(Goal.Flag.TARGET, noController)
     }
-
-    private val noMoveControl = object : MoveControl(this) { override fun getSpeedModifier(): Double = 0.0 }
-    private val noLookControl = object : LookControl(this) {}
 
     override fun getLookControl(): LookControl =  if (smashAttackTime>0) noLookControl else super.getLookControl()
     override fun getMoveControl(): MoveControl = if (smashAttackTime>0) noMoveControl else super.getMoveControl()
@@ -215,34 +212,33 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
             )
         }
 
-        if (smashDelayTime>0) --smashDelayTime
+        if (smashCooldown>0) --smashCooldown
 
         if(smashAttackTime>0) {
             smashAttackAnimation.startIfStopped(tickCount)
-            smashAttackTime++
-        }
-        if (smashAttackTime>40) {
-            smashAttackAnimation.stop()
-            smashAttackTime=0
+            if (smashAttackTime++>40) {
+                smashAttackAnimation.stop()
+                smashAttackTime=0
+            }
         }
 
         if (punchAttackTime>0) {
             punchAttackAnimation.startIfStopped(tickCount)
-            punchAttackTime++
+            if (punchAttackTime++>30) {
+                punchAttackAnimation.stop()
+                punchAttackTime=0
+            }
         }
-        if (punchAttackTime>30) {
-            punchAttackAnimation.stop()
-            punchAttackTime=0
-        }
+
 
         if (throwTime>0) {
             throwImpAnimation.startIfStopped(tickCount)
-            throwTime++
+            if (throwTime++>60) {
+                throwImpAnimation.stop()
+                throwTime=0
+            }
         }
-        if (throwTime>60) {
-            throwImpAnimation.stop()
-            throwTime=0
-        }
+
     }
 
     override fun emergingTime(): Int = 80

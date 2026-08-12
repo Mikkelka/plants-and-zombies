@@ -294,6 +294,10 @@ abstract class PazProjectile(
         }
     }
 
+    protected fun explode() {
+        
+    }
+
     private fun applyInertia() {
         val m = this.deltaMovement
         val p = this.position()

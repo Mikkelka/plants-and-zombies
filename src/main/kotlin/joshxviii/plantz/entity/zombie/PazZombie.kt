@@ -25,6 +25,7 @@ import net.minecraft.world.entity.*
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier
 import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.entity.ai.control.FlyingMoveControl
+import net.minecraft.world.entity.ai.control.LookControl
 import net.minecraft.world.entity.ai.control.MoveControl
 import net.minecraft.world.entity.ai.goal.MoveThroughVillageGoal
 import net.minecraft.world.entity.ai.goal.SpearUseGoal
@@ -137,9 +138,8 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
         get() = this.entityData.get(ZOMBIE_STATE)
         set(value) { this.entityData.set(ZOMBIE_STATE, value) }
 
-    private val noMoveControl = object : MoveControl(this) {
-        override fun getSpeedModifier(): Double = 0.0
-    }
+    protected val noMoveControl = object : MoveControl(this) { override fun getSpeedModifier(): Double = 0.0 }
+    protected val noLookControl = object : LookControl(this) {}
 
     val flyControl = object : FlyingMoveControl(this, 20, true) {
         override fun getSpeedModifier(): Double = 0.0

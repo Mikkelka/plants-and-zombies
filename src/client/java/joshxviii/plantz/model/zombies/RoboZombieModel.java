@@ -14,7 +14,7 @@ import static joshxviii.plantz.UtilsKt.pazResource;
 
 public class RoboZombieModel extends PazZombieModel {
     public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(pazResource("robo_zombie"), "main");
-    private final KeyframeAnimation meleeAttackAnimation;
+    private final KeyframeAnimation bashAnimation;
     private final KeyframeAnimation shootAnimation;
     private final KeyframeAnimation walkAnimation;
     private final KeyframeAnimation idleAnimation;
@@ -22,7 +22,7 @@ public class RoboZombieModel extends PazZombieModel {
 
     public RoboZombieModel(final ModelPart root) {
         super(null, root);
-        this.meleeAttackAnimation = RoboZombieAnimation.attack.bake(root.getChild("root"));
+        this.bashAnimation = RoboZombieAnimation.attack.bake(root.getChild("root"));
         this.shootAnimation = RoboZombieAnimation.missile.bake(root.getChild("root"));
         this.walkAnimation = RoboZombieAnimation.walk.bake(root.getChild("root"));
         this.idleAnimation = RoboZombieAnimation.idle.bake(root.getChild("root"));
@@ -91,5 +91,7 @@ public class RoboZombieModel extends PazZombieModel {
 
         if (roboState.isTankTransformation()) tankIdleAnimation.apply(roboState.getIdleAnimationState(), roboState.ageInTicks);
         else idleAnimation.apply(roboState.getIdleAnimationState(), roboState.ageInTicks);
+        shootAnimation.apply(roboState.getShootAnimationState(), roboState.ageInTicks);
+        bashAnimation.apply(roboState.getBashAnimationState(), roboState.ageInTicks);
     }
 }
