@@ -94,11 +94,10 @@ class ZombieRaid(
                 Codec.BOOL.optionalFieldOf("starter_has_seen_credits", false).forGetter<ZombieRaid> { it.starterHasSeenCredits },
             ).apply<ZombieRaid>(r, ::ZombieRaid )
         }
-        val ZOMBIE_RAID_BAR: Component = Component.translatable("event.plantz.zombie_raid")
-        val ZOMBIE_RAID_BAR_START: Component = Component.translatable("event.plantz.zombie_raid.start")
-        val ZOMBIE_RAID_BAR_START_CREDITS: Component = Component.translatable("event.plantz.zombie_raid.start.credits")
-        val ZOMBIE_RAID_BAR_VICTORY: Component = Component.translatable("event.plantz.zombie_raid.victory")
-        val ZOMBIE_RAID_BAR_DEFEAT: Component = Component.translatable("event.plantz.zombie_raid.defeat")
+        val ZOMBIE_RAID_BAR_START: Component = Component.translatable("event.plantz.zombie_raid.start").withStyle(ChatFormatting.GOLD)
+        val ZOMBIE_RAID_BAR_START_CREDITS: Component = Component.translatable("event.plantz.zombie_raid.start.after_credits").withStyle(ChatFormatting.GOLD)
+        val ZOMBIE_RAID_VICTORY: Component = Component.translatable("event.plantz.zombie_raid.victory").withStyle(ChatFormatting.YELLOW)
+        val ZOMBIE_RAID_DEFEAT: Component = Component.translatable("event.plantz.zombie_raid.defeat").withStyle(ChatFormatting.RED)
         const val WAVE_DURATION_TICKS: Int = 3000 // 2.5 minutes
         const val PRE_RAID_TICKS: Int = 300
         const val POST_RAID_TICKS: Int = 80
@@ -188,6 +187,7 @@ class ZombieRaid(
                 val lootTables = waveTypes.map { it.lootTable }.toList()
                 (effect.effect.value() as? GardenHeroEffect)?.lootTables = lootTables
                 player.addEffect(effect)
+                player.sendSystemMessage(ZOMBIE_RAID_VICTORY)
             }
             return
         }
@@ -195,10 +195,10 @@ class ZombieRaid(
         else if (!level.getBlockState(center).`is`(PazBlocks.PLANTZ_FLAG)) {
             status = ZombieRaidStatus.LOSS
             postRaidTicks = POST_RAID_TICKS
+            zombieRaidEvent.players.forEach { player ->
+                player.sendSystemMessage(ZOMBIE_RAID_DEFEAT)
+            }
             return
-        }
-        else {
-            zombieRaidEvent.setName(Component.translatable("event.plantz.zombie_raid.wave", wavesSpawned, waveTimer.tickTimeFormat()))
         }
 
         if (shouldSpawnNextWave()) {
@@ -376,7 +376,7 @@ class ZombieRaid(
             currentZombieHealth = getHealthOfZombies(),
             flagHealth = flag?.health ?: 0f,
             flagMaxHealth = MAX_HEALTH,
-            center = center
+            seenCredits = starterHasSeenCredits
         )
 
         val packet = ZombieRaidResponsePayload(data, terminate)

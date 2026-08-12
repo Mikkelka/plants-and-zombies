@@ -22,8 +22,10 @@ object ZombieRaidOverlay {
     }
 
     val BACKGROUND: Identifier = pazResource("textures/gui/raid/background.png")
+    val BACKGROUND_CREDITS: Identifier = pazResource("textures/gui/raid/background_after_credits.png")
     val PLANT_FLAG_SPRITE: Identifier = pazResource("textures/gui/raid/plant_flag.png")
     val ZOMBIE_HEAD_SPRITE: Identifier = pazResource("textures/gui/raid/zombie_head.png")
+    val ZOMBIE_HEAD_CREDITS_SPRITE: Identifier = pazResource("textures/gui/raid/zombie_head_after_credits.png")
     val HEALTH_BAR_FLAG: Identifier = pazResource("textures/gui/raid/flag_health.png")
     val HEALTH_BAR_ZOMBIES: Identifier = pazResource("textures/gui/raid/zombie_health.png")
 
@@ -35,13 +37,14 @@ object ZombieRaidOverlay {
         val bgHeight = 32
         val font = Minecraft.getInstance().font
         val raidEvent = ZombieRaidClientCache.active.values.firstOrNull() ?: return
+        val credits = raidEvent.seenCredits
 
         val screenWidth = graphics.guiWidth()
         val x = screenWidth / 2 - (bgWidth / 2)
         val y = 0
 
         // tombstone bg
-        graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, x, y, 0f, 0f, bgWidth, bgHeight, bgWidth, bgHeight)
+        graphics.blit(RenderPipelines.GUI_TEXTURED, if (credits) BACKGROUND_CREDITS else BACKGROUND, x, y, 0f, 0f, bgWidth, bgHeight, bgWidth, bgHeight)
 
         // flag health
         val barWidth = 98
@@ -68,7 +71,7 @@ object ZombieRaidOverlay {
                 val headX = zombieHealthX + (i * 8)
                 val headY = zombieHealthY - if (i % 2 == 0) 3 else 0
                 val headFrame = i % 4f
-                graphics.blit(RenderPipelines.GUI_TEXTURED, ZOMBIE_HEAD_SPRITE, headX, headY, headWidth*headFrame, 0f, headWidth, 11, headWidth*4, 11)
+                graphics.blit(RenderPipelines.GUI_TEXTURED, if (credits) ZOMBIE_HEAD_CREDITS_SPRITE else  ZOMBIE_HEAD_SPRITE, headX, headY, headWidth*headFrame, 0f, headWidth, 11, headWidth*4, 11)
             }
         }
 

@@ -112,7 +112,6 @@ class NavigateToTargetGoal(
                 return
             }
 
-
             recalculatePath(target)
 
             val distSqr = distance * distance
@@ -169,7 +168,7 @@ class NavigateToTargetGoal(
     }
 
     private fun getKeepAwayPosition(
-        target: net.minecraft.world.entity.LivingEntity,
+        target: LivingEntity,
         distance: Double
     ): net.minecraft.world.phys.Vec3 {
         val mobPos = mob.position()
@@ -177,9 +176,8 @@ class NavigateToTargetGoal(
         val delta = mobPos.subtract(targetPos)
         val len = sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z)
 
-        return if (len < 1.0E-4) {
-            targetPos.add(distance, 0.0, 0.0)
-        } else {
+        return if (len < 1.0E-4) targetPos.add(distance, 0.0, 0.0)
+        else {
             val scale = distance / len
             targetPos.add(delta.x * scale, delta.y * scale, delta.z * scale)
         }
