@@ -27,6 +27,7 @@
   "rewards": {
     "recipes": [
       "plantz:sun_battery",
+      "plantz:brainz_alloy_by_block",
       "plantz:brainz_alloy_block",
       "plantz:brainz_alloy_stairs",
       "plantz:brainz_alloy_slab",

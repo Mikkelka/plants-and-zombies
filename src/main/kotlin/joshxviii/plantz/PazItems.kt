@@ -79,6 +79,7 @@ object PazItems {
     val BRAINZIUM: Item = registerItem(
         "brainzium",
         properties = Item.Properties()
+            .component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)
     )
     @JvmField
     val BRAINZ_ALLOY: Item = registerItem(

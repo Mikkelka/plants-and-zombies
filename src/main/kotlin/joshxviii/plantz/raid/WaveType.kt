@@ -299,18 +299,20 @@ enum class ZombieRaiderType(
 ) {
     // default spawns per wave
     BROWN_COAT(PazEntities.BROWN_COAT,             intArrayOf(6,      8,      10,     12,     16,     20,     25,     25,     30,   25)),
-    NEWSPAPER_ZOMBIE(PazEntities.NEWSPAPER_ZOMBIE, intArrayOf(1,      1,      0,      1,      0,      1,      2,      1,      3,    2 )),
-    DIGGER_ZOMBIE(PazEntities.DIGGER_ZOMBIE,       intArrayOf(0,      1,      1,      0,      4,      1,      1,      2,      3,    3 )),
-    DISCO_ZOMBIE(PazEntities.DISCO_ZOMBIE,         intArrayOf(0,      0,      1,      2,      3,      3,      4,      2,      3,    5 )),
-    ALL_STAR(PazEntities.ALL_STAR,                 intArrayOf(0,      0,      1,      3,      2,      4,      5,      3,      5,    5 )),
-    ZOMBIE_YETI(PazEntities.ZOMBIE_YETI,           intArrayOf(0,      0,      0,      1,      2,      0,      3,      1,      2,    3 )),
-    IMP(PazEntities.IMP,                           intArrayOf(0,      1,      1,      0,      2,      4,      5,      5,      4,    8 )),
-    ENGINEER_ZOMBIE(PazEntities.ENGINEER_ZOMBIE,   intArrayOf(0,      0,      1,      3,      1,      1,      2,      2,      3,    4 ), true),
-    SOLDIER_ZOMBIE(PazEntities.SOLDIER_ZOMBIE,     intArrayOf(0,      0,      0,      0,      0,      0,      0,      0,      0,    10), true),
-    ROBO_ZOMBIE(PazEntities.ROBO_ZOMBIE,           intArrayOf(0,      0,      1,      0,      1,      2,      1,      2,      2,    4 ), true),
+    NEWSPAPER_ZOMBIE(PazEntities.NEWSPAPER_ZOMBIE, intArrayOf(1,      1,      0,      2,      0,      1,      2,      1,      3,    2 )),
+    DIGGER_ZOMBIE(PazEntities.DIGGER_ZOMBIE,       intArrayOf(0,      1,      1,      0,      2,      1,      1,      2,      3,    3 )),
+    DISCO_ZOMBIE(PazEntities.DISCO_ZOMBIE,         intArrayOf(0,      0,      0,      1,      3,      3,      4,      2,      3,    5 )),
+    ALL_STAR(PazEntities.ALL_STAR,                 intArrayOf(0,      0,      1,      0,      2,      4,      3,      3,      5,    5 )),
+    ZOMBIE_YETI(PazEntities.ZOMBIE_YETI,           intArrayOf(0,      0,      0,      0,      1,      0,      2,      1,      2,    3 )),
+    IMP(PazEntities.IMP,                           intArrayOf(0,      1,      1,      0,      2,      2,      5,      5,      4,    8 )),
+    ENGINEER_ZOMBIE(PazEntities.ENGINEER_ZOMBIE,   intArrayOf(0,      0,      1,      2,      1,      1,      2,      2,      3,    4 ), true),
+    SOLDIER_ZOMBIE(PazEntities.SOLDIER_ZOMBIE,     intArrayOf(0,      0,      0,      0,      1,      0,      0,      1,      0,    1 ), true),
+    ROBO_ZOMBIE(PazEntities.ROBO_ZOMBIE,           intArrayOf(0,      0,      0,      0,      0,      1,      1,      2,      2,    4 ), true),
     PIRATE_CAPTAIN(PazEntities.PIRATE_CAPTAIN,     intArrayOf(0,      0,      0,      0,      0,      0,      0,      0,      0,    0 ), true),
-    SUPER_BRAINZ(PazEntities.SUPER_BRAINZ,         intArrayOf(0,      0,      0,      0,      0,      1,      1,      1,      2,    4 ), true),
+    SUPER_BRAINZ(PazEntities.SUPER_BRAINZ,         intArrayOf(0,      0,      0,      0,      0,      0,      1,      1,      2,    4 ), true),
     GARGANTUAR(PazEntities.GARGANTUAR,             intArrayOf(0,      0,      0,      0,      0,      1,      0,      2,      1,    3 ));
+    //                                                        1       2       3       4       5       6       7       8       9     10
+
 
     companion object {
         val VALUES = entries.toTypedArray()

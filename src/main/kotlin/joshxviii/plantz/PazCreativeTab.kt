@@ -90,7 +90,7 @@ object PazCreativeTab {
                 output.accept(PazBlocks.PLANTZ_FLAG)
 
                 // other
-                //output.accept(PazItems.BRAINZIUM)
+                output.accept(PazItems.BRAINZIUM)
                 output.accept(PazItems.BRAINZ_ALLOY)
                 output.accept(PazBlocks.BRAINZ_ALLOY_BLOCK)
                 output.accept(PazBlocks.BRAINZ_ALLOY_STAIRS)

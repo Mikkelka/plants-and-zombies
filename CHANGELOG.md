@@ -3,6 +3,7 @@
 #### General:   
 - Plantz Flag now reduces the cooldown of nearby plants by 20%. This effect does not stack.
 - When placing plants in plant pots, their initial rotation will be orientated the same as the pot.
+- While a plant is equipped using the Plant Pot Helmet, you can place them back in plant pots. by shift clicking.
 - Added Brainz Alloy.
   - Drops from the Grave Loot, Raid rewards, Rob Zombies, Super Brainz, Zombie Bots, and various other methods.
   - Used for crafting blocks and special zombie tech.

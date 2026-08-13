@@ -37,7 +37,7 @@ class ExplodeONut(type: EntityType<out Explosive>, level: Level) : Explosive(Paz
     }
 
     override fun actuallyHurt(level: ServerLevel, source: DamageSource, damage: Float) {
-        val reducedDamage = if (source.entity is Zombie) damage*0.25f else damage
+        val reducedDamage = if (source.entity is Zombie) damage*0.666f else damage
         super.actuallyHurt(level, source, reducedDamage)
     }
 

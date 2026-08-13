@@ -3,10 +3,18 @@
   "category": "misc",
   "group": "brainz_alloy",
   "ingredients": [
-    "plantz:brainz_alloy_block"
+    "plantz:brainzium",
+    "minecraft:copper_ingot",
+    "minecraft:copper_ingot",
+    "minecraft:copper_ingot",
+    "minecraft:copper_ingot",
+    "minecraft:iron_ingot",
+    "minecraft:iron_ingot",
+    "minecraft:iron_ingot",
+    "minecraft:iron_ingot"
   ],
   "result": {
-    "count": 9,
+    "count": 16,
     "id": "plantz:brainz_alloy"
   }
 }
