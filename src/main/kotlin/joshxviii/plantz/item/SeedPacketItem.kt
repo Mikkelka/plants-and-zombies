@@ -133,6 +133,19 @@ class SeedPacketItem(properties: Properties) : Item(properties) {
             return InteractionResult.FAIL
         }
 
+        val entityLimit = PazConfig.getEntityLimit(entityType)
+        if (entityLimit != -1) {
+            val nearbySameTypePlants = level.allEntities.filter {
+                it is Plant && it.type == entityType && it.isAlive && it.owner == player && spawnPos.distToCenterSqr(it.position()) < 32.0 * 32.0
+            }.size
+            if (nearbySameTypePlants >= entityLimit) {
+                if (entityType!=null) player.sendOverlayMessage(
+                    Component.translatable("message.plantz.entity_limit", entityType.description.copy().withStyle(ChatFormatting.RED)).withStyle(ChatFormatting.DARK_RED)
+                )
+                return InteractionResult.FAIL
+            }
+        }
+
         val entity = entityType?.create(
             level,
             EntityType.createDefaultStackConfig(level, itemStack, player),
