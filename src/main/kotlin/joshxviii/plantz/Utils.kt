@@ -172,6 +172,11 @@ fun Entity.hasSameRootOwner(target: Entity?): Boolean {
     return owner.`is`(targetOwner)
 }
 
+fun Entity?.isHypnotized(): Boolean {
+    val self = this
+    return self is LivingEntity && self.hasEffect(PazEffects.HYPNOTIZE)
+}
+
 private fun extractRootOwner(entity: Entity): Entity? = when (entity) {
     is OwnableEntity -> entity.rootOwner
     is Projectile -> (entity.owner as? OwnableEntity)?.rootOwner ?: entity.owner

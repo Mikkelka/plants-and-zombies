@@ -3,12 +3,14 @@ package joshxviii.plantz.entity.zombie
 import joshxviii.plantz.PazBlocks
 import joshxviii.plantz.PazDamageTypes
 import joshxviii.plantz.PazDataSerializers.DATA_ZOMBIE_STATE
+import joshxviii.plantz.PazEffects
 import joshxviii.plantz.PazEntities
 import joshxviii.plantz.PazItems
 import joshxviii.plantz.PazTags
 import joshxviii.plantz.ai.ZombieState
 import joshxviii.plantz.ai.goal.FlyingPathfindingGoal
 import joshxviii.plantz.entity.Balloon
+import joshxviii.plantz.isHypnotized
 import joshxviii.plantz.item.BalloonItem
 import net.minecraft.core.BlockPos
 import net.minecraft.core.particles.BlockParticleOption
@@ -271,13 +273,13 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
     }
 
     override fun hurtServer(level: ServerLevel, source: DamageSource, damage: Float): Boolean {
-        return if (source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES)) false else super.hurtServer(level, source, damage)
+        return if (source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES) && !source.directEntity.isHypnotized()) false else super.hurtServer(level, source, damage)
     }
     override fun hurtClient(source: DamageSource): Boolean {
-        return if (source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES)) false else super.hurtClient(source)
+        return if (source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES) && !source.directEntity.isHypnotized()) false else super.hurtClient(source)
     }
     override fun actuallyHurt(level: ServerLevel, source: DamageSource, damage: Float) {
-        if (source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES)) return
+        if (source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES) && !source.directEntity.isHypnotized()) return
         super.actuallyHurt(level, source, damage)
     }
 

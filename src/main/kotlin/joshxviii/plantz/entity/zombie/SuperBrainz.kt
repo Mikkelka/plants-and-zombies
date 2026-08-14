@@ -122,6 +122,7 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
                 target?.let {
                     if (it.y > y + 4.5) state = ZombieState.FLYING
                 }
+                if (moveControl.wantedY > y + 4.5) state = ZombieState.FLYING else {}
             }
             ZombieState.FLYING -> {
                 val floorHeight = y - level().getHeight(Heightmap.Types.WORLD_SURFACE, blockPosition()).toDouble()
