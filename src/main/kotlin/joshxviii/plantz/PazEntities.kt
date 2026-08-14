@@ -468,8 +468,7 @@ object PazEntities {
     @JvmField val SUPER_BRAINZ: EntityType<SuperBrainz> =  registerZombie(
         "super_brainz",
         EntityType.Builder.of(::SuperBrainz, MobCategory.MONSTER)
-            .sized(1.0f, 2.4f)
-            .eyeHeight(2.0f)
+            .sized(1.25f, 2.4f)
             .clientTrackingRange(8),
         attributes = PazZombie.Companion.PazZombieAttributes(
             armor = 8.0,

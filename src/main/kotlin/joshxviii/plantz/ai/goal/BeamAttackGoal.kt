@@ -2,11 +2,7 @@ package joshxviii.plantz.ai.goal
 
 import joshxviii.plantz.PazConfig
 import joshxviii.plantz.PazDamageTypes
-import joshxviii.plantz.PazServerParticles
 import joshxviii.plantz.entity.plant.Plant
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup.level
-import net.minecraft.core.particles.ParticleOptions
-import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.resources.ResourceKey
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.util.Mth
@@ -28,11 +24,12 @@ class BeamAttackGoal(
     actionSuccessEffect: () -> Unit = {},
     actionEndEffect: () -> Unit = {},
     actionPredicate: Predicate<PathfinderMob> = Predicate { true },
+    val doNotExtendPastTarget: Boolean = false,
     val beamRange : Double = 10.0,
     val beamWidth : Double = 3.25,
     val damageMultiplier: Float = 1.0f,
     val damageType: ResourceKey<DamageType> = PazDamageTypes.PLANT,
-    val particleFactory : (startPos: Vec3, targetPos: Vec3) -> ParticleOptions? = { _, _ -> null },
+    val particleFactory : (startPos: Vec3, targetPos: Vec3) -> Unit = { _, _ -> },
     val afterHitEntityEffect: (target: LivingEntity) -> Unit = {},
 ) : ActionGoal(usingEntity, cooldownTime, actionDelay, actionStartEffect, actionSuccessEffect, actionEndEffect, actionPredicate) {
     private var piercedEntities: MutableList<Entity>? = null
@@ -58,9 +55,11 @@ class BeamAttackGoal(
 
         val start = usingEntity.position().add(0.0, usingEntity.eyeHeight.toDouble(), 0.0)
 
-        val direction = target.eyePosition.subtract(start).normalize()
+        val vector = target.eyePosition.subtract(start)
+        val direction = vector.normalize()
 
-        val end = start.add(direction.scale(beamRange))
+        val end = if (doNotExtendPastTarget && vector.length() < beamRange) start.add(vector)
+        else start.add(direction.scale(beamRange))
 
         val beamAABB = AABB(start, end).inflate(beamWidth / 2.0 + 1.0)
 
@@ -91,12 +90,8 @@ class BeamAttackGoal(
             }
         }
 
+        particleFactory(start, end)
         val particle = particleFactory(start, end)
-        if (particle != null) usingEntity.level().addParticle(
-            particle,
-            start.x, start.y, start.z,
-            0.0, 0.0, 0.0
-        )
         return piercedEntities?.isNotEmpty() ?: false
     }
 

@@ -12,11 +12,16 @@ import net.minecraft.client.particle.SplashParticle
 object PazParticles {
     @JvmField
     val ELECTRIC_ARC = ParticleRenderType(pazResource("electric_arc").toString())
+    @JvmField
+    val BEAM = ParticleRenderType(pazResource("beam").toString())
 
     fun registerAll() {
         // particle groups
         ParticleGroupRegistry.register(ELECTRIC_ARC) {
             ElectricArcParticleGroup(it)
+        }
+        ParticleGroupRegistry.register(BEAM) {
+            BeamParticleGroup(it)
         }
 
         // particle providers
@@ -71,6 +76,10 @@ object PazParticles {
 
         it.register(PazServerParticles.ELECTRIC_ARC) { _ ->
             ElectricArcParticle.Provider()
+        }
+
+        it.register(PazServerParticles.BEAM) { _ ->
+            BeamParticle.Provider()
         }
 
         it.register(PazServerParticles.ENERGIZED) { spriteSet ->

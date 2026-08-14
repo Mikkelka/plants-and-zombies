@@ -54,7 +54,7 @@ class ElectrifyMobEffect(
                 ElectricArcParticleOptions(// electric arc particle
                     Vec3(it.getRandomX(0.2), it.randomY, it.getRandomZ(0.2)),
                     color = 0xBDFDF5,
-                    thickness = 0.15f
+                    width = 0.15f
                 ),
                 mob.getRandomX(0.2), mob.randomY, mob.getRandomZ(0.2),
                 1, 0.0, 0.0, 0.0, 0.0

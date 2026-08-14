@@ -1,12 +1,15 @@
 package joshxviii.plantz.entity.zombie
 
+import joshxviii.plantz.BeamParticleOptions
 import joshxviii.plantz.ElectricArcParticleOptions
+import joshxviii.plantz.NukeSmokeParticleOptions
 import joshxviii.plantz.PazDamageTypes
 import joshxviii.plantz.PazDataSerializers.SUPER_BRAINZ_VARIANT
 import joshxviii.plantz.PazEffects
 import joshxviii.plantz.ai.ZombieState
 import joshxviii.plantz.ai.goal.BeamAttackGoal
-import joshxviii.plantz.entity.zombie.Gargantuar.Companion.SMASH_COOLDOWN_TIME
+import joshxviii.plantz.ai.goal.NavigateToTargetGoal
+import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.network.syncher.EntityDataAccessor
 import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
@@ -107,26 +110,38 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
 
     override fun registerGoals() {
         super.registerGoals()
+        goalSelector.addGoal(3, NavigateToTargetGoal(this))
         goalSelector.addGoal(2, BeamAttackGoal(
             this,
+            beamRange = 12.0,
+            beamWidth = 1.0,
             actionDelay = 2,
+            doNotExtendPastTarget = true,
             damageType = PazDamageTypes.ZOMBIE_ELECTRIC,
             damageMultiplier = 0.2f,
             actionPredicate = {
                 state != ZombieState.FLYING && beamCooldown<=0
             },
-            afterHitEntityEffect = {
-                if (beamAttackTime<=0) beamAttackTime = 1
-                val direction = this.headLookAngle.scale(0.5)
-                (level() as? ServerLevel)?.sendParticles(
-                    ElectricArcParticleOptions(
-                        Vec3(it.getRandomX(0.2), it.randomY, it.getRandomZ(0.2)),
-                        color = variant.beamColor,
-                        thickness = 0.4f
-                    ),
-                    x + direction.x, y + eyeHeight, z + direction.z,
+            particleFactory = { startPos, endPos ->
+                val laserStart = calculateUpVector(this.xRot + 95, this.yHeadRot + 25).scale(0.9).add(startPos)
+                (level() as ServerLevel).sendParticles(
+                    ParticleTypes.ELECTRIC_SPARK,
+                    laserStart.x, laserStart.y, laserStart.z,
+                    2, 0.0, 0.0, 0.0, 0.5
+                )
+                (level() as ServerLevel).sendParticles(
+                    BeamParticleOptions(endPos, color = variant.beamColor, width = 0.3f),
+                    laserStart.x, laserStart.y, laserStart.z,
                     1, 0.0, 0.0, 0.0, 0.0
                 )
+                (level() as ServerLevel).sendParticles(
+                    NukeSmokeParticleOptions(color = variant.beamColor, scale = 0.1f),
+                    endPos.x, endPos.y, endPos.z,
+                    1, 0.0, 0.0, 0.0, 0.0
+                )
+            },
+            afterHitEntityEffect = {
+                if (beamAttackTime<=0) beamAttackTime = 1
                 when (variant) {
                     SuperBrainzVariant.SUPER -> {}
                     SuperBrainzVariant.TOXIC -> it.addEffect(MobEffectInstance(MobEffects.POISON, 100, 0))
@@ -134,6 +149,10 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
                 }
             }
         ))
+    }
+
+    override fun addBehaviourGoals() {
+        addBehaviourGoalsNoMelee()
     }
 
     //TODO custom sounds
@@ -191,6 +210,8 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
         groupData: SpawnGroupData?
     ): SpawnGroupData? {
         val data = super.finalizeSpawn(level, difficulty, spawnReason, ZombieGroupData(false, false))
+
+        beamCooldown = BEAM_MODE_COOLDOWN
 
         if (spawnReason != EntitySpawnReason.CONVERSION) {
             setCanBreakDoors(true)

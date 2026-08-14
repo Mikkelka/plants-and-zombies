@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes
-import net.fabricmc.loader.impl.lib.sat4j.core.Vec
 import net.minecraft.core.Registry
 import net.minecraft.core.particles.ParticleOptions
 import net.minecraft.core.particles.ParticleType
@@ -17,7 +16,6 @@ import net.minecraft.network.codec.StreamCodec
 import net.minecraft.util.ARGB
 import net.minecraft.util.ExtraCodecs
 import net.minecraft.world.phys.Vec3
-import org.joml.Vector3d
 import org.joml.Vector3f
 import java.util.function.Function
 
@@ -49,6 +47,7 @@ object PazServerParticles {
     @JvmField val NUKE_SMOKE: ParticleType<NukeSmokeParticleOptions> = register("nuke_smoke", {NukeSmokeParticleOptions.CODEC}, {NukeSmokeParticleOptions.STREAM_CODEC})
     @JvmField val PAINT_BALL: ParticleType<PaintParticleOptions> = register("paint_ball", {PaintParticleOptions.CODEC}, {PaintParticleOptions.STREAM_CODEC})
     @JvmField val ELECTRIC_ARC: ParticleType<ElectricArcParticleOptions> = register("electric_arc", {ElectricArcParticleOptions.CODEC}, {ElectricArcParticleOptions.STREAM_CODEC})
+    @JvmField val BEAM: ParticleType<BeamParticleOptions> = register("beam", { BeamParticleOptions.CODEC}, {BeamParticleOptions.STREAM_CODEC})
 
     fun registerSimple(name: String): SimpleParticleType {
         val particleType = FabricParticleTypes.simple()
@@ -139,7 +138,7 @@ class NukeSmokeParticleOptions(private val color: Int = 0xFFFFFF, scale: Float =
 class ElectricArcParticleOptions(
     val targetPos: Vec3 = Vec3.ZERO,
     val color: Int = 0xAACCFF,
-    val thickness: Float = 0.075f
+    val width: Float = 0.075f
 ) : ParticleOptions {
 
     override fun getType(): ParticleType<ElectricArcParticleOptions> = PazServerParticles.ELECTRIC_ARC
@@ -151,7 +150,7 @@ class ElectricArcParticleOptions(
                 Codec.DOUBLE.optionalFieldOf("ty", 0.0).forGetter { it.targetPos.y },
                 Codec.DOUBLE.optionalFieldOf("tz", 0.0).forGetter { it.targetPos.z },
                 ExtraCodecs.RGB_COLOR_CODEC.optionalFieldOf("color", 0xAACCFF).forGetter { it.color },
-                Codec.FLOAT.optionalFieldOf("thickness", 0.0f).forGetter { it.thickness }
+                Codec.FLOAT.optionalFieldOf("width", 0.0f).forGetter { it.width }
             ).apply(builder
             ) { x, y, z, color, thickness -> ElectricArcParticleOptions(Vec3(x, y, z), color, thickness) }
         }
@@ -162,8 +161,43 @@ class ElectricArcParticleOptions(
                 ByteBufCodecs.DOUBLE, { it.targetPos.y },
                 ByteBufCodecs.DOUBLE, { it.targetPos.z },
                 ByteBufCodecs.INT, { it.color },
-                ByteBufCodecs.FLOAT, { it.thickness },
+                ByteBufCodecs.FLOAT, { it.width },
                 { x, y, z, color, thickness -> ElectricArcParticleOptions(Vec3(x,y,z), color, thickness) }
+            )
+    }
+}
+
+class BeamParticleOptions(
+    val targetPos: Vec3 = Vec3.ZERO,
+    val color: Int = 0xAACCFF,
+    val width: Float = 0.075f,
+    val lifeTime: Int = 1
+) : ParticleOptions {
+
+    override fun getType(): ParticleType<BeamParticleOptions> = PazServerParticles.BEAM
+
+    companion object {
+        val CODEC: MapCodec<BeamParticleOptions> = RecordCodecBuilder.mapCodec { builder ->
+            builder.group(
+                Codec.DOUBLE.optionalFieldOf("tx", 0.0).forGetter { it.targetPos.x },
+                Codec.DOUBLE.optionalFieldOf("ty", 0.0).forGetter { it.targetPos.y },
+                Codec.DOUBLE.optionalFieldOf("tz", 0.0).forGetter { it.targetPos.z },
+                ExtraCodecs.RGB_COLOR_CODEC.optionalFieldOf("color", 0xAACCFF).forGetter { it.color },
+                Codec.FLOAT.optionalFieldOf("width", 0.0f).forGetter { it.width },
+                Codec.INT.optionalFieldOf("lifeTime", 1).forGetter { it.lifeTime }
+            ).apply(builder
+            ) { x, y, z, color, width, life -> BeamParticleOptions(Vec3(x, y, z), color, width, life) }
+        }
+
+        val STREAM_CODEC: StreamCodec<RegistryFriendlyByteBuf, BeamParticleOptions> =
+            StreamCodec.composite(
+                ByteBufCodecs.DOUBLE, { it.targetPos.x },
+                ByteBufCodecs.DOUBLE, { it.targetPos.y },
+                ByteBufCodecs.DOUBLE, { it.targetPos.z },
+                ByteBufCodecs.INT, { it.color },
+                ByteBufCodecs.FLOAT, { it.width },
+                ByteBufCodecs.INT, { it.lifeTime },
+                { x, y, z, color, width, life -> BeamParticleOptions(Vec3(x,y,z), color, width, life) }
             )
     }
 }

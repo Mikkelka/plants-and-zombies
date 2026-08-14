@@ -102,7 +102,7 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
     override fun registerGoals() {
         super.registerGoals()
         goalSelector.addGoal(1, FloatGoal(this))
-        goalSelector.addGoal(1, NavigateToTargetGoal(this))
+        goalSelector.addGoal(4, NavigateToTargetGoal(this))
         goalSelector.addGoal(2, ThrowImpGoal(this))
         goalSelector.addGoal(1, MeleeAttackActionGoal(// smash
             this,

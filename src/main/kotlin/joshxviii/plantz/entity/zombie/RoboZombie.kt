@@ -59,7 +59,7 @@ class RoboZombie(type: EntityType<out RoboZombie>, level: Level) : PazZombie(typ
 
     override fun registerGoals() {
         super.registerGoals()
-        goalSelector.addGoal(1, NavigateToTargetGoal(this))
+        goalSelector.addGoal(3, NavigateToTargetGoal(this))
         goalSelector.addGoal(1, MeleeAttackActionGoal(
             usingEntity = this,
             damageType = DamageTypes.MOB_ATTACK,
