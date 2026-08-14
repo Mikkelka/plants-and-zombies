@@ -136,7 +136,7 @@ class SeedPacketItem(properties: Properties) : Item(properties) {
         val entityLimit = PazConfig.getEntityLimit(entityType)
         if (entityLimit != -1) {
             val nearbySameTypePlants = level.allEntities.filter {
-                it is Plant && it.type == entityType && it.isAlive && it.owner == player && spawnPos.distToCenterSqr(it.position()) < 32.0 * 32.0
+                it is Plant && it.type == entityType && it.isAlive && (PazConfig.COOP_PLANTING || it.owner == player) && spawnPos.distToCenterSqr(it.position()) < 32.0 * 32.0
             }.size
             if (nearbySameTypePlants >= entityLimit) {
                 if (entityType!=null) player.sendOverlayMessage(

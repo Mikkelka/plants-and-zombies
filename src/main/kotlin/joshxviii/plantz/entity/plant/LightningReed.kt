@@ -5,11 +5,7 @@ import joshxviii.plantz.PazDamageTypes
 import joshxviii.plantz.PazEffects
 import joshxviii.plantz.PazEntities
 import joshxviii.plantz.PazServerParticles
-import joshxviii.plantz.ai.goal.BeamAttackGoal
 import joshxviii.plantz.ai.goal.MeleeAttackActionGoal
-import joshxviii.plantz.ai.goal.ProjectileAttackGoal
-import joshxviii.plantz.entity.projectile.PeaElectric
-import joshxviii.plantz.entity.projectile.PeaFire
 import net.minecraft.core.BlockPos
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.tags.FluidTags

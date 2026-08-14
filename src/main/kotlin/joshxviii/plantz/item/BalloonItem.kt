@@ -1,6 +1,7 @@
 package joshxviii.plantz.item
 
 import joshxviii.plantz.PazEntities
+import joshxviii.plantz.PazItems.balloonByColor
 import joshxviii.plantz.entity.Balloon
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
@@ -57,6 +58,12 @@ class BalloonItem(
         }
 
         return InteractionResult.SUCCESS_SERVER
+    }
+
+    companion object {
+        fun stackFor(color: DyeColor): ItemStack {
+            return balloonByColor[color]?.defaultInstance?: ItemStack.EMPTY
+        }
     }
 
 

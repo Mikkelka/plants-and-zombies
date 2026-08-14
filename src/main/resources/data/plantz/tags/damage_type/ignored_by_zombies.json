@@ -4,6 +4,7 @@
     "plantz:zombie_eat",
     "plantz:zombie_smash",
     "plantz:zombie_explode",
+    "plantz:zombie_electric",
     "plantz:zombie_trample"
   ]
 }

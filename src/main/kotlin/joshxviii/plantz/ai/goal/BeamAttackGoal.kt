@@ -2,8 +2,11 @@ package joshxviii.plantz.ai.goal
 
 import joshxviii.plantz.PazConfig
 import joshxviii.plantz.PazDamageTypes
+import joshxviii.plantz.PazServerParticles
 import joshxviii.plantz.entity.plant.Plant
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup.level
 import net.minecraft.core.particles.ParticleOptions
+import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.resources.ResourceKey
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.util.Mth
@@ -29,7 +32,7 @@ class BeamAttackGoal(
     val beamWidth : Double = 3.25,
     val damageMultiplier: Float = 1.0f,
     val damageType: ResourceKey<DamageType> = PazDamageTypes.PLANT,
-    val particleFactory : (startPos: Vec3, targetPos: Vec3) -> Unit = { _, _ -> },
+    val particleFactory : (startPos: Vec3, targetPos: Vec3) -> ParticleOptions? = { _, _ -> null },
     val afterHitEntityEffect: (target: LivingEntity) -> Unit = {},
 ) : ActionGoal(usingEntity, cooldownTime, actionDelay, actionStartEffect, actionSuccessEffect, actionEndEffect, actionPredicate) {
     private var piercedEntities: MutableList<Entity>? = null
@@ -62,7 +65,7 @@ class BeamAttackGoal(
         val beamAABB = AABB(start, end).inflate(beamWidth / 2.0 + 1.0)
 
         val candidates = usingEntity.level().getEntities(usingEntity, beamAABB) { entity ->
-            entity is LivingEntity && entity !is Plant && entity.isAlive
+            entity is LivingEntity && entity.isAlive
         }
 
         for (target in candidates) {
@@ -88,7 +91,12 @@ class BeamAttackGoal(
             }
         }
 
-        particleFactory(start, end)
+        val particle = particleFactory(start, end)
+        if (particle != null) usingEntity.level().addParticle(
+            particle,
+            start.x, start.y, start.z,
+            0.0, 0.0, 0.0
+        )
         return piercedEntities?.isNotEmpty() ?: false
     }
 

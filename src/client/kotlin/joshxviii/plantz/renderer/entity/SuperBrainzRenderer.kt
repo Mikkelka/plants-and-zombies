@@ -5,6 +5,7 @@ import joshxviii.plantz.entity.zombie.SuperBrainz
 import joshxviii.plantz.model.zombies.SuperBrainzModel
 import net.minecraft.client.renderer.entity.EntityRendererProvider
 import net.minecraft.util.Mth
+import net.minecraft.world.entity.AnimationState
 
 class SuperBrainzRenderer(
     context: EntityRendererProvider.Context,
@@ -19,6 +20,7 @@ class SuperBrainzRenderer(
         super.extractRenderState(entity, state, partialTicks)
         (state as SuperBrainzRenderState)
         (entity as SuperBrainz)
+        state.laserAttackAnimationState.copyFrom(entity.laserAttackAnimation)
         extractCapeState(entity, state, partialTicks)
     }
 
@@ -58,4 +60,5 @@ class SuperBrainzRenderState: PazZombieRenderState() {
     var capeFlap: Float = 0f
     var capeLean: Float = 0f
     var capeLean2: Float = 0f
+    val laserAttackAnimationState: AnimationState = AnimationState()
 }

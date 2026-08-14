@@ -17,7 +17,7 @@ open class FlyingPathfindingGoal (
     }
 
     override fun canUse(): Boolean {
-        val target = entity.target ?: return false
+        val target = entity.target?: return false
         if (target.distanceTo(entity) < 1 || !entity.hasLineOfSight(target)) return false
         return (!entity.onGround() && entity !is PazZombie) || (entity is PazZombie && entity.state == ZombieState.FLYING)
     }
@@ -31,8 +31,8 @@ open class FlyingPathfindingGoal (
     }
 
     override fun tick() {
-        val target = entity.target ?: return
-        val targetPosition = target.position().subtract(entity.position())
+        val target = entity.target?: return
+        val targetPosition = target.eyePosition.subtract(entity.position())
 
         val distance = targetPosition.length()
 
@@ -42,8 +42,8 @@ open class FlyingPathfindingGoal (
         setEntityDelta(targetPosition, distance, flyingSpeed)
 
         entity.lookAt(target, 30.0f, 30.0f)
-        entity.lookControl.setLookAt(target)
-        entity.moveControl.setWantedPosition(target.x, target.y, target.z, 1.5)
+        entity.lookControl.setLookAt(targetPosition)
+        entity.moveControl.setWantedPosition(targetPosition.x, targetPosition.y, targetPosition.z, 1.5)
     }
 
 }

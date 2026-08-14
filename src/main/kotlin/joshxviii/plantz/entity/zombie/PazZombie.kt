@@ -9,6 +9,7 @@ import joshxviii.plantz.PazTags
 import joshxviii.plantz.ai.ZombieState
 import joshxviii.plantz.ai.goal.FlyingPathfindingGoal
 import joshxviii.plantz.entity.Balloon
+import joshxviii.plantz.item.BalloonItem
 import net.minecraft.core.BlockPos
 import net.minecraft.core.particles.BlockParticleOption
 import net.minecraft.core.particles.ParticleTypes
@@ -36,10 +37,12 @@ import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation
 import net.minecraft.world.entity.ai.navigation.PathNavigation
 import net.minecraft.world.entity.animal.golem.IronGolem
 import net.minecraft.world.entity.animal.turtle.Turtle
+import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.entity.monster.zombie.Zombie
 import net.minecraft.world.entity.monster.zombie.ZombifiedPiglin
 import net.minecraft.world.entity.npc.villager.AbstractVillager
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.DyeColor
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.LevelReader
@@ -85,6 +88,7 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
         }
 
         const val ZOMBIE_SPEED = 0.23
+        const val MAX_EQUIPPABLE_BALLOONS = 4
 
         data class PazZombieAttributes(
             val maxHealth: Double = 20.0,
@@ -131,7 +135,19 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
     override fun onEquipItem(slot: EquipmentSlot, oldStack: ItemStack, stack: ItemStack) {
         if (stack.`is`(PazItems.DUCKY_TUBE) && slot == EquipmentSlot.LEGS) this.getNavigation().setCanFloat(true);
         else if (oldStack.`is`(PazItems.DUCKY_TUBE) && slot == EquipmentSlot.LEGS) this.getNavigation().setCanFloat(false);
+
         super.onEquipItem(slot, oldStack, stack)
+    }
+
+    override fun pickUpItem(level: ServerLevel, entity: ItemEntity) {
+        val balloonItem = entity.item.item as? BalloonItem ?: return
+
+        val balloonsMissing = (4 - balloons.size).coerceIn(0, MAX_EQUIPPABLE_BALLOONS)
+        val count = entity.item.count.coerceAtMost(balloonsMissing)
+        spawnBalloons(count, balloonItem.color)
+        entity.item.shrink(count)
+
+        super.pickUpItem(level, entity)
     }
 
     var state: ZombieState
@@ -222,10 +238,11 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
         }
     }
 
-    fun spawnBalloons(count: Int = 2) {
+    fun spawnBalloons(count: Int = 2, color: DyeColor = DyeColor.RED) {
         val level = level() as? ServerLevel ?: return
         for (i in 0 until count) {
             val balloon = PazEntities.BALLOON.create(level, EntitySpawnReason.TRIGGERED) ?: return
+            balloon.dyeColor = color
             val randomX = (random.nextDouble() - 0.5) * 2 + x
             val randomZ = (random.nextDouble() - 0.5) * 2 + z
             balloon.snapTo(randomX, eyeY + 1.0, randomZ)

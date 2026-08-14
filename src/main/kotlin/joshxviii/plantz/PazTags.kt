@@ -49,6 +49,7 @@ object PazTags {
         @JvmField val PLANT_PROJECTILE = tag("plant_projectile")
         @JvmField val IS_ELECTRIC = tag("is_electric")
         @JvmField val IGNORED_BY_ZOMBIES = tag("ignored_by_zombies")
+        @JvmField val IGNORED_BY_PLANTS = tag("ignored_by_plants")
         private fun tag(name: String): TagKey<DamageType> = TagKey.create(Registries.DAMAGE_TYPE, pazResource(name))
     }
 

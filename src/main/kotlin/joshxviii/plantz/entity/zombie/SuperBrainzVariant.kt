@@ -11,10 +11,10 @@ import net.minecraft.util.ByIdMap
 import net.minecraft.util.StringRepresentable
 import java.util.function.IntFunction
 
-enum class SuperBrainzVariant(val suffix: String, val id: Int) : StringRepresentable {
-    SUPER("", 0),
-    TOXIC("toxic", 1),
-    ELECTRO("electro", 2);
+enum class SuperBrainzVariant(val suffix: String, val id: Int, val beamColor: Int) : StringRepresentable {
+    SUPER("", 0, 0xFF79E1),
+    TOXIC("toxic", 1, 0x9CD62E),
+    ELECTRO("electro", 2, 0xBDFDF5),;
 
     override fun getSerializedName(): String = suffix
 
