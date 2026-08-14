@@ -87,8 +87,9 @@ class BeamParticleGroup(engine: ParticleEngine) : ParticleGroup<BeamParticle>(en
 
         private fun renderBeam(buffer: VertexConsumer, state: BeamParticleRenderState) {
             val waveCycle = sin(state.gameTime * 0.1f) * 0.2f + 0.8f
+            val ageFactor = 1f - (state.age.toFloat() / state.lifetime)
             val mainAlpha = state.alpha * waveCycle
-            val width = .2f // state.thickness * ageFactor
+            val width = state.width * ageFactor
             val scroll = (state.gameTime * -.2f) % 32
 
             renderBeamBox(buffer, state.startPos, state.targetPos, width, state.color, mainAlpha, scroll)

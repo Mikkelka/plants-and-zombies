@@ -101,6 +101,7 @@ class ZombieRaid(
         const val WAVE_DURATION_TICKS: Int = 3000 // 2.5 minutes
         const val PRE_RAID_TICKS: Int = 300
         const val POST_RAID_TICKS: Int = 80
+        const val SPAWN_DISTANCE: Int = 96
     }
 
     private val waveToLeaderMap: MutableMap<Int, Zombie> = Maps.newHashMap<Int, Zombie>()
@@ -433,15 +434,13 @@ class ZombieRaid(
     }
 
     private fun findRandomSpawnPos(level: ServerLevel, maxTries: Int): BlockPos? {
-        val secondsRemaining = raidCooldownTicks / 20
-        val howFar = 0.22f * secondsRemaining - 0.24f
         val spawnPos = MutableBlockPos()
         val startAngle = random.nextFloat() * (Math.PI * 2).toFloat()
 
         for (i in 0..<maxTries) {
             val angle = startAngle + Math.PI.toFloat() * i / 8.0f
-            val spawnX = center.x + Mth.floor(Mth.cos(angle.toDouble()) * 32.0f * howFar) + random.nextInt(3) * Mth.floor(howFar)
-            val spawnZ = center.z + Mth.floor(Mth.sin(angle.toDouble()) * 32.0f * howFar) + random.nextInt(3) * Mth.floor(howFar)
+            val spawnX = center.x + Mth.floor(Mth.cos(angle.toDouble()) * SPAWN_DISTANCE)
+            val spawnZ = center.z + Mth.floor(Mth.sin(angle.toDouble()) * SPAWN_DISTANCE)
             var spawnY = level.getHeight(Heightmap.Types.WORLD_SURFACE, spawnX, spawnZ)
             if (level.getFluidState(BlockPos(spawnX, spawnY + 1, spawnZ)).`is`(FluidTags.WATER)) {
                 while (level.getFluidState(BlockPos(spawnX, spawnY + 1, spawnZ)).`is`(FluidTags.WATER)) spawnY++

@@ -3,7 +3,6 @@ package joshxviii.plantz.model.zombies;
 import joshxviii.plantz.ai.ZombieState;
 import joshxviii.plantz.animation.zombies.SuperBrainzAnimation;
 import joshxviii.plantz.renderer.entity.PazZombieRenderState;
-import joshxviii.plantz.renderer.entity.RoboZombieRenderState;
 import joshxviii.plantz.renderer.entity.SuperBrainzRenderState;
 import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.model.AnimationUtils;
@@ -22,6 +21,8 @@ public class SuperBrainzModel extends PazZombieModel {
     private final KeyframeAnimation walkAnimation;
     private final KeyframeAnimation flyAnimation;
     private final KeyframeAnimation laserAttackAnimation;
+    private final KeyframeAnimation rightPunchAnimation;
+    private final KeyframeAnimation leftPunchAnimation;
     ModelPart cape;
 
     public SuperBrainzModel(final ModelPart root) {
@@ -30,6 +31,8 @@ public class SuperBrainzModel extends PazZombieModel {
         this.walkAnimation = SuperBrainzAnimation.walk.bake(root.getChild("root"));
         this.flyAnimation = SuperBrainzAnimation.fly.bake(root.getChild("root"));
         this.laserAttackAnimation = SuperBrainzAnimation.action.bake(root.getChild("root"));
+        this.rightPunchAnimation = SuperBrainzAnimation.right_punch.bake(root.getChild("root"));
+        this.leftPunchAnimation = SuperBrainzAnimation.left_punch.bake(root.getChild("root"));
     }
 
     public static LayerDefinition createBodyLayer() {
@@ -114,6 +117,16 @@ public class SuperBrainzModel extends PazZombieModel {
             this.rightArm.yRot = (-state.xRot) * Mth.DEG_TO_RAD;
             this.rightArm.zRot = 90 * Mth.DEG_TO_RAD;
             this.rightArm.yRot += Mth.sin(state.ageInTicks * 1.5f)*0.07f;
+        }
+        if (superBrainzState.getRightPunchAnimationState().isStarted()) {
+            this.rightArm.getAllParts().forEach(ModelPart::resetPose);
+            AnimationUtils.animateZombieArms(this.rightArm, this.rightArm, false, state);
+            rightPunchAnimation.apply(superBrainzState.getRightPunchAnimationState(), state.ageInTicks);
+        }
+        if (superBrainzState.getLeftPunchAnimationState().isStarted()) {
+            this.leftArm.getAllParts().forEach(ModelPart::resetPose);
+            AnimationUtils.animateZombieArms(this.leftArm, this.leftArm, false, state);
+            leftPunchAnimation.apply(superBrainzState.getLeftPunchAnimationState(), state.ageInTicks);
         }
 
 
