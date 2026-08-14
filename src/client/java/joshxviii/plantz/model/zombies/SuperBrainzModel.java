@@ -108,8 +108,8 @@ public class SuperBrainzModel extends PazZombieModel {
             walkAnimation.applyWalk(animationPos, animationSpeed, 2f, 2f);
         }
 
-        if (state.isAggressive) laserAttackAnimation.apply(superBrainzState.getLaserAttackAnimationState(), state.ageInTicks);
-        if (superBrainzState.getLaserAttackAnimationState().isStarted()) {
+        laserAttackAnimation.apply(superBrainzState.getLaserAttackAnimationState(), state.ageInTicks);
+        if (superBrainzState.getLaserAttackAnimationState().isStarted() && superBrainzState.getZombieState() != ZombieState.FLYING) {
             this.rightArm.getAllParts().forEach(ModelPart::resetPose);
             this.rightArm.y += 3;
             this.rightArm.z -= 3;

@@ -91,7 +91,6 @@ class BeamAttackGoal(
         }
 
         particleFactory(start, end)
-        val particle = particleFactory(start, end)
         return piercedEntities?.isNotEmpty() ?: false
     }
 

@@ -6,7 +6,6 @@ import joshxviii.plantz.ai.ZombieState
 import joshxviii.plantz.ai.goal.BeamAttackGoal
 import joshxviii.plantz.ai.goal.MeleeAttackActionGoal
 import joshxviii.plantz.ai.goal.NavigateToTargetGoal
-import joshxviii.plantz.entity.zombie.AllStar.Companion.CHARGE_BOOST_ID
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.network.syncher.EntityDataAccessor
 import net.minecraft.network.syncher.EntityDataSerializers
@@ -23,7 +22,6 @@ import net.minecraft.world.effect.MobEffects
 import net.minecraft.world.entity.*
 import net.minecraft.world.entity.ai.attributes.AttributeModifier
 import net.minecraft.world.entity.ai.attributes.Attributes
-import net.minecraft.world.entity.ai.control.MoveControl
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.ServerLevelAccessor
 import net.minecraft.world.level.levelgen.Heightmap
@@ -35,14 +33,15 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
 
     companion object {
         val DATA_VARIANT_ID: EntityDataAccessor<SuperBrainzVariant> = SynchedEntityData.defineId(SuperBrainz::class.java, SUPER_BRAINZ_VARIANT)
-        val LASER_ATTACK_TIME_ID: EntityDataAccessor<Int> = SynchedEntityData.defineId<Int>(SuperBrainz::class.java, EntityDataSerializers.INT)
+        val BEAM_TIME_ID: EntityDataAccessor<Int> = SynchedEntityData.defineId<Int>(SuperBrainz::class.java, EntityDataSerializers.INT)
+        val BEAM_COOLDOWN_ID: EntityDataAccessor<Int> = SynchedEntityData.defineId<Int>(SuperBrainz::class.java, EntityDataSerializers.INT)
         val PUNCH_TIME_ID: EntityDataAccessor<Int> = SynchedEntityData.defineId<Int>(SuperBrainz::class.java, EntityDataSerializers.INT)
         val USE_LEFT_ID: EntityDataAccessor<Boolean> = SynchedEntityData.defineId<Boolean>(SuperBrainz::class.java, EntityDataSerializers.BOOLEAN)
         val BEAM_MODE_SPEED_ID: Identifier = pazResource("beam_mode")
         private val BEAM_MODE_SPEED = AttributeModifier(BEAM_MODE_SPEED_ID, -0.3, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL)
 
-        const val BEAM_MODE_COOLDOWN = 400
-        const val BEAM_MODE_TIME = 110
+        const val BEAM_COOLDOWN = 350
+        const val BEAM_MODE_TIME = 80
     }
 
     init {
@@ -68,8 +67,8 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
         set(value) = this.entityData.set(DATA_VARIANT_ID, value)
 
     var beamAttackTime: Int
-        get() = this.entityData.get(LASER_ATTACK_TIME_ID)
-        set(value) = this.entityData.set(LASER_ATTACK_TIME_ID, value)
+        get() = this.entityData.get(BEAM_TIME_ID)
+        set(value) = this.entityData.set(BEAM_TIME_ID, value)
 
     var punchTime: Int
         get() = this.entityData.get(PUNCH_TIME_ID)
@@ -79,11 +78,9 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
         get() = this.entityData.get(USE_LEFT_ID)
         set(value) = this.entityData.set(USE_LEFT_ID, value)
 
-    var beamCooldown = 0
-
-    override fun getMoveControl(): MoveControl {
-        return super.getMoveControl()
-    }
+    var beamCooldown: Int
+        get() = this.entityData.get(BEAM_COOLDOWN_ID)
+        set(value) = this.entityData.set(BEAM_COOLDOWN_ID, value)
 
     fun removeBeamModifiers() {
         getAttribute(Attributes.MOVEMENT_SPEED)!!.removeModifier(BEAM_MODE_SPEED_ID)
@@ -98,11 +95,16 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
         if(beamAttackTime>0 && state != ZombieState.FLYING) {
             if (beamAttackTime==1) applyBeamModifiers()
             laserAttackAnimation.startIfStopped(tickCount)
+            val laserStart = calculateUpVector(this.xRot + 95, this.yHeadRot + 25).scale(0.9).add(eyePosition)
+            (level() as? ServerLevel)?.sendParticles(
+                ParticleTypes.ELECTRIC_SPARK, laserStart.x, laserStart.y, laserStart.z,
+                4, 0.0, 0.0, 0.0, 0.5
+            )
             if (beamAttackTime++>BEAM_MODE_TIME) {
                 laserAttackAnimation.stop()
                 beamAttackTime=0
+                beamCooldown = BEAM_COOLDOWN + random.nextInt(20)
                 removeBeamModifiers()
-                beamCooldown = BEAM_MODE_COOLDOWN + random.nextInt(20)
             }
         }
         if(punchTime>0) {
@@ -122,7 +124,7 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
                 target?.let {
                     if (it.y > y + 4.5) state = ZombieState.FLYING
                 }
-                if (moveControl.wantedY > y + 4.5) state = ZombieState.FLYING else {}
+                if (moveControl.wantedY > y + 4.5) state = ZombieState.FLYING
             }
             ZombieState.FLYING -> {
                 val floorHeight = y - level().getHeight(Heightmap.Types.WORLD_SURFACE, blockPosition()).toDouble()
@@ -135,7 +137,8 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
     override fun defineSynchedData(entityData: SynchedEntityData.Builder) {
         super.defineSynchedData(entityData)
         entityData.define(DATA_VARIANT_ID, SuperBrainzVariant.getDefault())
-        entityData.define(LASER_ATTACK_TIME_ID, 0)
+        entityData.define(BEAM_TIME_ID, 0)
+        entityData.define(BEAM_COOLDOWN_ID, BEAM_COOLDOWN)
         entityData.define(PUNCH_TIME_ID, 0)
         entityData.define(USE_LEFT_ID, false)
     }
@@ -149,7 +152,7 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
     override fun readAdditionalSaveData(input: ValueInput) {
         super.readAdditionalSaveData(input)
         variant = input.read("variant", SuperBrainzVariant.CODEC).getOrDefault(SuperBrainzVariant.pickRandomVariant())
-        beamCooldown = input.getIntOr("beamCooldown", BEAM_MODE_COOLDOWN)
+        beamCooldown = input.getIntOr("beamCooldown", BEAM_COOLDOWN)
     }
 
     override fun registerGoals() {
@@ -172,25 +175,22 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
             beamWidth = 1.0,
             actionDelay = 10,
             doNotExtendPastTarget = true,
-            damageType = PazDamageTypes.ZOMBIE_ELECTRIC,
+            damageType = PazDamageTypes.ZOMBIE_BEAM,
             damageMultiplier = 0.2f,
             actionPredicate = {
-                state != ZombieState.FLYING && beamCooldown<=0
+                state != ZombieState.FLYING && beamCooldown<=0 && punchTime<=0
             },
             particleFactory = { startPos, endPos ->
                 val laserStart = calculateUpVector(this.xRot + 95, this.yHeadRot + 25).scale(0.9).add(startPos)
-                (level() as ServerLevel).sendParticles(
-                    ParticleTypes.ELECTRIC_SPARK,
-                    laserStart.x, laserStart.y, laserStart.z,
-                    6, 0.0, 0.0, 0.0, 0.5
-                )
                 if (variant != SuperBrainzVariant.ELECTRO) (level() as ServerLevel).sendParticles(
-                    BeamParticleOptions(endPos, color = variant.beamColor, width = 0.14f, lifeTime = 10),
+                    BeamParticleOptions(endPos.offsetRandom(random, .25f),
+                        color = variant.beamColor, width = 0.14f, lifeTime = 10),
                     laserStart.x, laserStart.y, laserStart.z,
                     1, 0.0, 0.0, 0.0, 0.0
                 )
                 else (level() as ServerLevel).sendParticles(
-                    ElectricArcParticleOptions(endPos, color = variant.beamColor, width = 0.14f),
+                    ElectricArcParticleOptions(endPos.offsetRandom(random, .25f),
+                        color = variant.beamColor, width = 0.14f),
                     laserStart.x, laserStart.y, laserStart.z,
                     1, 0.0, 0.0, 0.0, 0.0
                 )
@@ -198,6 +198,11 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
                     NukeSmokeParticleOptions(color = variant.beamColor, scale = 0.1f),
                     endPos.x, endPos.y, endPos.z,
                     3, 0.0, 0.0, 0.0, 0.0
+                )
+                (level() as ServerLevel).sendParticles(
+                    PazServerParticles.POP,
+                    endPos.x, endPos.y, endPos.z,
+                    2, 0.0, 0.0, 0.0, 0.0
                 )
             },
             afterHitEntityEffect = {
@@ -271,7 +276,7 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
     ): SpawnGroupData? {
         val data = super.finalizeSpawn(level, difficulty, spawnReason, ZombieGroupData(false, false))
 
-        beamCooldown = BEAM_MODE_COOLDOWN
+        beamCooldown = BEAM_COOLDOWN
 
         if (spawnReason != EntitySpawnReason.CONVERSION) {
             setCanBreakDoors(true)
