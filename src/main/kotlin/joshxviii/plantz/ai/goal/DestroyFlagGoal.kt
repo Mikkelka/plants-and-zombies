@@ -17,6 +17,7 @@ import net.minecraft.world.entity.ai.goal.Goal
 import net.minecraft.world.entity.ai.village.poi.PoiManager.Occupancy
 import net.minecraft.world.entity.ai.village.poi.PoiType
 import net.minecraft.world.level.pathfinder.Path
+import net.minecraft.world.phys.Vec3
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
@@ -64,7 +65,8 @@ class DestroyFlagGoal(
 
     override fun start() {
         mob.isAggressive = true
-        targetFlagPos?.center?.let {
+        val flagPos = targetFlagPos ?: return
+        Vec3.atCenterOf(flagPos).let {
             mob.moveControl.setWantedPosition(it.x, it.y, it.z, 1.0)
         }
         mob.navigation.moveTo(path, 1.0)
@@ -89,7 +91,7 @@ class DestroyFlagGoal(
         }
 
         val reach = mob.attackRange()
-        if (flagPos.distSqr(mob.blockPosition()) > reach) flagPos.center.let { mob.moveControl.setWantedPosition(it.x, it.y, it.z, 1.0) }
+        if (flagPos.distSqr(mob.blockPosition()) > reach) Vec3.atCenterOf(flagPos).let { mob.moveControl.setWantedPosition(it.x, it.y, it.z, 1.0) }
         if (flagPos.distSqr(mob.blockPosition()) < if (mob.navigation.path.canReachTarget(flagPos)) reach else reach*reach) {
             if (!mob.swinging) {
                 damageFlag(flagPos)

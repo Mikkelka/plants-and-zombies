@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.entity.PathfinderMob
 import net.minecraft.world.entity.ai.goal.Goal
 import net.minecraft.world.level.pathfinder.Path
+import net.minecraft.world.phys.Vec3
 import java.util.*
 import kotlin.math.max
 
@@ -53,7 +54,8 @@ class PathfindToFlagGoal(
 
     override fun start() {
         //mob.isAggressive = true
-        targetFlagPos?.center?.let {
+        val flagPos = targetFlagPos ?: return
+        Vec3.atCenterOf(flagPos).let {
             mob.moveControl.setWantedPosition(it.x, it.y, it.z, 1.0)
         }
         mob.navigation.moveTo(path, 1.0)
