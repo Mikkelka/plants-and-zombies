@@ -78,15 +78,22 @@ open class PazZombieRenderer(
         if (entity is AllStar) state.actionAnimationState.copyFrom(entity.chargeAnimation)
         if (entity is NewspaperZombie) state.isAngry = entity.isAngry()
         state.customName = entity.customName?.string ?: ""
-        state.textureExtra =
+        state.textureExtra = mutableListOf<String>().apply {
             when (entity) {
-                is Gargantuar -> entity.variant.suffix + if (entity.hasImp) "_imp" else ""
-                is NewspaperZombie -> if (entity.isAngry()) "angry" else ""
-                is BrownCoat -> entity.variant.suffix
-                is Imp -> entity.variant.suffix + if (entity.hasBarrel) "_barrel" else ""
-                is SuperBrainz -> entity.variant.suffix
-                else -> ""
+                is Gargantuar -> {
+                    add(entity.variant.suffix)
+                    if (entity.hasImp) add("imp")
+                }
+                is NewspaperZombie -> if (entity.isAngry()) add("angry")
+                is BrownCoat -> add(entity.variant.suffix)
+                is Imp -> {
+                    add(entity.variant.suffix)
+                    if (entity.hasBarrel) add("barrel")
+                }
+                is SuperBrainz -> add(entity.variant.suffix)
+                else -> {}
             }
+        }
     }
 
     override fun getTextureLocation(state: PazZombieRenderState): Identifier {
@@ -122,7 +129,7 @@ open class PazZombieRenderState : ZombieRenderState() {
     }
 
     var customName: String = ""
-    var textureExtra: String = ""
+    var textureExtra: List<String> = listOf()
     var isAngry: Boolean = false
     var zombieState: ZombieState = ZombieState.IDLE
     val emergeAnimationState: AnimationState = AnimationState()
@@ -132,10 +139,10 @@ open class PazZombieRenderState : ZombieRenderState() {
     fun getSuffixes(): MutableList<String> {
         val magicName = this.isMagicName(customName)
         val suffixes = mutableListOf<String>().apply {
-            if (textureExtra.isNotEmpty()) add(textureExtra)
+            textureExtra.forEach                { add(it) }
             if (isBaby)                         add("baby")
             else if (magicName.isNotEmpty())    add(magicName)
-        }
+        }.filter { it.isNotEmpty() }.toMutableList()
         return suffixes
     }
 }

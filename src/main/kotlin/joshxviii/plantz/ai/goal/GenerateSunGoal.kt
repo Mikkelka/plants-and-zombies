@@ -15,9 +15,11 @@ class GenerateSunGoal(
     actionSuccessEffect: () -> Unit = {},
     actionEndEffect: () -> Unit = {},
     actionPredicate: Predicate<PathfinderMob> = Predicate { true },
+    delayedEffectDelay: Int = 0,
+    delayedEffect: () -> Unit = {},
     val sunAmount: Int = 1,
     val generatesAtNight : Boolean = false,
-): ActionGoal(usingEntity, cooldownTime, actionDelay, actionStartEffect, actionSuccessEffect, actionEndEffect, actionPredicate, -10..20) {
+): ActionGoal(usingEntity, cooldownTime, actionDelay, actionStartEffect, actionSuccessEffect, actionEndEffect, actionPredicate, delayedEffectDelay, delayedEffect, -10..20) {
     override fun canUse(): Boolean = (
         usingEntity.tickCount>cooldownTime
             && usingEntity.isAlive

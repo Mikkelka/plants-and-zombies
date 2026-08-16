@@ -1,15 +1,29 @@
 package joshxviii.plantz.renderer.entity
 
+import com.mojang.blaze3d.vertex.PoseStack
 import joshxviii.plantz.entity.zombie.PazZombie
 import joshxviii.plantz.entity.zombie.SuperBrainz
 import joshxviii.plantz.model.zombies.SuperBrainzModel
+import net.minecraft.client.renderer.SubmitNodeCollector
 import net.minecraft.client.renderer.entity.EntityRendererProvider
+import net.minecraft.client.renderer.state.level.CameraRenderState
 import net.minecraft.util.Mth
+import net.minecraft.world.entity.AnimationState
 
 class SuperBrainzRenderer(
     context: EntityRendererProvider.Context,
     private val model: SuperBrainzModel = SuperBrainzModel(context.bakeLayer(SuperBrainzModel.LAYER_LOCATION)),
 ): PazZombieRenderer(context, model, model) {
+
+    override fun submit(
+        state: PazZombieRenderState,
+        poseStack: PoseStack,
+        collector: SubmitNodeCollector,
+        camera: CameraRenderState
+    ) {
+
+        super.submit(state, poseStack, collector, camera)
+    }
 
     override fun createRenderState(): PazZombieRenderState {
         return SuperBrainzRenderState()
@@ -19,6 +33,9 @@ class SuperBrainzRenderer(
         super.extractRenderState(entity, state, partialTicks)
         (state as SuperBrainzRenderState)
         (entity as SuperBrainz)
+        state.laserAttackAnimationState.copyFrom(entity.laserAttackAnimation)
+        state.rightPunchAnimationState.copyFrom(entity.rightPunchAnimation)
+        state.leftPunchAnimationState.copyFrom(entity.leftPunchAnimation)
         extractCapeState(entity, state, partialTicks)
     }
 
@@ -58,4 +75,7 @@ class SuperBrainzRenderState: PazZombieRenderState() {
     var capeFlap: Float = 0f
     var capeLean: Float = 0f
     var capeLean2: Float = 0f
+    val laserAttackAnimationState: AnimationState = AnimationState()
+    val rightPunchAnimationState: AnimationState = AnimationState()
+    val leftPunchAnimationState: AnimationState = AnimationState()
 }

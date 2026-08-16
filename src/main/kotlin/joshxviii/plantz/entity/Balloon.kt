@@ -7,6 +7,8 @@ import joshxviii.plantz.PazServerParticles
 import joshxviii.plantz.applyImpulse
 import joshxviii.plantz.entity.zombie.AllStar.Companion.CHARGE_BOOST_ID
 import joshxviii.plantz.entity.zombie.PazZombie
+import joshxviii.plantz.item.BalloonItem
+import joshxviii.plantz.item.SeedPacketItem
 import joshxviii.plantz.pazResource
 import net.minecraft.core.BlockPos
 import net.minecraft.core.particles.ParticleTypes
@@ -28,6 +30,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier
 import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.DyeColor
+import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.levelgen.Heightmap
 import net.minecraft.world.level.storage.ValueInput
@@ -52,6 +55,13 @@ class Balloon(
         private const val HOLDER_PULL_STIFFNESS = 0.0075
         private const val MAX_HOLDER_PULL_FORCE = 0.16
         private const val MAX_HOLDER_UPWARD_VELOCITY = 0.5
+
+        fun spawnAndEquip(level: Level, pos: Vec3, dyeColor: DyeColor, entity: LivingEntity) {
+            val balloon = Balloon(PazEntities.BALLOON, level)
+            balloon.setPos(pos.x, pos.y, pos.z)
+            balloon.dyeColor = dyeColor
+
+        }
     }
     private val interpolation = InterpolationHandler(this)
 
@@ -145,6 +155,10 @@ class Balloon(
         holder.checkFallDistanceAccumulation()
     }
 
+    override fun dropLeash() {
+        super.dropLeash()
+    }
+
     private fun pushCollidingEntities() {
         val entities = level().getPushableEntities(this, boundingBox.inflate(0.25))
         for (entity in entities) {
@@ -180,7 +194,7 @@ class Balloon(
         }
     }
 
-
+    override fun getPickResult(): ItemStack = BalloonItem.stackFor(this.dyeColor)
     override fun isPushable(): Boolean = true
     override fun isPickable(): Boolean = true
     override fun getDefaultGravity(): Double = -0.005

@@ -5,14 +5,8 @@ import joshxviii.plantz.PazBlocks
 import joshxviii.plantz.PazDamageTypes
 import joshxviii.plantz.PazEffects
 import joshxviii.plantz.PazEntities
-import joshxviii.plantz.PazSounds
 import joshxviii.plantz.ai.goal.MeleeAttackActionGoal
-import joshxviii.plantz.ai.goal.ProjectileAttackGoal
-import joshxviii.plantz.entity.plant.Chomper.ChompAttackGoal
-import joshxviii.plantz.entity.plant.Chomper.Companion.CHEW_TIME_ID
-import joshxviii.plantz.entity.projectile.WaterSpore
 import joshxviii.plantz.hasSameRootOwner
-import joshxviii.plantz.pazResource
 import net.minecraft.core.BlockPos
 import net.minecraft.network.syncher.EntityDataAccessor
 import net.minecraft.network.syncher.EntityDataSerializers
@@ -23,15 +17,12 @@ import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.tags.FluidTags
 import net.minecraft.util.RandomSource
-import net.minecraft.world.InteractionHand
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntitySpawnReason
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.LivingEntity
-import net.minecraft.world.entity.ai.attributes.AttributeModifier
 import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal
-import net.minecraft.world.entity.monster.Creeper
 import net.minecraft.world.entity.monster.Enemy
 import net.minecraft.world.entity.monster.zombie.Zombie
 import net.minecraft.world.entity.player.Player
@@ -40,11 +31,8 @@ import net.minecraft.world.level.ServerLevelAccessor
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.Vec3
 import net.minecraft.util.Mth
-import net.minecraft.world.damagesource.DamageSource
-import net.minecraft.world.damagesource.DamageType
 import net.minecraft.world.effect.MobEffectInstance
 import kotlin.math.sqrt
-import kotlin.math.tan
 
 class TangleKelp(type: EntityType<out Plant>, level: Level) : Plant(PazEntities.TANGLE_KELP, level) {
 
@@ -149,7 +137,7 @@ class TangleKelp(type: EntityType<out Plant>, level: Level) : Plant(PazEntities.
                 ElectricArcParticleOptions(
                     Vec3(target.getRandomX(0.2), target.randomY, target.getRandomZ(0.2)),
                     color = 0x354023,
-                    thickness = 0.12f
+                    width = 0.12f
                 ),
                 x + direction.x, y + eyeHeight, z + direction.z,
                 1, 0.0, 0.0, 0.0, 0.0

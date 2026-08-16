@@ -18,8 +18,14 @@ object PazLootTables {
 
     @JvmField
     val GRAVESTONE_TREASURE = registerLootTable("chests/gravestone_treasure")
-    @JvmField
-    val GARDEN_HERO_MAIL = registerLootTable("chests/garden_hero_mail")
+
+    @JvmField val DEFAULT_MAIL_REWARD = registerLootTable("chests/raid/default_mail_reward")
+    @JvmField val BUCKET_MAIL_REWARD = registerLootTable("chests/raid/bucket_mail_reward")
+    @JvmField val HALFTIME_MAIL_REWARD = registerLootTable("chests/raid/halftime_mail_reward")
+    @JvmField val WINTER_MAIL_REWARD = registerLootTable("chests/raid/winter_mail_reward")
+    @JvmField val PIRATE_MAIL_REWARD = registerLootTable("chests/raid/pirate_mail_reward")
+    @JvmField val ARMY_MAIL_REWARD = registerLootTable("chests/raid/army_mail_reward")
+    @JvmField val LEAGUE_MAIL_REWARD = registerLootTable("chests/raid/league_mail_reward")
 
     private fun registerLootTable(
         name: String

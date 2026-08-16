@@ -429,7 +429,7 @@ object PazEntities {
             .clientTrackingRange(8),
         attributes = PazZombie.Companion.PazZombieAttributes(
             armor = 4.0,
-            attackDamage = 10.0,
+            attackDamage = 6.0,
             maxHealth = 120.0,
             movementSpeed = 0.21,
             spawnReinforcementsChance = 0.0,
@@ -442,7 +442,7 @@ object PazEntities {
             .eyeHeight(1.74f)
             .clientTrackingRange(8),
         attributes = PazZombie.Companion.PazZombieAttributes(
-            attackDamage = 9.0,
+            attackDamage = 6.0,
             maxHealth = 80.0,
             movementSpeed = 0.25,
             followRange = 126.0,
@@ -468,8 +468,7 @@ object PazEntities {
     @JvmField val SUPER_BRAINZ: EntityType<SuperBrainz> =  registerZombie(
         "super_brainz",
         EntityType.Builder.of(::SuperBrainz, MobCategory.MONSTER)
-            .sized(1.0f, 2.4f)
-            .eyeHeight(2.0f)
+            .sized(1.25f, 2.4f)
             .clientTrackingRange(8),
         attributes = PazZombie.Companion.PazZombieAttributes(
             armor = 8.0,
@@ -512,7 +511,7 @@ object PazEntities {
             explosionKnockbackResistance = 0.7,
             scale = 1.33,
             stepHeight = 1.0,
-            interactionRange = 3.5,
+            interactionRange = 2.0,
             spawnReinforcementsChance = 0.0,
         )
     )

@@ -2,15 +2,19 @@ package joshxviii.plantz
 
 import joshxviii.plantz.PazMain.MODID
 import joshxviii.plantz.entity.plant.Plant
+import net.minecraft.ChatFormatting
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Vec3i
 import net.minecraft.core.component.DataComponents
 import net.minecraft.nbt.CompoundTag
+import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerEntityGetter
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.sounds.SoundEvents
 import net.minecraft.util.Mth
+import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.*
 import net.minecraft.world.entity.Entity.MoveFunction
 import net.minecraft.world.entity.ai.attributes.Attributes
@@ -21,7 +25,10 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.entity.projectile.Projectile
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.AttackRange
+import net.minecraft.world.level.Level
+import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.pathfinder.Path
+import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import kotlin.math.sqrt
 
@@ -33,7 +40,30 @@ interface PlantHeadAttachment {
     fun `plantz$setPlant`(value: Plant?)
     fun `plantz$getPlantData`(): CompoundTag
     fun `plantz$setPlantData`(value: CompoundTag)
+    companion object {
+        fun potBlockInteraction(state: BlockState, level: Level, pos: BlockPos, player: Player, ) : InteractionResult {
+            if (level !is ServerLevel) return InteractionResult.PASS
+            val hasPlant = (player as PlantHeadAttachment).`plantz$hasPlantOnHead`()
+            if (hasPlant && player.isShiftKeyDown) {
+                val plant = player.`plantz$getPlant`()?: return InteractionResult.FAIL
+                val plantBox = plant.boundingBox.move(pos.multiply(-1))
+                val placePos = pos.above()
+
+                if (level.getEntitiesOfClass(Plant::class.java, AABB(placePos)).isNotEmpty()) {
+                    player.sendOverlayMessage(Component.translatable("message.plantz.already_planted").withStyle(ChatFormatting.RED))
+                    return InteractionResult.FAIL
+                }
+
+                plant.detachFromEntity()
+                plant.setPos(placePos.x.toDouble(), placePos.y.toDouble(), placePos.z.toDouble())
+                plant.playSound(SoundEvents.HARNESS_UNEQUIP)// TODO custom sounds
+                return InteractionResult.SUCCESS
+            }
+            return InteractionResult.PASS
+        }
+    }
 }
+
 
 fun Entity.canWearPlant(): Boolean {
     return this is LivingEntity && this.getItemBySlot(EquipmentSlot.HEAD).`is`(PazItems.PLANT_POT_HELMET)
@@ -142,6 +172,11 @@ fun Entity.hasSameRootOwner(target: Entity?): Boolean {
     return owner.`is`(targetOwner)
 }
 
+fun Entity?.isHypnotized(): Boolean {
+    val self = this
+    return self is LivingEntity && self.hasEffect(PazEffects.HYPNOTIZE)
+}
+
 private fun extractRootOwner(entity: Entity): Entity? = when (entity) {
     is OwnableEntity -> entity.rootOwner
     is Projectile -> (entity.owner as? OwnableEntity)?.rootOwner ?: entity.owner
@@ -199,7 +234,6 @@ fun Path?.canReachTarget(target: BlockPos?): Boolean {
 
 fun Mob.attackRange(): Double {
     val DEFAULT = sqrt(2.04) - 0.6;
-    val range: Double
     val interactionRange = this.getAttribute(Attributes.ENTITY_INTERACTION_RANGE)?.value?: 0.0
     val attackRange = Mth.absMax(this.getActiveItem().get(DataComponents.ATTACK_RANGE)?.effectiveMaxRange(this)?.toDouble() ?: DEFAULT, interactionRange)
     val hitboxWidth = (this.boundingBox.xsize + this.boundingBox.ysize) / 2.0

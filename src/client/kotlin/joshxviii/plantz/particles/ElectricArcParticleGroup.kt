@@ -92,10 +92,8 @@ class ElectricArcParticleGroup(engine: ParticleEngine) : ParticleGroup<ElectricA
             val mainAlpha = state.alpha * ageFactor
             val width = state.thickness * ageFactor
 
-            // Main bright arc
             renderSegmentedArc(buffer, state, width, mainAlpha, 10, 1.05f, randomInt = state.random.nextFloat())
 
-            // Secondary arcs for electricity feel
             if (ageFactor < 0.75f) renderSegmentedArc(buffer, state, width * 0.55f, mainAlpha, 8, 1.35f, 0.08, state.random.nextFloat())
             if (ageFactor < 0.74f) renderSegmentedArc(buffer, state, width * 0.35f, mainAlpha, 7, 1.6f, -0.10, state.random.nextFloat())
         }

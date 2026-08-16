@@ -3,7 +3,8 @@ package joshxviii.plantz.entity.zombie
 import joshxviii.plantz.*
 import joshxviii.plantz.PazDataSerializers.GARGANTUAR_VARIANT
 import joshxviii.plantz.ai.ZombieState
-import joshxviii.plantz.entity.zombie.Gargantuar.SmashAttackGoal.Companion.ATTACK_DELAY_TIME
+import joshxviii.plantz.ai.goal.MeleeAttackActionGoal
+import joshxviii.plantz.ai.goal.NavigateToTargetGoal
 import net.minecraft.core.BlockPos
 import net.minecraft.core.particles.BlockParticleOption
 import net.minecraft.core.particles.ParticleTypes
@@ -16,6 +17,7 @@ import net.minecraft.sounds.SoundEvents
 import net.minecraft.util.random.WeightedList
 import net.minecraft.world.DifficultyInstance
 import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.world.damagesource.DamageTypes
 import net.minecraft.world.entity.*
 import net.minecraft.world.entity.ai.control.LookControl
 import net.minecraft.world.entity.ai.control.MoveControl
@@ -38,10 +40,13 @@ import kotlin.jvm.optionals.getOrDefault
 class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(type, level) {
 
     companion object {
+        val SMASH_DAMAGE_CALCULATOR: ExplosionDamageCalculator = SimpleExplosionDamageCalculator(false, true, Optional.of(2.5f), Optional.ofNullable(null))
+        const val SMASH_COOLDOWN_TIME = 100
 
         val DATA_VARIANT_ID: EntityDataAccessor<GargantuarVariant> = SynchedEntityData.defineId(Gargantuar::class.java, GARGANTUAR_VARIANT)
 
         val SMASH_ATTACK_TIME_ID: EntityDataAccessor<Int> = SynchedEntityData.defineId<Int>(Gargantuar::class.java, EntityDataSerializers.INT)
+        val PUNCH_ATTACK_TIME_ID: EntityDataAccessor<Int> = SynchedEntityData.defineId<Int>(Gargantuar::class.java, EntityDataSerializers.INT)
         val THROW_TIME_ID: EntityDataAccessor<Int> = SynchedEntityData.defineId<Int>(Gargantuar::class.java, EntityDataSerializers.INT)
         val HAS_IMP_ID: EntityDataAccessor<Boolean> = SynchedEntityData.defineId<Boolean>(Gargantuar::class.java, EntityDataSerializers.BOOLEAN)
     }
@@ -54,6 +59,8 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
     val punchAttackAnimation : AnimationState = AnimationState()
     val throwImpAnimation : AnimationState = AnimationState()
 
+    var smashCooldown = 0
+
     var variant: GargantuarVariant
         get() = this.entityData.get(DATA_VARIANT_ID)
         set(value) = this.entityData.set(DATA_VARIANT_ID, value)
@@ -61,6 +68,9 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
     var smashAttackTime: Int
         get() = this.entityData.get(SMASH_ATTACK_TIME_ID)
         set(value) = this.entityData.set(SMASH_ATTACK_TIME_ID, value)
+    var punchAttackTime: Int
+        get() = this.entityData.get(PUNCH_ATTACK_TIME_ID)
+        set(value) = this.entityData.set(PUNCH_ATTACK_TIME_ID, value)
     var throwTime: Int
         get() = this.entityData.get(THROW_TIME_ID)
         set(value) = this.entityData.set(THROW_TIME_ID, value)
@@ -72,6 +82,7 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
         super.defineSynchedData(entityData)
         entityData.define(DATA_VARIANT_ID, GargantuarVariant.getDefault())
         entityData.define(SMASH_ATTACK_TIME_ID, 0)
+        entityData.define(PUNCH_ATTACK_TIME_ID, 0)
         entityData.define(THROW_TIME_ID, 0)
         entityData.define(HAS_IMP_ID, true)
     }
@@ -91,8 +102,75 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
     override fun registerGoals() {
         super.registerGoals()
         goalSelector.addGoal(1, FloatGoal(this))
-        goalSelector.addGoal(1, SmashAttackGoal(this))
+        goalSelector.addGoal(4, NavigateToTargetGoal(this))
         goalSelector.addGoal(2, ThrowImpGoal(this))
+        goalSelector.addGoal(1, MeleeAttackActionGoal(// smash
+            this,
+            damageType = DamageTypes.MOB_ATTACK,
+            actionDelay = 16,
+            usePredicate = {
+                smashAttackTime<=0 && throwTime<=0 && smashCooldown<=0
+            },
+            actionStartEffect = {
+                smashAttackTime=1
+            },
+            actionEndEffect = {
+                smashCooldown = SMASH_COOLDOWN_TIME + random.nextInt(10)
+                val target = target
+                val level = level()
+                val direction = calculateViewVector(0f, yBodyRotO-20).scale(3.5)
+                val pos = Vec3(
+                    direction.x + x,
+                    direction.y + (target?.y?.coerceIn(y..y+5) ?: y),
+                    direction.z + z
+                )
+                //TODO add electric attack on <.5 health
+                level.explode(
+                    this,
+                    damageSources().source(PazDamageTypes.ZOMBIE_SMASH, this),
+                    SMASH_DAMAGE_CALCULATOR, pos.x, pos.y, pos.z,
+                    3.5f,
+                    false,
+                    Level.ExplosionInteraction.MOB,
+                    ParticleTypes.LARGE_SMOKE,
+                    ParticleTypes.EXPLOSION,
+                    WeightedList.of(),
+                    SoundEvents.WIND_CHARGE_BURST
+                )
+                if (level is ServerLevel) {
+                    level.sendParticles(
+                        BlockParticleOption(ParticleTypes.BLOCK, level.getBlockState(BlockPos.containing(pos).below())),
+                        pos.x, pos.y, pos.z,
+                        50, 1.2, 0.4, 1.2, 0.2
+                    )
+                    level.sendParticles(
+                        ParticleTypes.DUST_PLUME,
+                        pos.x, pos.y+0.2, pos.z,
+                        45, 1.0, 0.4, 1.0, 0.01
+                    )
+                    level.sendParticles(NukeWaveParticleOptions(color = 0xD8E7E8, scale = 3.5f),
+                        pos.x, y+0.2, pos.z, 1, 0.0, 0.0, 0.0, 0.0
+                    )
+                }
+
+                playSound(SoundEvents.MACE_SMASH_GROUND_HEAVY, 1.0f, 0.9f)
+            }
+        ))
+        goalSelector.addGoal(2, MeleeAttackActionGoal(// punch
+            this,
+            damageType = DamageTypes.MOB_ATTACK,
+            actionDelay = 15,
+            usePredicate = {
+                punchAttackTime<=0 && smashAttackTime<=0 && throwTime<=0
+            },
+            actionStartEffect = {
+                punchAttackTime=1
+            }
+        ))
+    }
+
+    override fun addBehaviourGoals() {
+        addBehaviourGoalsNoMelee()
     }
 
     override fun updateControlFlags() {
@@ -137,23 +215,33 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
             )
         }
 
+        if (smashCooldown>0) --smashCooldown
+
         if(smashAttackTime>0) {
             smashAttackAnimation.startIfStopped(tickCount)
-            smashAttackTime++
+            if (smashAttackTime++>40) {
+                smashAttackAnimation.stop()
+                smashAttackTime=0
+            }
         }
-        if (smashAttackTime>40) {
-            smashAttackAnimation.stop()
-            smashAttackTime=0
+
+        if (punchAttackTime>0) {
+            punchAttackAnimation.startIfStopped(tickCount)
+            if (punchAttackTime++>30) {
+                punchAttackAnimation.stop()
+                punchAttackTime=0
+            }
         }
+
 
         if (throwTime>0) {
             throwImpAnimation.startIfStopped(tickCount)
-            throwTime++
+            if (throwTime++>60) {
+                throwImpAnimation.stop()
+                throwTime=0
+            }
         }
-        if (throwTime>60) {
-            throwImpAnimation.stop()
-            throwTime=0
-        }
+
     }
 
     override fun emergingTime(): Int = 80
@@ -214,76 +302,6 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
         return data
     }
 
-    private class SmashAttackGoal(
-        val gargantuar: Gargantuar,
-    ) : Goal() {
-        companion object {
-            const val ATTACK_DELAY_TIME = 40
-            val SMASH_DAMAGE_CALCULATOR: ExplosionDamageCalculator = SimpleExplosionDamageCalculator(false, true, Optional.of(2.5f), Optional.ofNullable(null))
-        }
-        var attackTime = gargantuar.random.nextInt(10,20)
-
-        override fun canUse(): Boolean {
-            if (attackTime <= 0) return true
-            return gargantuar.isAggressive && !gargantuar.isDeadOrDying && gargantuar.target.let { it != null && it.isAlive && gargantuar.hasLineOfSight(it) && it.distanceTo(gargantuar) < 6.75f }
-        }
-
-        override fun canContinueToUse(): Boolean {
-            return attackTime > 1
-        }
-
-        override fun tick() {
-            super.tick()
-            if (--attackTime == 0) {
-                gargantuar.target.let { if (it!=null) gargantuar.lookAt(it, 10f, 10f) }
-                gargantuar.smashAttackTime=1
-            }
-            if (attackTime<-6) smashAttack()
-        }
-
-        private fun smashAttack() {
-            attackTime = ATTACK_DELAY_TIME + gargantuar.random.nextInt(10)
-            val target = gargantuar.target
-            val level = gargantuar.level()
-            val direction = gargantuar.calculateViewVector(0f, gargantuar.yBodyRotO-20).scale(3.5)
-            val pos = Vec3(
-                direction.x + gargantuar.x,
-                direction.y + (target?.y?.coerceIn(gargantuar.y..gargantuar.y+5) ?: gargantuar.y),
-                direction.z + gargantuar.z
-            )
-            //TODO add electric attack on <.5 health
-            level.explode(
-                    gargantuar,
-                    gargantuar.damageSources().source(PazDamageTypes.ZOMBIE_SMASH, gargantuar),
-                    SMASH_DAMAGE_CALCULATOR, pos.x, pos.y, pos.z,
-                    3.5f,
-                    false,
-                    Level.ExplosionInteraction.MOB,
-                    ParticleTypes.LARGE_SMOKE,
-                    ParticleTypes.EXPLOSION,
-                    WeightedList.of(),
-                    SoundEvents.WIND_CHARGE_BURST
-                )
-            if (level is ServerLevel) {
-                level.sendParticles(
-                    BlockParticleOption(ParticleTypes.BLOCK, level.getBlockState(BlockPos.containing(pos).below())),
-                    pos.x, pos.y, pos.z,
-                    50, 1.2, 0.4, 1.2, 0.2
-                )
-                level.sendParticles(
-                    ParticleTypes.DUST_PLUME,
-                    pos.x, pos.y+0.2, pos.z,
-                    45, 1.0, 0.4, 1.0, 0.01
-                )
-                level.sendParticles(NukeWaveParticleOptions(color = 0xD8E7E8, scale = 3.5f),
-                    pos.x, gargantuar.y+0.2, pos.z, 1, 0.0, 0.0, 0.0, 0.0
-                )
-            }
-
-            gargantuar.playSound(SoundEvents.MACE_SMASH_GROUND_HEAVY, 1.0f, 0.9f)
-        }
-    }
-
     private class ThrowImpGoal(
         val gargantuar: Gargantuar,
     ) : Goal() {
@@ -310,7 +328,7 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
         }
 
         fun throwImp() {
-            throwTime = ATTACK_DELAY_TIME + gargantuar.random.nextInt(10)
+            throwTime = THROW_DELAY_TIME + gargantuar.random.nextInt(10)
             gargantuar.hasImp = false
             val level = gargantuar.level() as ServerLevel
 

@@ -27,6 +27,13 @@ data class ServerConfig(
     var plantCooldownTime: Double = 4.0,
     var plantCooldownTimePerSun: Double = 2.5,
     var solarBatteryMax: Int = 512,
+    var defaultPlantEntityLimit: Int = 30,
+    var customPlantEntityLimits: MutableMap<String, Int> = mutableMapOf(
+        "plantz:melonpult"              to 15,
+        "plantz:doomshroom"             to 15,
+        "plantz:coffeebean"             to -1,
+        "plantz:grave_buster"           to -1,
+    ),
     var sunCosts: MutableMap<String, Int> = mutableMapOf(
         "plantz:sunflower"              to 5,
         "plantz:peashooter"             to 5,
@@ -155,6 +162,14 @@ object PazConfig {
                 it
             }
         ?: -1 // not in id list
+        return value.coerceAtLeast(-1)
+    }
+
+    fun getEntityLimit(type: EntityType<*>?): Int {
+        val id = type?.let { BuiltInRegistries.ENTITY_TYPE.getKey(it) }
+        val default = server.defaultPlantEntityLimit
+        val key = id?.toString()?: return default
+        val value = server.customPlantEntityLimits[key]?: default
         return value.coerceAtLeast(-1)
     }
 

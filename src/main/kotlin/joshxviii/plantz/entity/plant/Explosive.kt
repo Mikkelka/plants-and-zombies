@@ -84,7 +84,7 @@ abstract class Explosive(type: EntityType<out Explosive>, level: Level) : Plant(
     open fun explode(
         radius: Float = 4.0f,
         sound: Holder.Reference<SoundEvent> = PazSounds.PLANT_EXPLODE,
-        damageType: ResourceKey<DamageType> = PazDamageTypes.PLANT_AOE,
+        damageType: ResourceKey<DamageType> = PazDamageTypes.PLANT_EXPLODE,
         destroyBlocks: Boolean = false,
         discardOnExplode: Boolean = discardOnExplode()
     ) {

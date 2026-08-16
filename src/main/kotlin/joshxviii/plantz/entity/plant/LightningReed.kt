@@ -5,14 +5,9 @@ import joshxviii.plantz.PazDamageTypes
 import joshxviii.plantz.PazEffects
 import joshxviii.plantz.PazEntities
 import joshxviii.plantz.PazServerParticles
-import joshxviii.plantz.ai.goal.BeamAttackGoal
 import joshxviii.plantz.ai.goal.MeleeAttackActionGoal
-import joshxviii.plantz.ai.goal.ProjectileAttackGoal
-import joshxviii.plantz.entity.projectile.PeaElectric
-import joshxviii.plantz.entity.projectile.PeaFire
 import net.minecraft.core.BlockPos
 import net.minecraft.server.level.ServerLevel
-import net.minecraft.tags.FluidTags
 import net.minecraft.util.RandomSource
 import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.entity.EntitySpawnReason
@@ -59,7 +54,7 @@ class LightningReed(type: EntityType<out Plant>, level: Level) : Plant(PazEntiti
                     ElectricArcParticleOptions(
                         Vec3(it.getRandomX(0.2), it.randomY, it.getRandomZ(0.2)),
                         color = 0xBDFDF5,
-                        thickness = 0.15f
+                        width = 0.15f
                     ),
                     x + direction.x, y + eyeHeight, z + direction.z,
                     1, 0.0, 0.0, 0.0, 0.0

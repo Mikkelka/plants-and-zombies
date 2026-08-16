@@ -43,7 +43,7 @@ class ElectricArcParticle private constructor(
             random: RandomSource
         ): Particle {
             return ElectricArcParticle(
-                level, x, y, z, options.targetPos, options.thickness, options.color
+                level, x, y, z, options.targetPos, options.width, options.color
             )
         }
     }

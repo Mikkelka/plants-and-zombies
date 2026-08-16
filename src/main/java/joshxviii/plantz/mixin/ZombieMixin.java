@@ -7,7 +7,6 @@ import joshxviii.plantz.entity.zombie.Gargantuar;
 import joshxviii.plantz.entity.zombie.ZombieYeti;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -39,7 +38,7 @@ public class ZombieMixin {
     private void updateDamage(Args args) {
         DamageSource source = args.get(1);
         float damage = args.get(2);
-        if (source.is(PazDamageTypes.PLANT_AOE)) args.set(2, damage*3f);
+        if (source.is(PazDamageTypes.PLANT_EXPLODE)) args.set(2, damage*3f);
     }
 
     @Inject(method = "hurtServer", at = @At("HEAD"), cancellable = true)

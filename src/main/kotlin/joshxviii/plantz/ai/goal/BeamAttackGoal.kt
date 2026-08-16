@@ -3,7 +3,6 @@ package joshxviii.plantz.ai.goal
 import joshxviii.plantz.PazConfig
 import joshxviii.plantz.PazDamageTypes
 import joshxviii.plantz.entity.plant.Plant
-import net.minecraft.core.particles.ParticleOptions
 import net.minecraft.resources.ResourceKey
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.util.Mth
@@ -25,6 +24,7 @@ class BeamAttackGoal(
     actionSuccessEffect: () -> Unit = {},
     actionEndEffect: () -> Unit = {},
     actionPredicate: Predicate<PathfinderMob> = Predicate { true },
+    val doNotExtendPastTarget: Boolean = false,
     val beamRange : Double = 10.0,
     val beamWidth : Double = 3.25,
     val damageMultiplier: Float = 1.0f,
@@ -55,14 +55,16 @@ class BeamAttackGoal(
 
         val start = usingEntity.position().add(0.0, usingEntity.eyeHeight.toDouble(), 0.0)
 
-        val direction = target.eyePosition.subtract(start).normalize()
+        val vector = target.eyePosition.subtract(start)
+        val direction = vector.normalize()
 
-        val end = start.add(direction.scale(beamRange))
+        val end = if (doNotExtendPastTarget && vector.length() < beamRange) start.add(vector)
+        else start.add(direction.scale(beamRange))
 
         val beamAABB = AABB(start, end).inflate(beamWidth / 2.0 + 1.0)
 
         val candidates = usingEntity.level().getEntities(usingEntity, beamAABB) { entity ->
-            entity is LivingEntity && entity !is Plant && entity.isAlive
+            entity is LivingEntity && entity.isAlive
         }
 
         for (target in candidates) {

@@ -3,12 +3,15 @@ package joshxviii.plantz.entity.zombie
 import joshxviii.plantz.PazBlocks
 import joshxviii.plantz.PazDamageTypes
 import joshxviii.plantz.PazDataSerializers.DATA_ZOMBIE_STATE
+import joshxviii.plantz.PazEffects
 import joshxviii.plantz.PazEntities
 import joshxviii.plantz.PazItems
 import joshxviii.plantz.PazTags
 import joshxviii.plantz.ai.ZombieState
 import joshxviii.plantz.ai.goal.FlyingPathfindingGoal
 import joshxviii.plantz.entity.Balloon
+import joshxviii.plantz.isHypnotized
+import joshxviii.plantz.item.BalloonItem
 import net.minecraft.core.BlockPos
 import net.minecraft.core.particles.BlockParticleOption
 import net.minecraft.core.particles.ParticleTypes
@@ -25,6 +28,7 @@ import net.minecraft.world.entity.*
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier
 import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.entity.ai.control.FlyingMoveControl
+import net.minecraft.world.entity.ai.control.LookControl
 import net.minecraft.world.entity.ai.control.MoveControl
 import net.minecraft.world.entity.ai.goal.MoveThroughVillageGoal
 import net.minecraft.world.entity.ai.goal.SpearUseGoal
@@ -35,10 +39,12 @@ import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation
 import net.minecraft.world.entity.ai.navigation.PathNavigation
 import net.minecraft.world.entity.animal.golem.IronGolem
 import net.minecraft.world.entity.animal.turtle.Turtle
+import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.entity.monster.zombie.Zombie
 import net.minecraft.world.entity.monster.zombie.ZombifiedPiglin
 import net.minecraft.world.entity.npc.villager.AbstractVillager
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.DyeColor
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.LevelReader
@@ -84,6 +90,7 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
         }
 
         const val ZOMBIE_SPEED = 0.23
+        const val MAX_EQUIPPABLE_BALLOONS = 4
 
         data class PazZombieAttributes(
             val maxHealth: Double = 20.0,
@@ -130,16 +137,29 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
     override fun onEquipItem(slot: EquipmentSlot, oldStack: ItemStack, stack: ItemStack) {
         if (stack.`is`(PazItems.DUCKY_TUBE) && slot == EquipmentSlot.LEGS) this.getNavigation().setCanFloat(true);
         else if (oldStack.`is`(PazItems.DUCKY_TUBE) && slot == EquipmentSlot.LEGS) this.getNavigation().setCanFloat(false);
+
         super.onEquipItem(slot, oldStack, stack)
+    }
+
+    override fun pickUpItem(level: ServerLevel, entity: ItemEntity) {
+        val balloonItem = entity.item.item as? BalloonItem ?: return
+
+        val balloonsMissing = (4 - balloons.size).coerceIn(0, MAX_EQUIPPABLE_BALLOONS)
+        val count = entity.item.count.coerceAtMost(balloonsMissing)
+        spawnBalloons(count, balloonItem.color)
+        entity.item.shrink(count)
+
+        super.pickUpItem(level, entity)
     }
 
     var state: ZombieState
         get() = this.entityData.get(ZOMBIE_STATE)
         set(value) { this.entityData.set(ZOMBIE_STATE, value) }
 
-    private val noMoveControl = object : MoveControl<PazZombie>(this) {
+    protected val noMoveControl = object : MoveControl<PazZombie>(this) {
         override fun getSpeedModifier(): Double = 0.0
     }
+    protected val noLookControl = object : LookControl(this) {}
 
     val flyControl = object : FlyingMoveControl<PazZombie>(this, 20, true) {
         override fun getSpeedModifier(): Double = 0.0
@@ -222,10 +242,11 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
         }
     }
 
-    fun spawnBalloons(count: Int = 2) {
+    fun spawnBalloons(count: Int = 2, color: DyeColor = DyeColor.RED) {
         val level = level() as? ServerLevel ?: return
         for (i in 0 until count) {
             val balloon = PazEntities.BALLOON.create(level, EntitySpawnReason.TRIGGERED) ?: return
+            balloon.dyeColor = color
             val randomX = (random.nextDouble() - 0.5) * 2 + x
             val randomZ = (random.nextDouble() - 0.5) * 2 + z
             balloon.snapTo(randomX, eyeY + 1.0, randomZ)
@@ -254,13 +275,13 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
     }
 
     override fun hurtServer(level: ServerLevel, source: DamageSource, damage: Float): Boolean {
-        return if (source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES)) false else super.hurtServer(level, source, damage)
+        return if (source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES) && !source.directEntity.isHypnotized()) false else super.hurtServer(level, source, damage)
     }
     override fun hurtClient(source: DamageSource): Boolean {
-        return if (source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES)) false else super.hurtClient(source)
+        return if (source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES) && !source.directEntity.isHypnotized()) false else super.hurtClient(source)
     }
     override fun actuallyHurt(level: ServerLevel, source: DamageSource, damage: Float) {
-        if (source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES)) return
+        if (source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES) && !source.directEntity.isHypnotized()) return
         super.actuallyHurt(level, source, damage)
     }
 

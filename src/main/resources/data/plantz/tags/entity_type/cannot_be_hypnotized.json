@@ -1,6 +1,7 @@
 {
   "values": [
     "#plantz:plant",
+    "plantz:robo_zombie",
     "plantz:gargantuar",
     {
       "id": "#c:bosses",

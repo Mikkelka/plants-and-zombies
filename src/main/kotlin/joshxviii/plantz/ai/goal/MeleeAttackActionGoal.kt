@@ -2,6 +2,7 @@ package joshxviii.plantz.ai.goal
 
 import joshxviii.plantz.PazConfig
 import joshxviii.plantz.PazDamageTypes
+import joshxviii.plantz.attackRange
 import joshxviii.plantz.entity.plant.Plant
 import net.minecraft.resources.ResourceKey
 import net.minecraft.server.level.ServerLevel
@@ -20,11 +21,15 @@ open class MeleeAttackActionGoal(
     actionSuccessEffect: () -> Unit = {},
     actionEndEffect: () -> Unit = {},
     actionPredicate: Predicate<PathfinderMob> = Predicate { true },
+    delayedEffectDelay: Int = 0,
+    delayedEffect: () -> Unit = {},
+    val usePredicate: Predicate<PathfinderMob> = actionPredicate,
+    val rangeMultiplier: Float = 1.0f,
     val damageMultiplier: Float = 1.0f,
     val damageType: ResourceKey<DamageType> = PazDamageTypes.PLANT,
     val beforeHitEntityEffect: (target: LivingEntity) -> Unit = {},
     val afterHitEntityEffect: (target: LivingEntity) -> Unit = {},
-) : ActionGoal(usingEntity, cooldownTime, actionDelay, actionStartEffect, actionSuccessEffect, actionEndEffect, actionPredicate) {
+) : ActionGoal(usingEntity, cooldownTime, actionDelay, actionStartEffect, actionSuccessEffect, actionEndEffect, actionPredicate, delayedEffectDelay, delayedEffect) {
 
     override fun canUse(): Boolean = (
         actionPredicate.test(usingEntity)
@@ -37,7 +42,7 @@ open class MeleeAttackActionGoal(
         val target = usingEntity.target?: return false
         usingEntity.lookControl.setLookAt(target, 30f, 30f)
 
-        return isReachable(target);
+        return isReachable(target) && usePredicate.test(usingEntity);
     }
 
     override fun doAction() : Boolean {
@@ -66,7 +71,8 @@ open class MeleeAttackActionGoal(
     }
 
     fun isReachable(target: LivingEntity): Boolean {
-        val range = usingEntity.attributes.let { if (it.hasAttribute(Attributes.ENTITY_INTERACTION_RANGE)) it.getValue(Attributes.ENTITY_INTERACTION_RANGE).toFloat() else 2f }
-        return usingEntity.distanceToSqr(target) <= range * range
+        val range = usingEntity.attackRange()
+        val distance = usingEntity.distanceToSqr(target)
+        return distance <= (range * range) * rangeMultiplier
     }
 }
