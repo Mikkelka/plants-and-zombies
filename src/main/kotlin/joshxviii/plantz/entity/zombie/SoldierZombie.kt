@@ -2,17 +2,13 @@ package joshxviii.plantz.entity.zombie
 
 import joshxviii.plantz.PazDataSerializers.DATA_DYE_COLOR
 import joshxviii.plantz.PazItems
-import joshxviii.plantz.PazSounds
 import joshxviii.plantz.ai.goal.NavigateToTargetGoal
 import joshxviii.plantz.ai.goal.ProjectileAttackGoal
 import joshxviii.plantz.entity.projectile.PaintBall
 import net.minecraft.network.syncher.EntityDataAccessor
 import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.server.level.ServerLevel
-import net.minecraft.sounds.SoundEvent
-import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.DifficultyInstance
-import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.entity.*
 import net.minecraft.world.item.DyeColor
 import net.minecraft.world.level.Level
@@ -65,19 +61,6 @@ class SoldierZombie(type: EntityType<out SoldierZombie>, level: Level) : PazZomb
 
     override fun addBehaviourGoals() {
         addBehaviourGoalsNoMelee()
-    }
-
-    override fun getAmbientSound(): SoundEvent {
-        return PazSounds.BROWNCOAT_AMBIENT
-    }
-    override fun getHurtSound(source: DamageSource): SoundEvent {
-        return PazSounds.BROWNCOAT_HURT
-    }
-    override fun getDeathSound(): SoundEvent {
-        return PazSounds.BROWNCOAT_DEATH
-    }
-    override fun getStepSound(): SoundEvent {
-        return SoundEvents.ZOMBIE_STEP
     }
 
     override fun doHurtTarget(level: ServerLevel, target: Entity): Boolean {

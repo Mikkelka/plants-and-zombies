@@ -1,17 +1,8 @@
 package joshxviii.plantz.entity.projectile
 
-import joshxviii.plantz.NukeBlastParticleOptions
-import joshxviii.plantz.NukeSmokeParticleOptions
-import joshxviii.plantz.NukeWaveParticleOptions
-import joshxviii.plantz.PazConfig
-import joshxviii.plantz.PazDamageTypes
-import joshxviii.plantz.PazSounds
+import joshxviii.plantz.*
 import joshxviii.plantz.entity.plant.Plant
-import joshxviii.plantz.entity.zombie.Gargantuar.Companion.SMASH_DAMAGE_CALCULATOR
-import joshxviii.plantz.hasSameRootOwner
 import net.minecraft.core.BlockPos
-import net.minecraft.core.Holder
-import net.minecraft.core.particles.BlockParticleOption
 import net.minecraft.core.particles.ParticleOptions
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket
@@ -41,7 +32,6 @@ import net.minecraft.world.phys.*
 import java.util.*
 import java.util.Arrays.sort
 import java.util.function.Predicate
-import java.util.function.ToDoubleFunction
 import kotlin.math.sign
 
 abstract class PazProjectile(
@@ -99,6 +89,8 @@ abstract class PazProjectile(
                 }
             }
         }
+
+        if (tickCount > lifeTime()) discard()
 
         val inGround = this.isInGround()
         if (inGround) {
@@ -273,6 +265,7 @@ abstract class PazProjectile(
 
     open fun getHitSound(): SoundEvent = SoundEvents.HONEY_BLOCK_BREAK
     open fun stickInGroundTime(): Int = 0
+    open fun lifeTime(): Int = 2400
 
     private fun shouldFall(): Boolean {
         return this.isInGround() && this.level().noCollision(AABB(this.position(), this.position()).inflate(0.06))

@@ -8,10 +8,13 @@ import joshxviii.plantz.ai.goal.PathfindToFlagGoal
 import joshxviii.plantz.entity.Balloon
 import joshxviii.plantz.entity.PlantPotMinecart
 import joshxviii.plantz.entity.Sun
+import joshxviii.plantz.entity.blueprint_machines.ElectroTurret
+import joshxviii.plantz.entity.blueprint_machines.LawnMower
+import joshxviii.plantz.entity.blueprint_machines.ZombieDrone
+import joshxviii.plantz.entity.blueprint_machines.ZombieTurret
 import joshxviii.plantz.entity.gnome.Gnome
 import joshxviii.plantz.entity.plant.*
 import joshxviii.plantz.entity.projectile.*
-import joshxviii.plantz.entity.turret.Turret
 import joshxviii.plantz.entity.zombie.*
 import joshxviii.plantz.mixin.MobAccessor
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
@@ -346,8 +349,9 @@ object PazEntities {
             .eyeHeight(1.74f)
             .clientTrackingRange(8),
         attributes = PazZombie.Companion.PazZombieAttributes(
-            attackDamage = 1.5,
-            maxHealth = 30.0
+            movementSpeed = 0.24,
+            maxHealth = 35.0,
+            followRange = 40.0,
         )
     )
     @JvmField val ZOMBIE_YETI: EntityType<ZombieYeti> =  registerZombie(
@@ -374,7 +378,7 @@ object PazEntities {
             .eyeHeight(1.74f)
             .clientTrackingRange(8),
         attributes = PazZombie.Companion.PazZombieAttributes(
-            attackDamage = 7.0,
+            attackDamage = 6.0,
             maxHealth = 60.0,
             movementSpeed = 0.235,
             spawnReinforcementsChance = 0.1,
@@ -401,7 +405,7 @@ object PazEntities {
             .eyeHeight(1.74f)
             .clientTrackingRange(8),
         attributes = PazZombie.Companion.PazZombieAttributes(
-            attackDamage = 8.0,
+            attackDamage = 7.0,
             maxHealth = 75.0,
             stepHeight = 1.0,
             movementSpeed = 0.23,
@@ -457,7 +461,7 @@ object PazEntities {
             .clientTrackingRange(8),
         attributes = PazZombie.Companion.PazZombieAttributes(
             armor = 16.0,
-            attackDamage = 8.0,
+            attackDamage = 10.0,
             maxHealth = 100.0,
             stepHeight = 1.0,
             movementSpeed = 0.23,
@@ -473,7 +477,7 @@ object PazEntities {
         attributes = PazZombie.Companion.PazZombieAttributes(
             armor = 8.0,
             attackDamage = 8.0,
-            maxHealth = 200.0,
+            maxHealth = 150.0,
             stepHeight = 1.0,
             movementSpeed = 0.25,
             flyingSpeed = 0.2,
@@ -517,17 +521,33 @@ object PazEntities {
     )
     // endregion
 
-    @JvmField val ZOMBIE_TURRET: EntityType<Turret> = registerTurret(
+    @JvmField val ZOMBIE_TURRET: EntityType<ZombieTurret> = registerZombie(
         "zombie_turret",
-        attributes = createMobAttributes()
-            .add(Attributes.MAX_HEALTH, 20.0)
-            .add(Attributes.ATTACK_DAMAGE, 2.0)
+        EntityType.Builder.of(::ZombieTurret, MobCategory.MISC).sized(0.8f, 1.0f),
+        attributes = PazZombie.Companion.PazZombieAttributes(
+            maxHealth = 10.0,
+            followRange = 20.0
+        )
     )
-    @JvmField val ELECTRO_TURRET: EntityType<Turret> = registerTurret(
+    @JvmField val ELECTRO_TURRET: EntityType<ElectroTurret> = registerZombie(
         "electro_turret",
-        attributes = createMobAttributes()
-            .add(Attributes.MAX_HEALTH, 20.0)
-            .add(Attributes.ATTACK_DAMAGE, 2.0)
+        EntityType.Builder.of(::ElectroTurret, MobCategory.MISC).sized(0.8f, 1.0f),
+        attributes = PazZombie.Companion.PazZombieAttributes(
+            maxHealth = 10.0,
+            followRange = 16.0
+        )
+    )
+    @JvmField val ZOMBIE_DRONE: EntityType<ZombieDrone> = registerZombie(
+        "zombie_drone",
+        EntityType.Builder.of(::ZombieDrone, MobCategory.MISC).sized(0.8f, 1.0f),
+        attributes = PazZombie.Companion.PazZombieAttributes(
+            maxHealth = 10.0,
+            followRange = 32.0
+        )
+    )
+    @JvmField val LAWN_MOWER: EntityType<LawnMower> = registerOther(
+        "lawn_mower",
+        EntityType.Builder.of(::LawnMower, MobCategory.MISC).sized(0.8f, 0.6f),
     )
 
     @JvmField val GNOME: EntityType<Gnome> =  registerGnome(
@@ -558,6 +578,7 @@ object PazEntities {
     @JvmField val BUTTER: EntityType<Butter> = registerProjectile("butter", EntityType.Builder.of({_,l->Butter(l)}, MobCategory.MISC), width = 0.75f, height = 0.5f)
     @JvmField val MELON: EntityType<Melon> = registerProjectile("melon", EntityType.Builder.of({_,l->Melon(l)}, MobCategory.MISC), width = 1.0f, height = 0.8f)
     @JvmField val PAINT_BALL: EntityType<PaintBall> = registerProjectile("paint_ball", EntityType.Builder.of({ _, l->PaintBall(l)}, MobCategory.MISC), width = 0.42f, height = 0.42f)
+    @JvmField val LASER_BULLET: EntityType<LaserBullet> = registerProjectile("laser_bullet", EntityType.Builder.of({ _, l-> LaserBullet(l)}, MobCategory.MISC), width = 0.5f, height = 0.5f)
     @JvmField val MISSILE: EntityType<Missile> = registerProjectile("missile", EntityType.Builder.of({ _, l->Missile(l)}, MobCategory.MISC), width = 0.42f, height = 0.42f)
     // endregion
 
@@ -624,18 +645,6 @@ object PazEntities {
         return type
     }
 
-    private fun <T : Turret> registerTurret(
-        name : String,
-        builder: EntityType.Builder<T> = EntityType.Builder.createNothing(MobCategory.MONSTER),
-        attributes: AttributeSupplier.Builder = createMobAttributes()
-    ): EntityType<T> {
-        val type = register(name, builder
-            .ridingOffset(-0.7f)
-            .notInPeaceful())
-        FabricDefaultAttributeRegistry.register(type, attributes)
-        return type
-    }
-
     private fun <T : Projectile> registerProjectile(
         name : String,
         builder: EntityType.Builder<T> = EntityType.Builder.createNothing(MobCategory.MISC),
@@ -644,6 +653,16 @@ object PazEntities {
     ): EntityType<T> {
         builder.sized(width, height).eyeHeight(0.0f)
         return register(name, builder)
+    }
+
+    private fun <T : LivingEntity> registerOther(
+        name : String,
+        builder: EntityType.Builder<T> = EntityType.Builder.createNothing(MobCategory.MISC),
+        attributes: AttributeSupplier.Builder = createMobAttributes()
+    ): EntityType<T> {
+        val type = register(name, builder)
+        FabricDefaultAttributeRegistry.register(type, attributes)
+        return type
     }
 
     private fun <T : Entity> register(

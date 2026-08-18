@@ -1,7 +1,6 @@
 package joshxviii.plantz.entity.plant
 
 import joshxviii.plantz.*
-import joshxviii.plantz.PazDamageTypes
 import joshxviii.plantz.PazDataSerializers.DATA_COFFEE_BUFF
 import joshxviii.plantz.PazDataSerializers.DATA_COOLDOWN
 import joshxviii.plantz.PazDataSerializers.DATA_PLANT_STATE
@@ -10,13 +9,11 @@ import joshxviii.plantz.PazDataSerializers.DATA_RECEIVED_SUN
 import joshxviii.plantz.PazDataSerializers.DATA_RECEIVED_WATER
 import joshxviii.plantz.PazDataSerializers.DATA_SEED_GROW_COOLDOWN
 import joshxviii.plantz.PazDataSerializers.DATA_SLEEPING
-import joshxviii.plantz.PazSounds
 import joshxviii.plantz.PazTags.BlockTags.PLANTABLE
 import joshxviii.plantz.ai.PlantState
 import joshxviii.plantz.ai.goal.SleepGoal
 import joshxviii.plantz.entity.Sun
 import joshxviii.plantz.item.SeedPacketItem
-import joshxviii.plantz.pazResource
 import net.minecraft.ChatFormatting
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
@@ -235,6 +232,7 @@ abstract class Plant(type: EntityType<out Plant>, level: Level) : TamableAnimal(
     }
 
     // disables body control
+    protected val noLookControl = object : LookControl(this) {}
     override fun createBodyControl(): BodyRotationControl = object : BodyRotationControl(this) { override fun clientTick() {} }
 
     // only apply up/down movement
@@ -377,7 +375,7 @@ abstract class Plant(type: EntityType<out Plant>, level: Level) : TamableAnimal(
     fun hasPlantPotProtection(): Boolean= getBlockBelow().`is`(PazTags.BlockTags.PLANT_POT) || isAttached()
 
     override fun setPos(x: Double, y: Double, z: Double) {
-        if (this.isPassenger || isAttached()) super.setPos(x, y, z)
+        if (this.isPassenger || isAttached() || !onGround()) super.setPos(x, y, z)
         else super.setPos(Mth.floor(x) + 0.5, y, Mth.floor(z) + 0.5)
     }
 

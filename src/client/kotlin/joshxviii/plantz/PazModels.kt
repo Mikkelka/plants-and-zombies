@@ -8,6 +8,10 @@ import joshxviii.plantz.model.BalloonModel
 import joshxviii.plantz.model.FlagBlockModel
 import joshxviii.plantz.model.GnomeArmorModel
 import joshxviii.plantz.model.GnomeModel
+import joshxviii.plantz.model.blueprint_machines.ZombieDroneModel
+import joshxviii.plantz.model.blueprint_machines.ElectroTurretModel
+import joshxviii.plantz.model.blueprint_machines.LawnMowerModel
+import joshxviii.plantz.model.blueprint_machines.ZombieTurretModel
 import joshxviii.plantz.model.plants.*
 import joshxviii.plantz.model.projectiles.*
 import joshxviii.plantz.model.zombies.*
@@ -30,6 +34,7 @@ import joshxviii.plantz.renderer.entity.PirateCaptainRenderer
 import joshxviii.plantz.renderer.entity.PlantRenderer
 import joshxviii.plantz.renderer.entity.RoboZombieRenderer
 import joshxviii.plantz.renderer.entity.SuperBrainzRenderer
+import joshxviii.plantz.renderer.entity.BlueprintMachineRenderer
 import net.fabricmc.fabric.api.client.rendering.v1.ModelLayerRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey
 import net.minecraft.client.model.geom.ModelLayerLocation
@@ -127,6 +132,7 @@ object PazModels {
         ModelLayerRegistry.registerModelLayer(ButterModel.LAYER_LOCATION) { ButterModel.createBodyLayer() }
         ModelLayerRegistry.registerModelLayer(MelonModel.LAYER_LOCATION) { MelonModel.createBodyLayer() }
         ModelLayerRegistry.registerModelLayer(SmallProjectileModel.LAYER_LOCATION) { SmallProjectileModel.createBodyLayer() }
+        ModelLayerRegistry.registerModelLayer(LaserBulletModel.LAYER_LOCATION) { LaserBulletModel.createBodyLayer() }
         ModelLayerRegistry.registerModelLayer(MissileModel.LAYER_LOCATION) { MissileModel.createBodyLayer() }
 
         ModelLayerRegistry.registerModelLayer(PazZombieModel.LAYER_LOCATION) { PazZombieModel.createBodyLayer() }
@@ -142,6 +148,12 @@ object PazModels {
         ModelLayerRegistry.registerModelLayer(SuperBrainzModel.LAYER_LOCATION) { SuperBrainzModel.createBodyLayer() }
         ModelLayerRegistry.registerModelLayer(ImpModel.LAYER_LOCATION) { ImpModel.createBodyLayer() }
         ModelLayerRegistry.registerModelLayer(GargantuarModel.LAYER_LOCATION) { GargantuarModel.createBodyLayer() }
+
+        ModelLayerRegistry.registerModelLayer(ZombieTurretModel.LAYER_LOCATION) { ZombieTurretModel.createBodyLayer() }
+        ModelLayerRegistry.registerModelLayer(ElectroTurretModel.LAYER_LOCATION) { ElectroTurretModel.createBodyLayer() }
+        ModelLayerRegistry.registerModelLayer(ZombieDroneModel.LAYER_LOCATION) { ZombieDroneModel.createBodyLayer() }
+        ModelLayerRegistry.registerModelLayer(LawnMowerModel.LAYER_LOCATION) { LawnMowerModel.createBodyLayer() }
+
 
         ModelLayerRegistry.registerModelLayer(GnomeModel.LAYER_LOCATION) { GnomeModel.createBodyLayer() }
         ModelLayerRegistry.registerModelLayer(ARMOR_LAYER_LOCATION.head)  { GnomeArmorModel.createHeadLayer() }
@@ -196,8 +208,8 @@ object PazModels {
 
         EntityRenderers.register(PazEntities.PEA) { ProjectileRenderer(PeaModel(it.bakeLayer(PeaModel.LAYER_LOCATION)), it) }
         EntityRenderers.register(PazEntities.PEA_ICE) { ProjectileRenderer(PeaModel(it.bakeLayer(PeaModel.LAYER_LOCATION)), it) }
-        EntityRenderers.register(PazEntities.PEA_FIRE) { ProjectileRenderer(PeaModel(it.bakeLayer(PeaModel.LAYER_LOCATION)), it, emissive = true) }
-        EntityRenderers.register(PazEntities.PEA_ELECTRIC) { ProjectileRenderer(PeaModel(it.bakeLayer(PeaModel.LAYER_LOCATION)), it, emissive = true) }
+        EntityRenderers.register(PazEntities.PEA_FIRE) { ProjectileRenderer(PeaModel(it.bakeLayer(PeaModel.LAYER_LOCATION)), it) }
+        EntityRenderers.register(PazEntities.PEA_ELECTRIC) { ProjectileRenderer(PeaModel(it.bakeLayer(PeaModel.LAYER_LOCATION)), it) }
         EntityRenderers.register(PazEntities.SPORE) { ProjectileRenderer(SmallProjectileModel(it.bakeLayer(SmallProjectileModel.LAYER_LOCATION)), it) }
         EntityRenderers.register(PazEntities.WATER_SPORE) { ProjectileRenderer(SmallProjectileModel(it.bakeLayer(SmallProjectileModel.LAYER_LOCATION)), it) }
         EntityRenderers.register(PazEntities.NEEDLE) { ProjectileRenderer(NeedleModel(it.bakeLayer(NeedleModel.LAYER_LOCATION)), it) }
@@ -206,6 +218,7 @@ object PazModels {
         EntityRenderers.register(PazEntities.BUTTER) { ProjectileRenderer(ButterModel(it.bakeLayer(ButterModel.LAYER_LOCATION)), it) }
         EntityRenderers.register(PazEntities.MELON) { ProjectileRenderer(MelonModel(it.bakeLayer(MelonModel.LAYER_LOCATION)), it) }
         EntityRenderers.register(PazEntities.PAINT_BALL) { ProjectileRenderer(SmallProjectileModel(it.bakeLayer(SmallProjectileModel.LAYER_LOCATION)), it) }
+        EntityRenderers.register(PazEntities.LASER_BULLET) { ProjectileRenderer(LaserBulletModel(it.bakeLayer(LaserBulletModel.LAYER_LOCATION)), it) }
         EntityRenderers.register(PazEntities.MISSILE) { ProjectileRenderer(MissileModel(it.bakeLayer(MissileModel.LAYER_LOCATION)), it) }
 
         EntityRenderers.register(PazEntities.BROWN_COAT) { PazZombieRenderer(it) }
@@ -224,12 +237,17 @@ object PazModels {
         EntityRenderers.register(PazEntities.IMP) { PazZombieRenderer(it, ImpModel(it.bakeLayer(ImpModel.LAYER_LOCATION)), ImpModel(it.bakeLayer(ImpModel.LAYER_LOCATION))) }
         EntityRenderers.register(PazEntities.GARGANTUAR) { GargantuarRenderer(it) }
 
+        EntityRenderers.register(PazEntities.ZOMBIE_TURRET) { BlueprintMachineRenderer(it) }
+        EntityRenderers.register(PazEntities.ELECTRO_TURRET) { BlueprintMachineRenderer(it, ElectroTurretModel(it.bakeLayer(ElectroTurretModel.LAYER_LOCATION))) }
+        EntityRenderers.register(PazEntities.ZOMBIE_DRONE) { BlueprintMachineRenderer(it, ZombieDroneModel(it.bakeLayer(ZombieDroneModel.LAYER_LOCATION))) }
+        EntityRenderers.register(PazEntities.LAWN_MOWER) { BlueprintMachineRenderer(it, LawnMowerModel(it.bakeLayer(LawnMowerModel.LAYER_LOCATION))) }
+
         EntityRenderers.register(PazEntities.GNOME) { GnomeRenderer(it, GnomeModel(it.bakeLayer(GnomeModel.LAYER_LOCATION))) }
 
         EntityRenderers.register(PazEntities.PLANT_POT_MINECART) { PlantPotMinecartRenderer(it, ModelLayers.MINECART) }
         EntityRenderers.register(PazEntities.SUN) { SunRenderer(it) }
         EntityRenderers.register(PazEntities.THROWN_SUN_BOTTLE) { ThrownItemRenderer(it) }
-        EntityRenderers.register(PazEntities.BALLOON) { BalloonRenderer(it, BalloonModel(it.bakeLayer(BalloonModel.LAYER_LOCATION))) }
+        EntityRenderers.register(PazEntities.BALLOON) { BalloonRenderer(it) }
 
         BlockEntityRenderers.register<FlagBlockEntity, FlagRenderState>(PazBlocks.FLAG_BLOCK_ENTITY) { FlagRenderer(FlagBlockModel(it.bakeLayer(FlagBlockModel.LAYER_LOCATION))) }
         BlockEntityRenderers.register<GardenGnomeBlockEntity, GardenGnomeBlockRenderState>(PazBlocks.GARDEN_GNOME_ENTITY) { GardenGnomeBlockRenderer(GnomeModel(it.bakeLayer(GnomeModel.LAYER_LOCATION))) }

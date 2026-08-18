@@ -1,5 +1,6 @@
 package joshxviii.plantz
 
+import joshxviii.plantz.item.BlueprintItem
 import joshxviii.plantz.item.SeedPacketItem
 import net.minecraft.core.Registry
 import net.minecraft.core.registries.BuiltInRegistries
@@ -69,6 +70,12 @@ object PazCreativeTab {
                 output.accept(PazItems.SUPER_BRAINZ_SPAWN_EGG)
                 output.accept(PazItems.GARGANTUAR_SPAWN_EGG)
 
+                // machine blueprints
+                //output.accept(BlueprintItem.stackFor(PazEntities.ZOMBIE_TURRET))
+                //output.accept(BlueprintItem.stackFor(PazEntities.ELECTRO_TURRET))
+                //output.accept(BlueprintItem.stackFor(PazEntities.ZOMBIE_DRONE))
+                //output.accept(BlueprintItem.stackFor(PazEntities.LAWN_MOWER))
+
                 // gnome
                 if (parameters.hasPermissions()) output.accept(PazItems.GNOME_SPAWN_EGG)
 
@@ -90,7 +97,7 @@ object PazCreativeTab {
                 output.accept(PazBlocks.PLANTZ_FLAG)
 
                 // other
-                output.accept(PazItems.BRAINZIUM)
+                if (parameters.hasPermissions()) output.accept(PazItems.BRAINZIUM)
                 output.accept(PazItems.BRAINZ_ALLOY)
                 output.accept(PazBlocks.BRAINZ_ALLOY_BLOCK)
                 output.accept(PazBlocks.BRAINZ_ALLOY_STAIRS)
@@ -99,13 +106,12 @@ object PazCreativeTab {
                 output.accept(PazBlocks.REINFORCED_BRAINZ_ALLOY_BLOCK)
                 output.accept(PazBlocks.BRAINZ_ALLOY_FENCE)
                 output.accept(PazBlocks.GRAVESTONE)
-                if (parameters.hasPermissions()) {
-                    output.accept(PazBlocks.BLUE_GARDEN_GNOME)
-                    output.accept(PazBlocks.GREEN_GARDEN_GNOME)
-                    output.accept(PazBlocks.RED_GARDEN_GNOME)
-                    output.accept(PazBlocks.YELLOW_GARDEN_GNOME)
-                    output.accept(PazBlocks.TIME_MACHINE)
-                }
+                if (parameters.hasPermissions()) output.accept(PazBlocks.BLUE_GARDEN_GNOME)
+                output.accept(PazBlocks.GREEN_GARDEN_GNOME)
+                output.accept(PazBlocks.RED_GARDEN_GNOME)
+                output.accept(PazBlocks.YELLOW_GARDEN_GNOME)
+                output.accept(PazBlocks.TIME_MACHINE)
+
 
                 //music
                 output.accept(PazItems.MUSIC_DISC_GRASSY_GROOVE)

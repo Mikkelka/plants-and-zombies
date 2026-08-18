@@ -25,21 +25,22 @@ import net.minecraft.client.renderer.state.level.CameraRenderState
 import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
+import net.minecraft.util.Mth
 import net.minecraft.world.entity.AnimationState
 import net.minecraft.world.phys.Vec3
 
 open class PazZombieRenderer(
     context: EntityRendererProvider.Context,
-    private val defaultModel: PazZombieModel = PazZombieModel(null, context.bakeLayer(PazZombieModel.LAYER_LOCATION)),
-    private val babyModel: PazZombieModel = PazZombieModel(null, context.bakeLayer(ModelLayers.ZOMBIE_BABY)),
+    private val defaultModel: PazZombieModel<PazZombieRenderState> = PazZombieModel(null, context.bakeLayer(PazZombieModel.LAYER_LOCATION)),
+    private val babyModel: PazZombieModel<PazZombieRenderState> = PazZombieModel(null, context.bakeLayer(ModelLayers.ZOMBIE_BABY)),
     armorSet: ArmorModelSet<ModelLayerLocation> = ModelLayers.ZOMBIE_ARMOR,
     babyArmorSet: ArmorModelSet<ModelLayerLocation> = ModelLayers.ZOMBIE_BABY_ARMOR
-) : AbstractZombieRenderer<PazZombie, PazZombieRenderState, PazZombieModel>(
+) : AbstractZombieRenderer<PazZombie, PazZombieRenderState, PazZombieModel<PazZombieRenderState>>(
     context,
     defaultModel,
     babyModel,
-    ArmorModelSet.bake<PazZombieModel>(armorSet, context.modelSet) { root: ModelPart -> PazZombieModel(null, root) },
-    ArmorModelSet.bake<PazZombieModel>(babyArmorSet, context.modelSet) { root: ModelPart -> PazZombieModel(null, root) }
+    ArmorModelSet.bake(armorSet, context.modelSet) { root: ModelPart -> PazZombieModel(null, root) },
+    ArmorModelSet.bake(babyArmorSet, context.modelSet) { root: ModelPart -> PazZombieModel(null, root) }
 ) {
 
     init {
@@ -74,7 +75,9 @@ open class PazZombieRenderer(
         state.zombieState = entity.state
         state.emergeAnimationState.copyFrom(entity.emergeAnimation)
         state.floatAnimationState.copyFrom(entity.floatAnimation)
+        state.movementDirection = Mth.lerp(partialTicks.toDouble() * .5, entity.moveDirO, entity.moveDir)
         if (entity is DiscoZombie) state.actionAnimationState.copyFrom(entity.summonAnimation)
+        if (entity is EngineerZombie) state.actionAnimationState.copyFrom(entity.buildAnimation)
         if (entity is AllStar) state.actionAnimationState.copyFrom(entity.chargeAnimation)
         if (entity is NewspaperZombie) state.isAngry = entity.isAngry()
         state.customName = entity.customName?.string ?: ""
@@ -128,6 +131,7 @@ open class PazZombieRenderState : ZombieRenderState() {
         const val TEXTURE_PATH = "textures/entity/zombie"
     }
 
+    var movementDirection: Vec3 = Vec3.ZERO
     var customName: String = ""
     var textureExtra: List<String> = listOf()
     var isAngry: Boolean = false

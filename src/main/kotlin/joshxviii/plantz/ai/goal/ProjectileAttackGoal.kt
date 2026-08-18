@@ -15,6 +15,7 @@ import net.minecraft.world.entity.projectile.ProjectileUtil
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.phys.Vec3
+import java.util.EnumSet
 import java.util.function.Predicate
 import kotlin.math.atan
 import kotlin.math.sqrt
@@ -36,8 +37,13 @@ class ProjectileAttackGoal(
     val attackRadius: Float = usingEntity.attributes.getValue(Attributes.FOLLOW_RANGE).toFloat(),
     val useHighArc: Boolean = false,
     val soundEvent: SoundEvent? = PazSounds.PROJECTILE_FIRE,
+    val leadShots: Boolean = true,
 ) : ActionGoal(usingEntity, cooldownTime, actionDelay, actionStartEffect, actionSuccessEffect, actionEndEffect, actionPredicate, delayedEffectDelay, delayedEffect) {
     var distanceSqr: Double = 0.0
+
+    init {
+        //flags = EnumSet.of(Flag.LOOK)
+    }
 
     override fun canUse(): Boolean = (
         usingEntity.tickCount>cooldownTime
@@ -48,8 +54,9 @@ class ProjectileAttackGoal(
     override fun stop() {
         super.stop()
         usingEntity.isAggressive = false
-        usingEntity.stopUsingItem()
         usingEntity.target = null
+        usingEntity.releaseUsingItem()
+        usingEntity.stopUsingItem()
     }
 
     override fun canDoAction(): Boolean {// check distance and line of sight
@@ -68,22 +75,17 @@ class ProjectileAttackGoal(
     override fun tick() {
         super.tick()
 
-        if (usingEntity.isUsingItem) {
-            if (!canDoAction()) {
-                usingEntity.isAggressive = false
-                usingEntity.stopUsingItem()
-            }
-            else {
-                val pullTime: Int = usingEntity.ticksUsingItem
-                if (pullTime >= actionDelay-1) {
-                    usingEntity.stopUsingItem()
-                }
-            }
-        } else usingEntity.startUsingItem(ProjectileUtil.getWeaponHoldingHand(usingEntity, Items.BOW))
+        val target = usingEntity.target
+        target?.let {
+            usingEntity.lookControl.setLookAt(it, 30.0f, 30.0f)
+        }
+
+        //usingEntity.startUsingItem(ProjectileUtil.getWeaponHoldingHand(usingEntity, usingEntity.weaponItem.item))
     }
 
     override fun doAction() : Boolean {// fire projectile
-       val target = usingEntity.target?: return false
+        //usingEntity.releaseUsingItem()
+        val target = usingEntity.target?: return false
 
         val level = usingEntity.level() as ServerLevel
         val projectile = projectileFactory()
@@ -99,7 +101,7 @@ class ProjectileAttackGoal(
         val finalVel = if(useHighArc) Mth.lerp(distanceRatio, velocity * 0.45, velocity) else velocity
 
         val targetPos = calculateMovingTargetPosition(target, projectile, finalVel)
-        val arcs = calculateProjectileArcs(targetPos, projectile.gravity, finalVel)
+        val arcs = calculateProjectileArcs(targetPos, projectile.gravity.coerceAtLeast(0.000001), finalVel)
         if (arcs==null) {// lose target if unreachable
             projectile.discard()
             usingEntity.target = null
@@ -133,9 +135,9 @@ class ProjectileAttackGoal(
         )
 
         val targetVel = target.knownSpeed
-        if (targetVel.lengthSqr() <= 0.000001) return basePos
+        if (!leadShots || targetVel.lengthSqr() <= 0.000001) return basePos
 
-        val g = projectile.gravity
+        val g = projectile.gravity.coerceAtLeast(0.000001)
 
         var predicted = basePos
 

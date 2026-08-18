@@ -1,16 +1,10 @@
 package joshxviii.plantz.entity.zombie
 
-import joshxviii.plantz.PazBlocks
-import joshxviii.plantz.PazDamageTypes
+import joshxviii.plantz.*
 import joshxviii.plantz.PazDataSerializers.DATA_ZOMBIE_STATE
-import joshxviii.plantz.PazEffects
-import joshxviii.plantz.PazEntities
-import joshxviii.plantz.PazItems
-import joshxviii.plantz.PazTags
 import joshxviii.plantz.ai.ZombieState
 import joshxviii.plantz.ai.goal.FlyingPathfindingGoal
 import joshxviii.plantz.entity.Balloon
-import joshxviii.plantz.isHypnotized
 import joshxviii.plantz.item.BalloonItem
 import net.minecraft.core.BlockPos
 import net.minecraft.core.particles.BlockParticleOption
@@ -18,6 +12,7 @@ import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.network.syncher.EntityDataAccessor
 import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.server.level.ServerLevel
+import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.tags.FluidTags
 import net.minecraft.util.RandomSource
@@ -52,12 +47,15 @@ import net.minecraft.world.level.ServerLevelAccessor
 import net.minecraft.world.level.material.Fluids
 import net.minecraft.world.level.storage.ValueInput
 import net.minecraft.world.level.storage.ValueOutput
+import net.minecraft.world.phys.Vec3
 import kotlin.math.max
 
 abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie(type, level) {
 
     val emergeAnimation : AnimationState = AnimationState()
     val floatAnimation : AnimationState = AnimationState()
+    var moveDir = Vec3.ZERO
+    var moveDirO = Vec3.ZERO
 
     companion object {
         fun checkPazZombieSpawnRules(
@@ -134,6 +132,19 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
         val ZOMBIE_STATE: EntityDataAccessor<ZombieState> = SynchedEntityData.defineId<ZombieState>(PazZombie::class.java, DATA_ZOMBIE_STATE)
     }
 
+    override fun getAmbientSound(): SoundEvent {
+        return PazSounds.BROWNCOAT_AMBIENT
+    }
+    override fun getHurtSound(source: DamageSource): SoundEvent {
+        return PazSounds.BROWNCOAT_HURT
+    }
+    override fun getDeathSound(): SoundEvent {
+        return PazSounds.BROWNCOAT_DEATH
+    }
+    override fun getStepSound(): SoundEvent {
+        return SoundEvents.ZOMBIE_STEP
+    }
+
     override fun onEquipItem(slot: EquipmentSlot, oldStack: ItemStack, stack: ItemStack) {
         if (stack.`is`(PazItems.DUCKY_TUBE) && slot == EquipmentSlot.LEGS) this.getNavigation().setCanFloat(true);
         else if (oldStack.`is`(PazItems.DUCKY_TUBE) && slot == EquipmentSlot.LEGS) this.getNavigation().setCanFloat(false);
@@ -198,6 +209,9 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
     var waterTime = -1
     override fun tick() {
         super.tick()
+        moveDirO = moveDir
+        moveDir = deltaMovement
+
         val serverLevel = level() as? ServerLevel
 
         if (isEyeInFluid(FluidTags.WATER)) {
@@ -275,13 +289,15 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
     }
 
     override fun hurtServer(level: ServerLevel, source: DamageSource, damage: Float): Boolean {
-        return if (source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES) && !source.directEntity.isHypnotized()) false else super.hurtServer(level, source, damage)
+        return if ((source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES) || source.isZombieFireworkExplosion()) && !source.directEntity.isHypnotized()) false else super.hurtServer(level, source, damage)
     }
     override fun hurtClient(source: DamageSource): Boolean {
-        return if (source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES) && !source.directEntity.isHypnotized()) false else super.hurtClient(source)
+        return if ((source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES) || source.isZombieFireworkExplosion()) && !source.directEntity.isHypnotized()) false else super.hurtClient(source)
     }
     override fun actuallyHurt(level: ServerLevel, source: DamageSource, damage: Float) {
-        if (source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES) && !source.directEntity.isHypnotized()) return
+        if ((source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES) || source.isZombieFireworkExplosion()) && !source.directEntity.isHypnotized()) {
+            return
+        }
         super.actuallyHurt(level, source, damage)
     }
 

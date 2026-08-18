@@ -12,10 +12,7 @@ import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.resources.Identifier
 import net.minecraft.server.level.ServerLevel
-import net.minecraft.sounds.SoundEvent
-import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.DifficultyInstance
-import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.damagesource.DamageTypes
 import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.effect.MobEffects
@@ -175,7 +172,7 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
             beamWidth = 1.0,
             actionDelay = 10,
             doNotExtendPastTarget = true,
-            damageType = PazDamageTypes.ZOMBIE_BEAM,
+            damageType = PazDamageTypes.ZOMBIE_ENERGY,
             damageMultiplier = 0.2f,
             actionPredicate = {
                 state != ZombieState.FLYING && beamCooldown<=0 && punchTime<=0
@@ -184,7 +181,7 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
                 val laserStart = calculateUpVector(this.xRot + 95, this.yHeadRot + 25).scale(0.9).add(startPos)
                 if (variant != SuperBrainzVariant.ELECTRO) (level() as ServerLevel).sendParticles(
                     BeamParticleOptions(endPos.offsetRandom(random, .25f),
-                        color = variant.beamColor, width = 0.14f, lifeTime = 10),
+                        color = variant.beamColor, width = 0.28f, lifeTime = 10),
                     laserStart.x, laserStart.y, laserStart.z,
                     1, 0.0, 0.0, 0.0, 0.0
                 )
@@ -218,20 +215,6 @@ class SuperBrainz(type: EntityType<out SuperBrainz>, level: Level) : PazZombie(t
 
     override fun addBehaviourGoals() {
         addBehaviourGoalsNoMelee()
-    }
-
-    //TODO custom sounds
-    override fun getAmbientSound(): SoundEvent {
-        return SoundEvents.EMPTY
-    }
-    override fun getHurtSound(source: DamageSource): SoundEvent {
-        return SoundEvents.EMPTY
-    }
-    override fun getDeathSound(): SoundEvent {
-        return SoundEvents.EMPTY
-    }
-    override fun getStepSound(): SoundEvent {
-        return SoundEvents.EMPTY
     }
 
     override fun doHurtTarget(level: ServerLevel, target: Entity): Boolean {

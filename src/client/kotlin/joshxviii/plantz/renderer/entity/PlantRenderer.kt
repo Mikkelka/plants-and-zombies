@@ -5,7 +5,7 @@ import joshxviii.plantz.PazConfig
 import joshxviii.plantz.ai.PlantState
 import joshxviii.plantz.entity.plant.BonkChoy
 import joshxviii.plantz.entity.plant.ExplodeONut
-import joshxviii.plantz.entity.plant.Explosive
+import joshxviii.plantz.entity.plant.ExplosivePlant
 import joshxviii.plantz.entity.plant.KernelPult
 import joshxviii.plantz.entity.plant.Plant
 import joshxviii.plantz.entity.plant.WallNut
@@ -35,7 +35,7 @@ class PlantRenderer(
     private val defaultModel: EntityModel<PlantRenderState>,
     context: EntityRendererProvider.Context,
     private val babyModel: EntityModel<PlantRenderState>? = null,
-) : net.minecraft.client.renderer.entity.MobRenderer<Plant, PlantRenderState, EntityModel<PlantRenderState>>(
+) : MobRenderer<Plant, PlantRenderState, EntityModel<PlantRenderState>>(
     context,
     defaultModel,
     0.5f
@@ -96,7 +96,7 @@ class PlantRenderer(
             Quaternionf()
         }
         state.plantState = entity.state
-        if (entity is Explosive) state.swelling = entity.getSwelling(partialTick)
+        if (entity is ExplosivePlant) state.swelling = entity.getSwelling(partialTick)
         state.cooldown = entity.cooldown
         state.isAsleep = entity.isAsleep
         state.damagedAmount = entity.damagedPercent
@@ -135,7 +135,7 @@ class PlantRenderer(
 
 class EmissivePlantLayer<M : EntityModel<PlantRenderState>>(
     renderer: RenderLayerParent<PlantRenderState, M>,
-) : net.minecraft.client.renderer.entity.layers.EyesLayer<PlantRenderState, M>(renderer) {
+) : EyesLayer<PlantRenderState, M>(renderer) {
 
     override fun submit(
         poseStack: PoseStack,
@@ -154,7 +154,7 @@ class EmissivePlantLayer<M : EntityModel<PlantRenderState>>(
 }
 
 
-class PlantRenderState : net.minecraft.client.renderer.entity.state.LivingEntityRenderState() {
+class PlantRenderState : LivingEntityRenderState() {
     companion object {
         const val TEXTURE_PATH = "textures/entity/plant"
     }

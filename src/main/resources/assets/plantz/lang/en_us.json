@@ -40,7 +40,7 @@
   "death.attack.zombie_trample": "%1$s was trampled by %2$s",
   "death.attack.zombie_explode": "%1$s was blown up %2$s",
   "death.attack.zombie_electric": "%1$s was electrocuted by %2$s",
-  "death.attack.zombie_beam": "%1$s was vaporized by %2$s",
+  "death.attack.zombie_energy": "%1$s was vaporized by %2$s",
   "death.attack.plant": "%1$s was killed by %2$s",
   "death.attack.plant.player": "%1$s was killed",
   "death.attack.ice_plant": "%1$s was frozen to death by %2$s",
@@ -51,6 +51,8 @@
   "death.attack.electric_plant": "%1$s was electrocuted by %2$s",
   "death.attack.electric_zap": "%1$s was electrocuted",
   "death.attack.electric_zap.player": "%1$s was electrocuted by %2$s",
+  "death.attack.energy": "%1$s was vaporized",
+  "death.attack.energy.player": "%1$s was vaporized by %2$s",
   "death.attack.toxic": "%1$s was poisoned",
   "death.attack.toxic.player": "%1$s was poisoned by %2$s",
   "death.attack.paint": "%1$s was turned into an art piece by %2$s",
@@ -124,6 +126,8 @@
   "item.plantz.plant_pot_helmet": "Plant Pot Helmet",
   "item.plantz.seed_packet": "Empty Seed Packet",
   "item.plantz.seed_packet.entity": "%s Seeds",
+  "item.plantz.blueprint": "Machine Blueprint",
+  "item.plantz.blueprint.entity": "%s Blueprint",
 
   "item.plantz.white_balloon": "White Balloon",
   "item.plantz.light_gray_balloon": "Light Gray Balloon",
@@ -270,6 +274,11 @@
   "entity.plantz.imp": "Imp",
   "entity.plantz.gargantuar": "Gargantuar",
 
+  "entity.plantz.zombie_turret": "Zombie Turret",
+  "entity.plantz.elctro_turret": "Electro Turret",
+  "entity.plantz.zombie_drone": "Zombie Drone",
+  "entity.plantz.lawn_mower": "Lawn Mower",
+
   "entity.plantz.gnome": "Garden Gnome",
   "entity.plantz.plant_pot_minecart": "Minecart with Plant Pot",
 
@@ -295,9 +304,7 @@
   "plantz.subtitles.entity.zombie_yeti.ambient": "Zombie Yeti groans",
   "plantz.subtitles.entity.zombie_yeti.death": "Zombie Yeti dies",
   "plantz.subtitles.entity.zombie_yeti.hurt": "Zombie Yeti hurt",
-  "plantz.subtitles.entity.browncoat.ambient": "Zombie groans",
-  "plantz.subtitles.entity.browncoat.death": "Zombie dies",
-  "plantz.subtitles.entity.browncoat.hurt": "Zombie hurt",
+
   "plantz.subtitles.entity.newspaper_zombie.ambient": "Newspaper Zombie groans",
   "plantz.subtitles.entity.newspaper_zombie.death": "Newspaper Zombie dies",
   "plantz.subtitles.entity.newspaper_zombie.hurt": "Newspaper Zombie hurt",
