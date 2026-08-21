@@ -34,6 +34,12 @@ data class ServerConfig(
         "plantz:coffeebean"             to -1,
         "plantz:grave_buster"           to -1,
     ),
+    var alloyCosts: MutableMap<String, Int> = mutableMapOf(
+        "plantz:zombie_turret"          to 12,
+        "plantz:zombie_drone"           to 8,
+        "plantz:electro_turret"         to 10,
+        "plantz:lawn_mower"             to 14,
+    ),
     var sunCosts: MutableMap<String, Int> = mutableMapOf(
         "plantz:sunflower"              to 5,
         "plantz:peashooter"             to 5,
@@ -66,6 +72,7 @@ data class ServerConfig(
 )
 data class ClientConfig(
     var showDebugInfo: Boolean = false,
+    var showHiddenItemsInCreativeTab: Boolean = false,
 )
 
 object PazConfig {
@@ -117,6 +124,9 @@ object PazConfig {
     val SHOW_DEBUG_INFO: Boolean
         get() = client.showDebugInfo
 
+    val SHOW_HIDDEN_ITEMS: Boolean
+        get() = client.showHiddenItemsInCreativeTab
+
     val COFFEE_BUFF_DURATION: Int
         get() = server.coffeeBuffDuration.coerceAtLeast(0)
 
@@ -150,17 +160,26 @@ object PazConfig {
 
     fun getSunCost(type: EntityType<*>?): Int {
         val id = type?.let { BuiltInRegistries.ENTITY_TYPE.getKey(it) }
-        return getSunCost(id)
+        if (id == null) return 0
+        val key = id.toString()
+        val value = server.sunCosts[key]?:// config
+        defaultServerConfig.sunCosts[key]?.let {// default
+            putDefaultSunCost(id, it)
+            it
+        }
+        ?: -1 // not in id list
+        return value.coerceAtLeast(-1)
     }
 
-    fun getSunCost(entityId: Identifier?): Int {
-        if (entityId == null) return 0
-        val key = entityId.toString()
-        val value = server.sunCosts[key]?:// config
-            defaultServerConfig.sunCosts[key]?.let {// default
-                putDefaultSunCost(entityId, it)
-                it
-            }
+    fun getAlloyCost(type: EntityType<*>?): Int {
+        val id = type?.let { BuiltInRegistries.ENTITY_TYPE.getKey(it) }
+        if (id == null) return 0
+        val key = id.toString()
+        val value = server.alloyCosts[key]?:// config
+        defaultServerConfig.alloyCosts[key]?.let {// default
+            putDefaultAlloyCost(id, it)
+            it
+        }
         ?: -1 // not in id list
         return value.coerceAtLeast(-1)
     }
@@ -183,6 +202,11 @@ object PazConfig {
 
     fun putDefaultSunCost(entityId: Identifier, sunCost: Int) {
         server.sunCosts.putIfAbsent(entityId.toString(), sunCost.coerceAtLeast(0))
+        saveConfig(serverConfigPath, server)
+    }
+
+    fun putDefaultAlloyCost(entityId: Identifier, alloyCost: Int) {
+        server.alloyCosts.putIfAbsent(entityId.toString(), alloyCost.coerceAtLeast(0))
         saveConfig(serverConfigPath, server)
     }
 }

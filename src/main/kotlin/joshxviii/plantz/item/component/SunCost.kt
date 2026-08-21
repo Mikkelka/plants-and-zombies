@@ -2,6 +2,8 @@ package joshxviii.plantz.item.component
 
 import com.mojang.serialization.Codec
 import joshxviii.plantz.PazConfig
+import joshxviii.plantz.PazItems
+import joshxviii.plantz.name
 import net.minecraft.ChatFormatting
 import net.minecraft.core.component.DataComponentGetter
 import net.minecraft.core.component.DataComponents
@@ -23,7 +25,7 @@ data class SunCost(
         components: DataComponentGetter
     ) {
         val type = components.get(DataComponents.ENTITY_DATA)?.type()
-        consumer.accept(Component.translatable("component.sun_cost", getSunCost(type)).withStyle(ChatFormatting.GOLD))
+        consumer.accept(Component.translatable("component.item_cost", PazItems.SUN.name(), getSunCost(type)).withStyle(ChatFormatting.GOLD))
     }
 
     fun getSunCost(forType: EntityType<*>?): Int {

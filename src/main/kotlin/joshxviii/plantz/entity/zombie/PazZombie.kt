@@ -237,7 +237,7 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
             }
             ZombieState.FLYING -> {
                 floatAnimation.startIfStopped(tickCount)
-                if (serverLevel!=null && this !is SuperBrainz ) {
+                if (serverLevel!=null && this !is SuperBrainz && this !is ZombieRobot) {
                     balloons.removeIf { !it.isAlive || it.leashHolder != this }
                     if (balloons.isEmpty()) state = ZombieState.IDLE
                 }
@@ -289,17 +289,25 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
     }
 
     override fun hurtServer(level: ServerLevel, source: DamageSource, damage: Float): Boolean {
+        if (!ignoreZombieDamage()) return super.hurtServer(level, source, damage)
         return if ((source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES) || source.isZombieFireworkExplosion()) && !source.directEntity.isHypnotized()) false else super.hurtServer(level, source, damage)
     }
     override fun hurtClient(source: DamageSource): Boolean {
+        if (!ignoreZombieDamage()) return super.hurtClient(source)
         return if ((source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES) || source.isZombieFireworkExplosion()) && !source.directEntity.isHypnotized()) false else super.hurtClient(source)
     }
     override fun actuallyHurt(level: ServerLevel, source: DamageSource, damage: Float) {
+        if (!ignoreZombieDamage()) {
+            super.actuallyHurt(level, source, damage)
+            return
+        }
         if ((source.`is`(PazTags.DamageTypes.IGNORED_BY_ZOMBIES) || source.isZombieFireworkExplosion()) && !source.directEntity.isHypnotized()) {
             return
         }
         super.actuallyHurt(level, source, damage)
     }
+
+    protected open fun ignoreZombieDamage(): Boolean = true
 
     override fun wantsToPickUp(level: ServerLevel, itemStack: ItemStack): Boolean {
         if (itemStack.`is`(PazBlocks.PLANTZ_FLAG.asItem())) return false

@@ -1,15 +1,18 @@
 package joshxviii.plantz.block.entity
 
 import com.mojang.serialization.Codec
+import joshxviii.plantz.GardenHeroRewards
 import joshxviii.plantz.MailboxData
 import joshxviii.plantz.PazBlocks
+import joshxviii.plantz.PazCriteria
 import joshxviii.plantz.PazEffects
+import joshxviii.plantz.PazLootTables
 import joshxviii.plantz.PazServerParticles
 import joshxviii.plantz.block.MailboxBlock.Companion.FACING
 import joshxviii.plantz.block.MailboxBlock.Companion.STATE
 import joshxviii.plantz.block.MailboxState
-import joshxviii.plantz.effect.GardenHeroEffect
 import joshxviii.plantz.inventory.MailboxMenu
+import joshxviii.plantz.raid.ZombieRaid.Companion.TACO_TIME_WAVE
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider
 import net.minecraft.core.BlockPos
 import net.minecraft.core.HolderLookup
@@ -56,11 +59,11 @@ class MailboxBlockEntity(
     private var name: Component? = null
     private var ejectTimer: Int = 0
     private var tickCount : Int = 0
-    private var heroMailBuffer: List<ResourceKey<LootTable>> = emptyList()
+    private var heroMailBuffer: MutableList<ResourceKey<LootTable>> = mutableListOf()
     private var heroMailIndex: Int = 0
 
     companion object {
-        const val HERO_MAIL_EJECT_DELAY = 12
+        const val HERO_MAIL_EJECT_DELAY = 10
         val DEFAULT_NAME = Component.translatable("item.plantz.mailbox");
 
         fun tick(level: Level, pos: BlockPos, state: BlockState, blockEntity: MailboxBlockEntity) {
@@ -74,17 +77,27 @@ class MailboxBlockEntity(
             }
 
             if (state.getValue(STATE) == MailboxState.EJECTING) {
-                if (blockEntity.heroMailBuffer.isNotEmpty()) {// Hero Mail Rewards
+                val buffer = blockEntity.heroMailBuffer
+                if (buffer.isNotEmpty()) {// Hero Mail Rewards
                     val dropPos = blockEntity.blockState.getValue(FACING).unitVec3.scale(0.75).add(Vec3.atCenterOf(blockEntity.blockPos))
-                    if (blockEntity.ejectTimer % HERO_MAIL_EJECT_DELAY == 0) blockEntity.heroMailBuffer.getOrNull(blockEntity.heroMailIndex)?.let {
-                        val items = blockEntity.getHeroMail(it)
+                    if (blockEntity.ejectTimer % HERO_MAIL_EJECT_DELAY == 0) buffer.getOrNull(blockEntity.heroMailIndex)?.let {
+                        val items = blockEntity.getHeroMail(it).toMutableList()
+                        if (blockEntity.heroMailIndex == TACO_TIME_WAVE - 1) {
+                            items.addAll(blockEntity.getHeroMail(PazLootTables.MAIL_REWARDS_TACO))
+                            blockEntity.playSound(SoundEvents.PLAYER_LEVELUP, 1.6f)
+                            (level as? ServerLevel)?.sendParticles(
+                                PazServerParticles.CONFETTI,
+                                dropPos.x, dropPos.y, dropPos.z, 16,
+                                0.1, 0.2, 0.1, 0.075
+                            )
+                        }
                         items.forEach { item ->
                             Containers.dropItemStack(level, dropPos.x, dropPos.y, dropPos.z, item)
                         }
-                        blockEntity.playSound(SoundEvents.VAULT_EJECT_ITEM)
+                        blockEntity.playSound(SoundEvents.VAULT_EJECT_ITEM, (blockEntity.heroMailIndex / buffer.size.toFloat()) * 0.2f + 1.0f)
                         blockEntity.heroMailIndex++
-                        if (blockEntity.heroMailIndex >= blockEntity.heroMailBuffer.size) {
-                            blockEntity.heroMailBuffer = emptyList()
+                        if (blockEntity.heroMailIndex >= buffer.size) {
+                            buffer.clear()
                             blockEntity.heroMailIndex = 0
                         }
                     }
@@ -113,14 +126,16 @@ class MailboxBlockEntity(
 
     fun tryToGetMail(player: Player): Boolean {
         val currentState = blockState.getValue(STATE)
-        val heroEffect = player.getEffect(PazEffects.GARDEN_HERO)?.effect?.value() as? GardenHeroEffect
+        val heroEffect = player.getEffect(PazEffects.GARDEN_HERO)?.effect
 
         val dropPos = blockState.getValue(FACING).unitVec3.scale(0.75).add(Vec3.atCenterOf(blockPos))
         if (heroEffect != null) {
-            player.removeEffect(PazEffects.GARDEN_HERO)
-            heroMailBuffer = heroEffect.lootTables
+            if (player !is ServerPlayer) return false
+            heroMailBuffer = GardenHeroRewards.collectRewards(player)
             updateMailboxState(MailboxState.EJECTING)
             ejectTimer = HERO_MAIL_EJECT_DELAY * heroMailBuffer.size
+            player.removeEffect(heroEffect)
+            PazCriteria.RECEIVE_HERO_MAIL.trigger(player, true)
             setChanged()
             return true
         }
@@ -209,7 +224,7 @@ class MailboxBlockEntity(
     override fun removeComponentsFromTag(output: ValueOutput) {
         output.discard("CustomName")
     }
-    private fun playSound(event: SoundEvent, pitch: Float = 0.9f) {
+    fun playSound(event: SoundEvent, pitch: Float = 0.9f) {
         val direction = blockState.getValue(FACING).unitVec3i
         val x = worldPosition.x + 0.5 + direction.x / 2.0
         val y = worldPosition.y + 0.5 + direction.y / 2.0

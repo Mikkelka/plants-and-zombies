@@ -3,7 +3,7 @@
 #### General:   
 - Plantz Flag now reduces the cooldown of nearby plants by 20%. This effect does not stack.
 - When placing plants in plant pots, their initial rotation will be orientated the same as the pot.
-- While a plant is equipped using the Plant Pot Helmet, you can place them back in plant pots. by shift clicking.
+- While a plant is equipped using the Plant Pot Helmet, you can place them back in plant pots by shift clicking.
 - Added Brainz Alloy.
   - Drops from the Grave Loot, Raid rewards, Rob Zombies, Super Brainz, Zombie Bots, and various other methods.
   - Used for crafting blocks and special zombie tech.
@@ -21,6 +21,7 @@
   - Zombies will emerge from the ground near the gravestone during the night.
 - Added The Graveyard biome.
 - Added Garden Gnome Blocks.
+- Added Tacos as a food item. It can be received as a raid reward or crafted with ingredients from [Farmer's Delight](https://modrinth.com/mod/farmers-delight-refabricated).
 - The Football Helmet now gives increased speed and step height while sprinting. Nearby Mobs will also be knocked back.
 - Added Freeze Mob Effect.
 - Added "Hero of the Garden" Effect.
@@ -51,20 +52,38 @@
     - Repeater has a 60% chance to produce Peashooter seeds.
 - Repeaters no longer spawn naturally.
 #### Zombies:
+- Updated the Zombie Raid event.
+  - The amount of waves a raid has is now determined by: (zombie omen level * 2) + (the game's difficulty) + (2 if the end credits have been seen).
+  - After the end credits have been seen, waves during a raid will be more difficult.
+  - Added Special wave types:
+    - "Bucket Brigade" can occur during waves 1–3.
+    - "Half-time Showdown" can occur during waves 2–5.
+    - "Winter Wonderland" can occur during waves 4–9.
+    - "Pirate Invasion" can occur during waves 5–14.
+    - "Robo Army" can occur during waves 6–15. (Only after the end credits have been seen)
+    - "League of Awesome" can occur during waves 8–19. (Only after the end credits have been seen)
+- Added the Hero of the Garden effect.
+  - When a raid is completed, all players will receive the Hero of the Garden effect.
+  - While the effect is active, interacting with a mailbox will grant special loot for each completed wave in the raid.
 - Added Desert, Snow, and Pirate Variants for the Browncoat Zombie.
+  - The pirate browncoat will spawn during the "Pirate Invasion" special wave.
+  - The snow browncoat will spawn during the "Winter Wonderland" special wave.
 - Added a Yeti and Pirate Variant for the Imp,
-  - Yeti Imps apply the Freeze effect.
-  - Pirate Imps spawn in an explosive barrel.
-- Added a Pirate Variant for Gargantuar.
-- Added Soldier Zombie
-  - Spawns during a zombie raid.
-  - Uses the dye blaster.
+  - Yeti Imps apply the Freeze effect and spawn during the "Winter Wonderland" special wave.
+  - Pirate Imps spawn in an explosive barrel and spawn during the "Pirate Invasion" special wave.
+- Added a Pirate Variant for Gargantuar that spawns during the "Pirate Invasion" special wave.
 - Added Engineer Zombie
-  - Spawns during a zombie raid.
+  - Spawns during the "Robo Army" zombie wave and normal waves after the end credits have been seen.
+  - Will avoid players and plants and will attempt to build zombie bots to attack.
+- Added Soldier Zombie
+  - Spawns during the "Robo Army" special wave.
+  - Uses the dye blaster.
 - Added Robo Zombie
-  - Spawns during a zombie raid.
+  - Spawns during the "Robo Army" special wave.
+- Added Pirate Captain Zombie
+  - Spawns during the "Pirate Invasion" special wave.
 - Added Super Brainz
-  - Spawns during a zombie raid.
+  - Spawns during the "League of Awesome" special zombie raid.
 - Zombies will now attack Wall Nuts when walking into them.
 ### Technical Changes
 
