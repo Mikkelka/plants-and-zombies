@@ -1,8 +1,14 @@
 package joshxviii.plantz
 
+import joshxviii.plantz.block.entity.MailboxBlockEntity
 import joshxviii.plantz.block.entity.MailboxManager
+import joshxviii.plantz.block.entity.SunBatteryBlockEntity
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLevelEvents
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import net.minecraft.client.Minecraft
+import net.minecraft.core.particles.ParticleTypes
+import net.minecraft.world.phys.Vec3
 
 object PazClient : ClientModInitializer {
 	override fun onInitializeClient() {
@@ -12,9 +18,5 @@ object PazClient : ClientModInitializer {
 		PazScreens.registerAll()
 		PazClientNetwork.initialize()
 		PazRenderPipelines.initialize()
-
-		ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { minecraft, level ->
-			//MailboxManager.clearMailboxes()
-		}
 	}
 }

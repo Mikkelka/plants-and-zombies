@@ -17,6 +17,7 @@ import joshxviii.plantz.PazEntities.SUPER_BRAINZ
 import joshxviii.plantz.PazEntities.ZOMBIE_YETI
 import joshxviii.plantz.item.*
 import joshxviii.plantz.item.component.BlocksProjectileDamage
+import joshxviii.plantz.item.component.BrainzAlloyCost
 import joshxviii.plantz.item.component.StoredSun
 import joshxviii.plantz.item.component.StoredWater
 import joshxviii.plantz.item.component.SunCost
@@ -39,6 +40,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier
 import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.item.*
 import net.minecraft.world.item.Items.GLASS_BOTTLE
+import net.minecraft.world.food.FoodProperties
 import net.minecraft.world.item.component.ItemAttributeModifiers
 import net.minecraft.world.item.component.UseCooldown
 import net.minecraft.world.item.equipment.ArmorMaterials
@@ -96,6 +98,11 @@ object PazItems {
                 mustBeUsing = true
             )
             ).component(DataComponents.BREAK_SOUND, SoundEvents.SHIELD_BREAK)
+    )
+    @JvmField
+    val TACO: Item = registerItem(
+        "taco",
+        properties = Item.Properties().food(FoodProperties.Builder().nutrition(9).saturationModifier(1.1f).build())
     )
     const val DUCKY_TUBE_DAMAGE_INTERVAL = 45
     val DUCKY_EQUIP_ASSET = ResourceKey.create(EquipmentAssets.ROOT_ID, pazResource("ducky_tube"))
@@ -189,6 +196,15 @@ object PazItems {
     val BLUEPRINT: Item = registerItem(
         "blueprint", ::BlueprintItem,
         properties = Item.Properties()
+            .stacksTo(1)
+            .durability(20)
+            .component(PazComponents.BRAINZ_ALLOY_COST, BrainzAlloyCost())
+            .component(DataComponents.BREAK_SOUND, SoundEvents.WOLF_ARMOR_BREAK)
+    )
+    @JvmField
+    val LETTER: Item = registerItem(
+        "letter",
+        properties = Item.Properties()
     )
     @JvmField
     val SEED_PACKET: Item = registerItem(
@@ -271,6 +287,7 @@ object PazItems {
         ItemComponentTooltipProviderRegistryImpl.addLast(PazComponents.STORED_WATER)
         ItemComponentTooltipProviderRegistryImpl.addLast(PazComponents.STORED_SUN)
         ItemComponentTooltipProviderRegistryImpl.addLast(PazComponents.SUN_COST)
+        ItemComponentTooltipProviderRegistryImpl.addLast(PazComponents.BRAINZ_ALLOY_COST)
         ItemComponentTooltipProviderRegistryImpl.addLast(PazComponents.BLOCKS_PROJECTILE_DAMAGE)
 
         DefaultItemComponentEvents.MODIFY.register {

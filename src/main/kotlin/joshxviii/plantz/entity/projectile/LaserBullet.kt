@@ -6,6 +6,8 @@ import joshxviii.plantz.PazEntities
 import net.minecraft.network.syncher.EntityDataAccessor
 import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
+import net.minecraft.resources.ResourceKey
+import net.minecraft.world.damagesource.DamageType
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.storage.ValueInput
@@ -18,12 +20,13 @@ class LaserBullet(
     owner: LivingEntity? = null,
     spawnOffset: Vec2 = Vec2.ZERO,
     color: Int = DEFAULT_COLOR,
+    damageType: ResourceKey<DamageType> = PazDamageTypes.ENERGY,
     damage: Float = 0.5f,
 ) : PazProjectile(PazEntities.LASER_BULLET, level, owner, spawnOffset,
-    PazDamageTypes.ENERGY, damage, knockback = 0.02
+    damageType, damage, knockback = 0.02
 ) {
     companion object {
-        const val DEFAULT_COLOR: Int = 0xFF44EE
+        const val DEFAULT_COLOR: Int = 0xFF99EE
         val COLOR: EntityDataAccessor<Int> = SynchedEntityData.defineId(LaserBullet::class.java, EntityDataSerializers.INT)
     }
 

@@ -15,6 +15,8 @@ import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.sounds.SoundEvents
 import net.minecraft.util.RandomSource
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResult
@@ -82,7 +84,6 @@ class MailboxBlock(
     ): InteractionResult {
         val mailbox = getMailboxEntity(level, pos)?: return super.useItemOn(itemStack, state, level, pos, player, hand, hitResult)
         val success = mailbox.tryToGetMail(player)
-        if (player is ServerPlayer) PazCriteria.SEND_MAIL.trigger(player, success)
         return if (success) InteractionResult.SUCCESS
         else InteractionResult.TRY_WITH_EMPTY_HAND
     }
@@ -114,6 +115,7 @@ class MailboxBlock(
                     .sortedBy { it.blockPos.distSqr(pos) }
 
                 player.openMenu(currentMailbox)
+                currentMailbox?.playSound(SoundEvents.COPPER_CHEST_OPEN, 1.5f)
                 (player.containerMenu as? MailboxMenu)?.availableMailboxes = mailboxes
                 ServerPlayNetworking.send(player as ServerPlayer, MailboxListResponsePayload(level.dimension(), mailboxes))
             }

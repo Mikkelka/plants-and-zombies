@@ -6,9 +6,10 @@ import joshxviii.plantz.networking.SendMailResponsePayload
 import joshxviii.plantz.networking.ServerConfigResponsePayload
 import joshxviii.plantz.networking.ZombieRaidClientData
 import joshxviii.plantz.networking.ZombieRaidResponsePayload
-import joshxviii.plantz.raid.ZombieRaid
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLevelEvents
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-import net.minecraft.core.BlockPos
+import net.minecraft.client.Minecraft
 import java.util.UUID
 
 object PazClientNetwork {
@@ -23,6 +24,13 @@ object PazClientNetwork {
     }
 
     fun initialize() {
+
+        ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { client, level ->
+            client.player?.let {
+                ZombieRaidClientCache.clear()
+            }
+        }
+
         ClientPlayNetworking.registerGlobalReceiver(ZombieRaidResponsePayload.ID) { payload, context ->
             ZombieRaidClientCache.put(payload.data)
             if (payload.terminate) ZombieRaidClientCache.remove(payload.data.id)

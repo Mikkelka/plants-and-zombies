@@ -2,6 +2,7 @@ package joshxviii.plantz.entity.zombie
 
 import PazOwnableZombie
 import joshxviii.plantz.entity.plant.Plant
+import joshxviii.plantz.hasSameRootOwner
 import joshxviii.plantz.item.BlueprintItem
 import net.minecraft.network.syncher.EntityDataAccessor
 import net.minecraft.network.syncher.EntityDataSerializers
@@ -24,6 +25,7 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.ServerLevelAccessor
+import net.minecraft.world.level.entity.UniquelyIdentifyable
 import net.minecraft.world.level.storage.ValueInput
 import net.minecraft.world.level.storage.ValueOutput
 import net.minecraft.world.phys.Vec3
@@ -51,15 +53,17 @@ abstract class ZombieRobot(type: EntityType<out ZombieRobot>, level: Level) : Pa
     }
 
     override fun setPos(x: Double, y: Double, z: Double) {
-        if (this.isPassenger || !onGround()) super.setPos(x, y, z)
+        if (!clampToGrid() || this.isPassenger || !onGround()) super.setPos(x, y, z)
         else super.setPos(Mth.floor(x) + 0.5, y, Mth.floor(z) + 0.5)
     }
 
+    open fun clampToGrid(): Boolean = true
+
     override fun createBodyControl(): BodyRotationControl = object : BodyRotationControl(this) { override fun clientTick() {} }
 
-    override fun getDeltaMovement(): Vec3 = Vec3(0.0, super.deltaMovement.y, 0.0)
+    override fun getDeltaMovement(): Vec3 = if (clampToGrid()) Vec3(0.0, super.deltaMovement.y, 0.0) else super.getDeltaMovement()
     override fun setDeltaMovement(deltaMovement: Vec3) {
-        if (!onGround() || isInWater) return super.setDeltaMovement(deltaMovement)
+        if (!clampToGrid() || !onGround() || isInWater) return super.setDeltaMovement(deltaMovement)
     }
 
     override fun defineSynchedData(entityData: SynchedEntityData.Builder) {
@@ -70,11 +74,15 @@ abstract class ZombieRobot(type: EntityType<out ZombieRobot>, level: Level) : Pa
 
     override fun addAdditionalSaveData(output: ValueOutput) {
         super.addAdditionalSaveData(output)
+        EntityReference.store(getOwnerReference(), output, "Owner")
         output.putInt("actionTime", actionTime)
     }
 
     override fun readAdditionalSaveData(input: ValueInput) {
         super.readAdditionalSaveData(input)
+        val owner = EntityReference.readWithOldOwnerConversion<LivingEntity>(input, "Owner", level())
+        if (owner != null) setOwnerReference(owner)
+        else this.entityData.set(DATA_OWNERUUID_ID, Optional.empty())
         input.getIntOr("actionTime", 0)
     }
 
@@ -82,7 +90,9 @@ abstract class ZombieRobot(type: EntityType<out ZombieRobot>, level: Level) : Pa
         return this.entityData.get(DATA_OWNERUUID_ID).orElse(null);
     }
 
-    override fun doPush(entity: Entity) {}
+    override fun doPush(entity: Entity) {
+        if (!clampToGrid()) super.doPush(entity)
+    }
 
     override fun tick() {
         super.tick()
@@ -120,6 +130,7 @@ abstract class ZombieRobot(type: EntityType<out ZombieRobot>, level: Level) : Pa
             if (this.owner is Player) (
                 entity !is Plant &&
                 entity !is Creeper &&
+                !entity.hasSameRootOwner(this.owner) &&
                 (entity is Zombie || (entity is Enemy))
             )
             else (
@@ -127,6 +138,8 @@ abstract class ZombieRobot(type: EntityType<out ZombieRobot>, level: Level) : Pa
             )
         })
     }
+
+    override fun ignoreZombieDamage(): Boolean = owner !is Player
 
     override fun finalizeSpawn(
         level: ServerLevelAccessor,

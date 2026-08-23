@@ -57,7 +57,7 @@ class EngineerZombie(type: EntityType<out EngineerZombie>, level: Level) : PazZo
 
     override fun registerGoals() {
         super.registerGoals()
-        goalSelector.addGoal(1, AvoidEntityGoal(this, LivingEntity::class.java, 32f, 1.0, 1.2) { target -> target is Player || target is Plant })
+        goalSelector.addGoal(1, AvoidEntityGoal(this, LivingEntity::class.java, 28f, 1.0, 1.2) { target -> target is Player || target is Plant })
         goalSelector.addGoal(2, BuildBotGoal(this))
     }
 
@@ -78,7 +78,7 @@ class EngineerZombie(type: EntityType<out EngineerZombie>, level: Level) : PazZo
                 buildAnimation.stop()
                 buildingTime=0
             }
-        }
+        } else if (buildAnimation.isStarted) buildAnimation.stop()
     }
 
     override fun getAmbientSound(): SoundEvent {
