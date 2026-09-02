@@ -9,7 +9,6 @@ import it.unimi.dsi.fastutil.ints.IntList
 import joshxviii.plantz.*
 import joshxviii.plantz.advancement.ZombieRaidContext
 import joshxviii.plantz.block.entity.FlagBlockEntity
-import joshxviii.plantz.block.entity.FlagBlockEntity.Companion.MAX_HEALTH
 import joshxviii.plantz.networking.ZombieRaidClientData
 import joshxviii.plantz.networking.ZombieRaidResponsePayload
 import net.minecraft.SharedConstants
@@ -129,7 +128,7 @@ class ZombieRaid(
         const val GARDEN_HERO_EFFECT_DURATION: Int = 72000
         const val COUNTDOWN_BEFORE_LOSS: Int = 200 //10 seconds
         const val MAXIMUM_WAVE_COUNT: Int = 20
-        const val TACO_TIME_WAVE = 10
+        const val BONUS_REWARD_INTERVAL = 5
     }
 
     private val waveToLeaderMap: MutableMap<Int, Zombie> = Maps.newHashMap<Int, Zombie>()
@@ -231,7 +230,7 @@ class ZombieRaid(
             postRaidTicks = POST_RAID_TICKS
             zombieRaidEvent.players.forEach { player ->// advancement
                 PazCriteria.WIN_ZOMBIE_RAID.trigger(player, ZombieRaidContext(center))
-                val effect = MobEffectInstance(PazEffects.GARDEN_HERO, GARDEN_HERO_EFFECT_DURATION, zombieRaidOmenLevel, false, true)
+                val effect = MobEffectInstance(PazEffects.GARDEN_HERO, GARDEN_HERO_EFFECT_DURATION, (waveTypes.size-1).coerceAtLeast(0), false, true)
                 (player as GardenHeroRewards).`plantz$setWaveList`(waveTypes)
                 player.addEffect(effect)
                 player.sendSystemMessage(ZOMBIE_RAID_VICTORY)
@@ -372,6 +371,7 @@ class ZombieRaid(
         for (zombies in waveZombieMap.values) {
             if (zombies.remove(zombie)) {
                 if (removeFromTotalHealth) totalZombieHealth -= zombie.health
+                (zombie as? ZombieRaider)?.`plantz$setIsFromRaid`(false)
                 sendClientUpdate(level)
                 setDirty(level)
                 break
@@ -393,20 +393,13 @@ class ZombieRaid(
         if (zombies.contains(zombie)) return false
         var existingCopy: Zombie? = null
 
-        for (r in zombies) {
-            if (r.getUUID() == zombie.getUUID()) {
-                existingCopy = r
-                break
-            }
-        }
+        zombies.firstOrNull { it.getUUID() == zombie.getUUID() }?.let { existingCopy = it }
 
-        if (existingCopy != null) {
-            zombies.remove(existingCopy)
-            zombies.add(zombie)
-        }
+        if (existingCopy != null) zombies.remove(existingCopy)
 
         zombies.add(zombie)
         totalZombieHealth += zombie.maxHealth
+        (zombie as? ZombieRaider)?.`plantz$setIsFromRaid`(true)
 
         sendClientUpdate(level)
         return true
@@ -417,6 +410,7 @@ class ZombieRaid(
         val data = ZombieRaidClientData(
             id = zombieRaidEvent.id,
             status = status,
+            currentWaveType = waveTypes.lastOrNull()?: WaveType.DEFAULT,
             wavesSpawned = wavesSpawned,
             activeTime = ticksActive.toInt(),
             numWaves = numWaves,
@@ -424,7 +418,6 @@ class ZombieRaid(
             zombieHealthMax = if (status != ZombieRaidStatus.NEXT_WAVE) totalZombieHealth else 1f,
             zombieHealth = getHealthOfZombies(),
             flagHealth = flag?.health ?: 0f,
-            flagMaxHealth = MAX_HEALTH,
             seenCredits = starterHasSeenCredits
         )
 
@@ -508,11 +501,11 @@ class ZombieRaid(
     fun stop() {
         active = false
         val data = ZombieRaidClientData(id = zombieRaidEvent.id)
+        status = ZombieRaidStatus.STOPPED
         zombieRaidEvent.players.forEach { player ->// terminate raid connection
             player.connection.send(ClientboundCustomPayloadPacket(ZombieRaidResponsePayload(data, true)))
         }
         zombieRaidEvent.removeAllPlayers()
-        status = ZombieRaidStatus.STOPPED
     }
     fun isStopped(): Boolean = status == ZombieRaidStatus.STOPPED
 }

@@ -274,13 +274,50 @@
       { "name": "block/trial_spawner/ambient_ominous3", "volume": 6.0, "pitch": 1.0 }
     ], "subtitle": "plantz.subtitles.event.raid.special_wave"
   },
+
+  "event.raid.taco_reward": {
+    "sounds": [{ "name": "plantz:event/taco_reward", "volume": 1.0, "pitch": 1.0  }], "subtitle": "plantz.subtitles.event.raid.taco_reward"
+  },
+
   "event.mob_effect.hypnotized": {
     "sounds": [{ "name": "enchant/thorns/hit1", "volume": 1.0, "pitch": 1.3 }], "subtitle": "plantz.subtitles.event.mob_effect.hypnotized"
   },
   "event.mob_effect.zombie_omen": {
     "sounds": [{ "name": "event/mob_effects/raid_omen", "volume": 1.0, "pitch": 1.2 }], "subtitle": "plantz.subtitles.event.mob_effect.zombie_omen"
   },
+
   "music_disc.grassy_groove": {
     "sounds": [{ "name": "plantz:music/grassy_groove", "volume": 1.0, "pitch": 1.0 }], "subtitle": "plantz.subtitles.music_disc.grassy_groove"
+  },
+
+  "music.raid.low": {
+    "sounds": [{ "name": "plantz:music/raid/low", "volume": 1.0, "pitch": 1.0 }], "subtitle": "plantz.subtitles.music.raid.low"
+  },
+  "music.raid.medium": {
+    "sounds": [{ "name": "plantz:music/raid/medium", "volume": 1.0, "pitch": 1.0 }], "subtitle": "plantz.subtitles.music.raid.medium"
+  },
+  "music.raid.high": {
+    "sounds": [{ "name": "plantz:music/raid/high", "volume": 1.0, "pitch": 1.0 }], "subtitle": "plantz.subtitles.music.raid.high"
+  },
+  "music.raid.bucket": {
+    "sounds": [{ "name": "plantz:music/raid/high", "volume": 1.0, "pitch": 1.0 }], "subtitle": "plantz.subtitles.music.raid.bucket"
+  },
+  "music.raid.halftime": {
+    "sounds": [{ "name": "plantz:music/raid/high", "volume": 1.0, "pitch": 1.0 }], "subtitle": "plantz.subtitles.music.raid.halftime"
+  },
+  "music.raid.winter": {
+    "sounds": [{ "name": "plantz:music/raid/high", "volume": 1.0, "pitch": 1.0 }], "subtitle": "plantz.subtitles.music.raid.winter"
+  },
+  "music.raid.pirate": {
+    "sounds": [{ "name": "plantz:music/raid/high", "volume": 1.0, "pitch": 1.0 }], "subtitle": "plantz.subtitles.music.raid.pirate"
+  },
+  "music.raid.army": {
+    "sounds": [{ "name": "plantz:music/raid/high", "volume": 1.0, "pitch": 1.0 }], "subtitle": "plantz.subtitles.music.raid.army"
+  },
+  "music.raid.league": {
+    "sounds": [{ "name": "plantz:music/raid/high", "volume": 1.0, "pitch": 1.0 }], "subtitle": "plantz.subtitles.music.raid.league"
+  },
+  "music.raid.zomboss": {
+    "sounds": [{ "name": "plantz:music/raid/high", "volume": 1.0, "pitch": 1.0 }], "subtitle": "plantz.subtitles.music.raid.zomboss"
   }
 }

@@ -2,7 +2,9 @@ package joshxviii.plantz
 
 import joshxviii.plantz.PazMain.MODID
 import joshxviii.plantz.entity.plant.Plant
+import joshxviii.plantz.networking.ZombieRaidClientData
 import joshxviii.plantz.raid.WaveType
+import joshxviii.plantz.raid.ZombieRaid
 import net.minecraft.ChatFormatting
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Vec3i
@@ -35,6 +37,8 @@ import net.minecraft.world.level.pathfinder.Path
 import net.minecraft.world.level.storage.loot.LootTable
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
+import org.joml.Vector3f
+import kotlin.math.pow
 import kotlin.math.sqrt
 
 fun pazResource(path: String): Identifier = Identifier.fromNamespaceAndPath(MODID, path)
@@ -51,6 +55,11 @@ interface GardenHeroRewards {
             return rewards
         }
     }
+}
+
+interface ZombieRaider {
+    fun `plantz$getIsFromRaid`(): Boolean
+    fun `plantz$setIsFromRaid`(value: Boolean)
 }
 
 interface PlantHeadAttachment {
@@ -260,12 +269,16 @@ fun Path?.canReachTarget(target: BlockPos?): Boolean {
     }?: false
 }
 
-fun Mob.attackRange(): Double {
+fun LivingEntity.attackRange(): Double {
     val DEFAULT = sqrt(2.04) - 0.6;
     val interactionRange = this.getAttribute(Attributes.ENTITY_INTERACTION_RANGE)?.value?: 0.0
-    val attackRange = Mth.absMax(this.getActiveItem().get(DataComponents.ATTACK_RANGE)?.effectiveMaxRange(this)?.toDouble() ?: DEFAULT, interactionRange)
+    val attackRange = Mth.absMax(this.activeItem.get(DataComponents.ATTACK_RANGE)?.effectiveMaxRange(this)?.toDouble() ?: DEFAULT, interactionRange)
     val hitboxWidth = (this.boundingBox.xsize + this.boundingBox.ysize) / 2.0
     return hitboxWidth + attackRange
+}
+
+fun LivingEntity.withinAttackRange(entity: Entity): Boolean {
+    return entity.distanceToSqr(this) <= this.attackRange().pow(2)
 }
 
 fun Path?.getEndPos(): BlockPos? = this?.endNode?.let { BlockPos(it.x, it.y, it.z) }

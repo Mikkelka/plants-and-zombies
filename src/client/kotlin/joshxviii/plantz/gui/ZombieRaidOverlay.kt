@@ -1,7 +1,8 @@
 package joshxviii.plantz.gui
 
-import joshxviii.plantz.PazClientNetwork.ZombieRaidClientCache
+import joshxviii.plantz.PazNetwork.ZombieRaidClientCache
 import joshxviii.plantz.PazConfig
+import joshxviii.plantz.block.entity.FlagBlockEntity
 import joshxviii.plantz.pazResource
 import joshxviii.plantz.raid.ZombieRaid
 import joshxviii.plantz.tickTimeFormat
@@ -37,7 +38,7 @@ object ZombieRaidOverlay {
         val bgWidth = 256
         val bgHeight = 32
         val font = Minecraft.getInstance().font
-        val raidEvent = ZombieRaidClientCache.active.values.firstOrNull() ?: return
+        val raidEvent = ZombieRaidClientCache.get() ?: return
         val credits = raidEvent.seenCredits
 
         val screenWidth = graphics.guiWidth()
@@ -51,7 +52,7 @@ object ZombieRaidOverlay {
         val barWidth = 98
         val barHeight = 5
 
-        val flagHealthPercent = (raidEvent.flagHealth / raidEvent.flagMaxHealth).coerceIn(0f, 1f)
+        val flagHealthPercent = (raidEvent.flagHealth / FlagBlockEntity.MAX_HEALTH).coerceIn(0f, 1f)
         val flagBarWidth = Mth.floor(barWidth * flagHealthPercent)
         val flagHealthX = x + 17 + (barWidth - flagBarWidth)
         val flagHealthY = y + 15
@@ -83,8 +84,8 @@ object ZombieRaidOverlay {
         val textX = screenWidth / 2 - font.width(timer) / 2
         val textY = y + 18
         val textColor = when (time) {
-            in -1..200 -> 0xFF5555
-            in 201..600 -> 0xFFFF55
+            in -1..600 -> 0xFF5555
+            in 601..1200 -> 0xFFFF55
             else -> 0xFFFFFF
         }
         if (raidEvent.status != ZombieRaid.ZombieRaidStatus.NEXT_WAVE) graphics.outlineText(font, timer, textX, textY,

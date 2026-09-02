@@ -5,6 +5,7 @@ import joshxviii.plantz.PazEffects
 import joshxviii.plantz.lookAtBlockPos
 import joshxviii.plantz.moveToBlockPos
 import joshxviii.plantz.raid.getZombieRaids
+import joshxviii.plantz.withinAttackRange
 import net.minecraft.core.BlockPos
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.entity.PathfinderMob
@@ -27,10 +28,11 @@ class PathfindToFlagGoal(
     var navCooldown: Int = SEARCH_COOLDOWN
 
     init {
-        flags = EnumSet.of<Flag>(Flag.MOVE, Flag.LOOK)
+        flags = EnumSet.of<Flag>(Flag.MOVE)
     }
 
     override fun canUse(): Boolean {
+        mob.target?.let { if(it.isAlive && mob.withinAttackRange(it)) return false }
         if (navCooldown > 0) { navCooldown--
             if (navCooldown <= 0) {
                 navCooldown = SEARCH_COOLDOWN

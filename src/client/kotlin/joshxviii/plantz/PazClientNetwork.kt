@@ -1,37 +1,26 @@
 package joshxviii.plantz
 
+import joshxviii.plantz.PazNetwork.ZombieRaidClientCache
 import joshxviii.plantz.inventory.MailboxMenu
 import joshxviii.plantz.networking.MailboxListResponsePayload
 import joshxviii.plantz.networking.SendMailResponsePayload
 import joshxviii.plantz.networking.ServerConfigResponsePayload
-import joshxviii.plantz.networking.ZombieRaidClientData
 import joshxviii.plantz.networking.ZombieRaidResponsePayload
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLevelEvents
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.Minecraft
-import java.util.UUID
+
 
 object PazClientNetwork {
-
-    object ZombieRaidClientCache {
-        val active = mutableMapOf<UUID, ZombieRaidClientData>()
-
-        fun get(id: UUID) = active[id]
-        fun put(data: ZombieRaidClientData) { active[data.id] = data }
-        fun remove(id: UUID) { active.remove(id) }
-        fun clear() { active.clear() }
-    }
-
     fun initialize() {
+        ZombieRaidClientCache.clear()
 
-        ClientLevelEvents.AFTER_CLIENT_LEVEL_CHANGE.register { client, level ->
-            client.player?.let {
-                ZombieRaidClientCache.clear()
-            }
+        ClientTickEvents.START_CLIENT_TICK.register { client ->
+            RaidMusicManager.tick()
         }
 
         ClientPlayNetworking.registerGlobalReceiver(ZombieRaidResponsePayload.ID) { payload, context ->
+            if (ZombieRaidClientCache.get(payload.data.id) == null) RaidMusicManager.start()
             ZombieRaidClientCache.put(payload.data)
             if (payload.terminate) ZombieRaidClientCache.remove(payload.data.id)
         }

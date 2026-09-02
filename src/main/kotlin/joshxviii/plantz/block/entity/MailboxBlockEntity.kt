@@ -1,18 +1,12 @@
 package joshxviii.plantz.block.entity
 
 import com.mojang.serialization.Codec
-import joshxviii.plantz.GardenHeroRewards
-import joshxviii.plantz.MailboxData
-import joshxviii.plantz.PazBlocks
-import joshxviii.plantz.PazCriteria
-import joshxviii.plantz.PazEffects
-import joshxviii.plantz.PazLootTables
-import joshxviii.plantz.PazServerParticles
+import joshxviii.plantz.*
 import joshxviii.plantz.block.MailboxBlock.Companion.FACING
 import joshxviii.plantz.block.MailboxBlock.Companion.STATE
 import joshxviii.plantz.block.MailboxState
 import joshxviii.plantz.inventory.MailboxMenu
-import joshxviii.plantz.raid.ZombieRaid.Companion.TACO_TIME_WAVE
+import joshxviii.plantz.raid.ZombieRaid.Companion.BONUS_REWARD_INTERVAL
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider
 import net.minecraft.core.BlockPos
 import net.minecraft.core.HolderLookup
@@ -30,10 +24,12 @@ import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
+import net.minecraft.util.Mth
+import net.minecraft.util.RandomSource
 import net.minecraft.world.Container
 import net.minecraft.world.ContainerHelper
-import net.minecraft.world.Containers
 import net.minecraft.world.SimpleContainer
+import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.entity.player.Inventory
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.AbstractContainerMenu
@@ -63,8 +59,9 @@ class MailboxBlockEntity(
     private var heroMailIndex: Int = 0
 
     companion object {
-        const val HERO_MAIL_EJECT_DELAY = 10
+        const val HERO_MAIL_EJECT_DELAY = 50
         val DEFAULT_NAME = Component.translatable("item.plantz.mailbox");
+        private fun spread(spread: Double, random: RandomSource): Double = (2.0 * random.nextDouble() - 1.0) * spread
 
         fun tick(level: Level, pos: BlockPos, state: BlockState, blockEntity: MailboxBlockEntity) {
             blockEntity.tickCount++
@@ -79,22 +76,15 @@ class MailboxBlockEntity(
             if (state.getValue(STATE) == MailboxState.EJECTING) {
                 val buffer = blockEntity.heroMailBuffer
                 if (buffer.isNotEmpty()) {// Hero Mail Rewards
-                    val dropPos = blockEntity.blockState.getValue(FACING).unitVec3.scale(0.75).add(Vec3.atCenterOf(blockEntity.blockPos))
-                    if (blockEntity.ejectTimer % HERO_MAIL_EJECT_DELAY == 0) buffer.getOrNull(blockEntity.heroMailIndex)?.let {
-                        val items = blockEntity.getHeroMail(it).toMutableList()
-                        if (blockEntity.heroMailIndex == TACO_TIME_WAVE - 1) {
-                            items.addAll(blockEntity.getHeroMail(PazLootTables.MAIL_REWARDS_TACO))
-                            blockEntity.playSound(SoundEvents.PLAYER_LEVELUP, 1.6f)
-                            (level as? ServerLevel)?.sendParticles(
-                                PazServerParticles.CONFETTI,
-                                dropPos.x, dropPos.y, dropPos.z, 16,
-                                0.1, 0.2, 0.1, 0.075
-                            )
+                    if (blockEntity.ejectTimer % Mth.floor((HERO_MAIL_EJECT_DELAY+buffer.size)/buffer.size.toFloat()) == 0) buffer.getOrNull(blockEntity.heroMailIndex)?.let {
+                        blockEntity.getHeroMail(it).forEach { item -> blockEntity.ejectItem(item) }
+
+                        if ((blockEntity.heroMailIndex+1) % BONUS_REWARD_INTERVAL==0) {// Add bonus reward every 5 waves
+                            blockEntity.getHeroMail(PazLootTables.MAIL_REWARDS_BONUS).forEach { item -> blockEntity.ejectItem(item, glow = true) }
+                            blockEntity.confetti()
                         }
-                        items.forEach { item ->
-                            Containers.dropItemStack(level, dropPos.x, dropPos.y, dropPos.z, item)
-                        }
-                        blockEntity.playSound(SoundEvents.VAULT_EJECT_ITEM, (blockEntity.heroMailIndex / buffer.size.toFloat()) * 0.2f + 1.0f)
+
+                        blockEntity.playSound(SoundEvents.VAULT_EJECT_ITEM, .5f, (blockEntity.heroMailIndex / buffer.size.toFloat()) * 0.2f + 1.0f)
                         blockEntity.heroMailIndex++
                         if (blockEntity.heroMailIndex >= buffer.size) {
                             buffer.clear()
@@ -128,12 +118,11 @@ class MailboxBlockEntity(
         val currentState = blockState.getValue(STATE)
         val heroEffect = player.getEffect(PazEffects.GARDEN_HERO)?.effect
 
-        val dropPos = blockState.getValue(FACING).unitVec3.scale(0.75).add(Vec3.atCenterOf(blockPos))
         if (heroEffect != null) {
             if (player !is ServerPlayer) return false
             heroMailBuffer = GardenHeroRewards.collectRewards(player)
             updateMailboxState(MailboxState.EJECTING)
-            ejectTimer = HERO_MAIL_EJECT_DELAY * heroMailBuffer.size
+            ejectTimer = HERO_MAIL_EJECT_DELAY+heroMailBuffer.size
             player.removeEffect(heroEffect)
             PazCriteria.RECEIVE_HERO_MAIL.trigger(player, true)
             setChanged()
@@ -141,10 +130,7 @@ class MailboxBlockEntity(
         }
         return when (currentState) {
             MailboxState.HAS_MAIL -> {
-                val dropPos = blockState.getValue(FACING).unitVec3.scale(0.75).add(Vec3.atCenterOf(blockPos))
-                items.forEach {
-                    Containers.dropItemStack(level!!, dropPos.x, dropPos.y, dropPos.z, it)
-                }
+                items.forEach { ejectItem(it) }
                 playSound(SoundEvents.VAULT_EJECT_ITEM)
                 updateMailboxState(MailboxState.EJECTING)
                 ejectTimer = 25
@@ -163,6 +149,44 @@ class MailboxBlockEntity(
         val lootTable: LootTable = level.server.reloadableRegistries().getLootTable(lootTable)
         val items = lootTable.getRandomItems(params)
         return items
+    }
+
+    private fun getDropPos(): Vec3 = blockState.getValue(FACING).unitVec3.scale(0.6).add(Vec3.atCenterOf(blockPos))
+    private fun ejectItem(item: ItemStack, glow: Boolean = false) {
+        val level = level as? ServerLevel ?: return
+        val random = level.getRandom()
+        val dropPos = getDropPos()
+        val direction = blockState.getValue(FACING).unitVec3.scale(0.1)
+
+        while (!item.isEmpty) {
+            val entity = ItemEntity(level, dropPos.x, dropPos.y, dropPos.z, item.split(random.nextInt(21) + 10))
+            entity.setDeltaMovement(
+                random.triangle(0.0, 0.11485000171139836) + direction.x, random.triangle(0.2, 0.11485000171139836) + direction.y, random.triangle(0.0, 0.11485000171139836) + direction.z
+            )
+            if (glow) entity.setGlowingTag(true)
+            level.addFreshEntity(entity)
+        }
+    }
+
+    private fun confetti(amount: Int = 25) {
+        playSound(PazSounds.TACO_REWARD, 0.65f)
+
+        val level = level as? ServerLevel?: return
+        val s = 0.2
+        val pos = getDropPos()
+        val v = blockState.getValue(FACING).unitVec3
+
+        repeat(amount) {
+            level.sendParticles(
+                PazServerParticles.CONFETTI,
+                pos.x + spread(s, level.random), pos.y + spread(s, level.random), pos.z + spread(s, level.random),
+                0,
+                v.x + (level.random.nextGaussian() * 0.5),
+                v.y + (level.random.nextGaussian() * 0.5),
+                v.z + (level.random.nextGaussian() * 0.5),
+                0.2
+            )
+        }
     }
 
     fun updateMailboxState(newState: MailboxState) {
@@ -224,13 +248,13 @@ class MailboxBlockEntity(
     override fun removeComponentsFromTag(output: ValueOutput) {
         output.discard("CustomName")
     }
-    fun playSound(event: SoundEvent, pitch: Float = 0.9f) {
+    fun playSound(event: SoundEvent, volume: Float = 0.5f, pitch: Float = 0.9f) {
         val direction = blockState.getValue(FACING).unitVec3i
         val x = worldPosition.x + 0.5 + direction.x / 2.0
         val y = worldPosition.y + 0.5 + direction.y / 2.0
         val z = worldPosition.z + 0.5 + direction.z / 2.0
         level!!.playSound(
-            null, x, y, z, event, SoundSource.BLOCKS, 0.5f, level!!.getRandom().nextFloat() * 0.1f + pitch
+            null, x, y, z, event, SoundSource.BLOCKS, volume, level!!.getRandom().nextFloat() * 0.1f + pitch
         )
     }
     fun asMailBoxData(): MailboxData {

@@ -43,7 +43,7 @@ enum class WaveType(
         minWave = 0,
         maxWave = 99,
         creditsRequired = false,
-        weightFn = { _, credits -> if (credits) 0.5f else 1f },
+        weightFn = { _, credits -> if (credits) 1.2f else 1.75f },
         spawnFn = { raid, credits ->
             val wave = raid.wavesSpawned
             val omenLevel = raid.zombieRaidOmenLevel
@@ -68,7 +68,7 @@ enum class WaveType(
                 , WaveSpawnEntry(PazEntities.SOLDIER_ZOMBIE, soldierCount)
             )
         },
-        lootTableFn = { waveNum, _ -> if (waveNum==10) PazLootTables.MAIL_REWARDS_TACO else if (waveNum > 7) PazLootTables.MAIL_REWARD_DEFAULT_HARD else PazLootTables.MAIL_REWARD_DEFAULT_EASY }
+        lootTableFn = { waveNum, _ -> if (waveNum > 7) PazLootTables.MAIL_REWARD_DEFAULT_HARD else PazLootTables.MAIL_REWARD_DEFAULT_EASY }
     ),
     BUCKET_BRIGADE(
         minWave = 1,
@@ -128,7 +128,7 @@ enum class WaveType(
         maxWave = 14,
         creditsRequired = false,
         weightFn = { raid, credits ->
-            0.19f + (raid.zombieRaidOmenLevel * 0.09f) + if (credits) 0.15f else 0f
+            0.13f + (raid.zombieRaidOmenLevel * 0.05f) + if (credits) 0.08f else 0f
         },
         spawnFn = { raid, credits ->
             val browncoatCount = 6 + raid.wavesSpawned * if (credits) 4 else 2 + (raid.zombieRaidOmenLevel / 2)
@@ -262,10 +262,10 @@ enum class WaveType(
     fun popupMessage(): Component {
         return Component.translatable("event.plantz.zombie_raid.special_wave.${name.lowercase()}")
     }
-}
 
-data class WaveSpawnEntry(
-    val entityType: EntityType<out Zombie>,
-    val count: Int = 1,
-    val configure: (Zombie) -> Unit = {},
-)
+    data class WaveSpawnEntry(
+        val entityType: EntityType<out Zombie>,
+        val count: Int = 1,
+        val configure: (Zombie) -> Unit = {},
+    )
+}
