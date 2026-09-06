@@ -36,7 +36,7 @@ object PazRenderPipelines {
             .withShaderDefine("NO_OVERLAY")
             .withShaderDefine("NO_CARDINAL_LIGHTING")
             .withShaderDefine("APPLY_TEXTURE_MATRIX")
-            .withBindGroupLayout(BindGroupLayouts.SAMPLER0)
+            .withBindGroupLayout(BindGroupLayouts.SAMPLER0_SAMPLER1)
             .withColorTargetState(ColorTargetState(BlendFunction.ADDITIVE))
             .withCull(false)
             .withVertexBinding(0, DefaultVertexFormat.ENTITY)
