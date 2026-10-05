@@ -42,6 +42,7 @@ object PazCreativeTab {
                 output.accept(SeedPacketItem.stackFor(PazEntities.CABBAGE_PULT))
                 output.accept(SeedPacketItem.stackFor(PazEntities.KERNEL_PULT))
                 output.accept(SeedPacketItem.stackFor(PazEntities.MELON_PULT))
+                output.accept(SeedPacketItem.stackFor(PazEntities.WINTER_MELON))
                 output.accept(SeedPacketItem.stackFor(PazEntities.BONK_CHOY))
                 output.accept(SeedPacketItem.stackFor(PazEntities.TANGLE_KELP))
                 output.accept(SeedPacketItem.stackFor(PazEntities.SUN_SHROOM))
@@ -49,6 +50,7 @@ object PazCreativeTab {
                 output.accept(SeedPacketItem.stackFor(PazEntities.FUME_SHROOM))
                 output.accept(SeedPacketItem.stackFor(PazEntities.SCAREDY_SHROOM))
                 output.accept(SeedPacketItem.stackFor(PazEntities.HYPNOSHROOM))
+                output.accept(SeedPacketItem.stackFor(PazEntities.ICE_SHROOM))
                 output.accept(SeedPacketItem.stackFor(PazEntities.DOOM_SHROOM))
                 output.accept(SeedPacketItem.stackFor(PazEntities.SEA_SHROOM))
                 output.accept(SeedPacketItem.stackFor(PazEntities.COFFEE_BEAN))
@@ -70,6 +72,7 @@ object PazCreativeTab {
                 output.accept(PazItems.BACKUP_DANCER_SPAWN_EGG)
                 output.accept(PazItems.DISCO_ZOMBIE_SPAWN_EGG)
                 output.accept(PazItems.ALL_STAR_SPAWN_EGG)
+                output.accept(PazItems.GRAVE_DIGGER_SPAWN_EGG)
                 output.accept(PazItems.ZOMBIE_YETI_SPAWN_EGG)
                 output.accept(PazItems.IMP_SPAWN_EGG)
                 output.accept(PazItems.SOLDIER_ZOMBIE_SPAWN_EGG)
@@ -86,6 +89,7 @@ object PazCreativeTab {
                 output.accept(PazItems.SUN)
                 output.accept(PazItems.SUN_BOTTLE)
                 output.accept(PazItems.WATERING_CAN)
+                output.accept(PazItems.GARDENING_GLOVE)
                 output.accept(PazBlocks.PLANT_POT)
                 output.accept(PazBlocks.ZEN_PLANT_POT)
                 output.accept(PazItems.PLANT_POT_MINECART)
@@ -112,6 +116,7 @@ object PazCreativeTab {
 
                 // mailboxes
                 PazBlocks.mailboxByColor.forEach { output.accept(it.value) }
+                output.accept(PazBlocks.MAIL_COLLECTION_BOX)
 
                 // blocks
                 output.accept(PazBlocks.BRAINZ_ALLOY_BLOCK)

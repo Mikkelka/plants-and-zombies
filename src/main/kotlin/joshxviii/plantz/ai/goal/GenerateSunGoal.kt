@@ -20,9 +20,9 @@ class GenerateSunGoal(
     val sunAmount: Int = 1,
     val generatesAtNight : Boolean = false,
 ): ActionGoal(usingEntity, cooldownTime, actionDelay, actionStartEffect, actionSuccessEffect, actionEndEffect, actionPredicate, delayedEffectDelay, delayedEffect, -10..20) {
+
     override fun canUse(): Boolean = (
-        usingEntity.tickCount>cooldownTime
-            && usingEntity.isAlive
+        usingEntity.isAlive
             && !(usingEntity is Plant && (usingEntity.isAsleep || usingEntity.isGrowingSeeds))
     )
 
@@ -31,7 +31,7 @@ class GenerateSunGoal(
     override fun doAction() : Boolean {
         val serverLevel = usingEntity.level() as? ServerLevel ?: return false
         Sun.award(serverLevel, usingEntity.position(), if (usingEntity.isBaby) (sunAmount/2).coerceAtLeast(1) else sunAmount )
-        usingEntity.playSound(SoundEvents.CHICKEN_EGG, 1.0f, 0.5f)
+        usingEntity.playSound(SoundEvents.CHICKEN_EGG, 1.0f, 0.5f)// TODO custom sounds
         return true
     }
 }

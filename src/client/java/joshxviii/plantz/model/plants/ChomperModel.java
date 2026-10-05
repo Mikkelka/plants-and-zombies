@@ -1,7 +1,7 @@
 package joshxviii.plantz.model.plants;
 
 import joshxviii.plantz.animation.plants.ChomperAnimation;
-import joshxviii.plantz.renderer.entity.PlantRenderState;
+import joshxviii.plantz.renderer.entity.plant.PlantRenderState;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -39,14 +39,14 @@ public class ChomperModel extends PlantModel {
 	private final ModelPart leaf_tip_4;
 
 	public ChomperModel(ModelPart root) {
-		super(
-			ChomperAnimation.init.bake(root),
-			ChomperAnimation.idle.bake(root),
-			ChomperAnimation.action.bake(root),
-			ChomperAnimation.sleep.bake(root),
-			ChomperAnimation.cooldown.bake(root),
-			root
-		);
+		super(root);
+
+		initAnimation = ChomperAnimation.init.bake(root);
+		idleAnimation = ChomperAnimation.idle.bake(root);
+		actionAnimation = ChomperAnimation.action.bake(root);
+		sleepAnimation = ChomperAnimation.sleep.bake(root);
+		cooldownAnimation = ChomperAnimation.cooldown.bake(root);
+
 		this.body = root.getChild("body");
 		this.stem = this.body.getChild("stem");
 		this.stem_2 = this.stem.getChild("stem_2");

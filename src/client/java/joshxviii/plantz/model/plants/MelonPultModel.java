@@ -1,7 +1,7 @@
 package joshxviii.plantz.model.plants;
 
 import joshxviii.plantz.animation.plants.MelonPultAnimation;
-import joshxviii.plantz.renderer.entity.PlantRenderState;
+import joshxviii.plantz.renderer.entity.plant.PlantRenderState;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -33,14 +33,13 @@ public class MelonPultModel extends PlantModel {
 	private final ModelPart leaf_tip_4;
 
 	public MelonPultModel(ModelPart root) {
-		super(
-			MelonPultAnimation.init.bake(root),
-			MelonPultAnimation.idle.bake(root),
-			MelonPultAnimation.action.bake(root),
-			MelonPultAnimation.sleep.bake(root),
-			null,
-			root
-		);
+		super(root);
+
+		initAnimation = MelonPultAnimation.init.bake(root);
+		idleAnimation = MelonPultAnimation.idle.bake(root);
+		actionAnimation = MelonPultAnimation.action.bake(root);
+		sleepAnimation = MelonPultAnimation.sleep.bake(root);
+
 		this.body = root.getChild("body");
 		this.head = this.body.getChild("head");
 		this.eyebrows = this.head.getChild("eyebrows");

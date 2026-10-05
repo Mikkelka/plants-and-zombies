@@ -1,7 +1,20 @@
+# Minecraft 26.2 fork update
+- Integrated upstream main through `b2ff8b4c` (71 commits since `4670a658`).
+- Added Winter Melon, Ice Shroom, Grave Digger, Gardening Gloves, Wall Nut bowling,
+  Mail Collection Box, balloon recipes/dispenser behavior, and data-driven seed mutations.
+- Included upstream raid, spawning, animation, balance, and villager trade updates.
+- Kept Minecraft 26.2, Java 25, and the fork's existing compatibility changes.
+- Adapted the bowling advancement, movement controls, block centers, falling blocks,
+  and projectile knockback to the 26.2 APIs.
+- Limited seed packet icon models to registered plants to avoid missing model warnings.
+
+# Changelog 1.6
+### Additions
+
 # Changelog 1.5
 ### Additions
 #### General:   
-- Plantz Flag now reduces the cooldown of nearby plants by 20%. This effect does not stack.
+- Plantz Flag will now power-up nearby plants, reducing their cooldown by 20%. This effect does not stack.
 - When placing plants in plant pots, their initial rotation will be orientated the same as the pot.
 - While a plant is equipped using the Plant Pot Helmet, you can place them back in plant pots by shift clicking.
 - Added Brainz Alloy.
@@ -11,6 +24,15 @@
   - Blocks include: Brainz Alloy Block, Stairs, Slab, Treaded Brainz Alloy Block, Reinforced Brainz Alloy Block, and Brainz Alloy Fences.
 - Added Time Machine.
   - ***Currently not obtainable outside of Creative mode.***
+- Added Gardening Gloves.
+  - Can be obtained from a level 3 farmer or from raid rewards.
+  - Lets players pet plants with right-click or pick up and hold one plant by shift-clicking.
+  - Can harvest and auto replant crops when the player has the right seeds/crops in their inventory with right-click.
+  - Can also be used to roll Wall Nuts by punching them.
+- Farmer Villagers trades have been added or changed.
+  - Level 1: An emerald for 32 Sun.
+  - Level 2: Watering Can and Potatomine seeds.
+  - Level 3: Gardening Gloves.
 - Added Dye Blaster
   - Has a 40% chance to consume dye as ammo.
   - Players and mobs shot with the blaster will be given the "painted" mob effect.
@@ -40,6 +62,10 @@
 - Added Grave Buster
   - Found in the Graveyard and Pale Garden biomes.
   - Can be used on Gravestones to acquire Grave Loot.
+- Added Winter Melon
+  - Acquired from Melon Pult zen-gardening while in cold biomes.
+- Added Ice Shroom
+  - Found in icy biomes.
 - Snow Peas will now apply the Freeze effect rather than Slowness and Weakness.
 - Added plant transformations
   - Some plants can be transformed into other plants under certain conditions.
@@ -51,12 +77,14 @@
     - Peashooter has a 10% chance to produce Repeater seeds.
     - Repeater has a 60% chance to produce Peashooter seeds.
 - Repeaters no longer spawn naturally.
+- Wall Nuts can now be rolled around by either using Gardening Gloves or by being pushed with a piston.
 #### Zombies:
 - Added the Hero of the Garden effect.
   - While the effect is active, interacting with a mailbox will grant hero rewards based on the effect's level.
 - Updated the Zombie Raid event.
   - The amount of waves a raid has is now determined by: (zombie omen level * 2) + (the game's difficulty) + (2 if the end credits have been seen).
   - After the end credits have been seen, waves during a raid will be more difficult.
+  - After losing a raid, all the zombies in the raid will vanish and no rewards will be given.
   - Added Special wave types:
     - "Bucket Brigade" can occur during waves 1–3.
     - "Half-time Showdown" can occur during waves 2–5.
@@ -66,7 +94,12 @@
     - "League of Awesome" can occur during waves 8–19. (Only after the end credits have been seen)
   - When a raid is completed, all players participating in the raid will receive the Hero of the Garden effect.
   - Special waves add unique loot to the item pool when claiming raid hero rewards.
-  - Every 10 waves completed add bonus tacos to the hero reward pool.
+  - Every 5 waves completed will add an item from the party loot table.
+    - Party Loot Includes:
+    - Tacos
+    - Balloons
+    - Lawn Flamingos
+    - Gargen Gnomes
 - Added Desert, Snow, and Pirate Variants for the Browncoat Zombie.
   - The pirate browncoat will spawn during the "Pirate Invasion" special wave.
   - The snow browncoat will spawn during the "Winter Wonderland" special wave.
@@ -80,6 +113,9 @@
 - Added Soldier Zombie
   - Spawns during the "Robo Army" special wave.
   - Uses the dye blaster.
+- Added Grave Digger
+  - Has a chance to spawn at night.
+  - Will dig up gravestone when attacking players.
 - Added Robo Zombie
   - Spawns during the "Robo Army" special wave.
 - Added Pirate Captain Zombie
@@ -90,9 +126,38 @@
 ### Technical Changes
 - Added BrainzAlloyCost item component.
 - Added configuration options.
-  - `alloyCost` – A list of entity ids paired with an integer.
-  - `showHiddenItemsInCreativeTab` – Enables some W.I.P items in the creative tab.
-
+  - `paz-server.json`:
+    - `poweredUpCooldownReduction` – This value will reduce the cooldown for powered up plants. (default is a 20% reduction)
+    - `alloyCost` – A list of entity ids paired with an integer.
+  - `paz-client.json`:
+    - `showHiddenItemsInCreativeTab` – Enables some W.I.P items in the creative tab.
+- Added `seed_mutation` data directory.
+  - The path for editing Seed Mutations is: `data/<namespace>/seed_mutation/<entity_name>.json`
+  - Entry Format:
+    - `mutations` - A list of mutation objects.
+      - `biome` - A biome or biome tag list.
+      - `weather` - `"clear"`, `"rain"`, `"thunder"`.
+      - `time` - `"day"`, `"night"`, or a ranged value: `{ "min": 0, "max": 12000 }`
+      - `chance` - value between 0-1. (defaults to 1.0)
+      - `result` - An entity id. (Required)
+  - Mutation objects are evaluated from top to bottom, the first mutation that matches the conditions will be accepted.
+  ### Example file:
+  ```
+  {
+    "mutations": [
+      {
+        "biomes": "#plantz:plant/has_winter_melon",
+        "chance": 0.75,
+        "result": "plantz:winter_melon"
+      },
+      {
+        "chance": 0.6,
+        "result": "plantz:melonpult"
+      }
+    ]
+  }
+  ```
+  - Datapacks or other mods can add or replace these files to change mutation rates and conditions.
 
 # Changelog 1.4.2
 ### Hotfix
@@ -175,7 +240,7 @@
     - `sunCost` – A list of entity ids paired with an integer amount.
 	- `seedGrowTime` – The base time for growing seeds.
     - `extraGrowTimePerSun` – Extra time per sunCost that is added to the base time.
-    - `zenPotTimeReduction` – This value is multiplied by the final growth time when plants are zen potted. _(1.0 = 100% reduction in sleep needed, aka no sleep.)_
+    - `zenPotTimeReduction` – This value will reduce the final growth time when plants are zen potted. _(1.0 = 100% reduction in sleep needed, aka no sleep.)_
     - `hydrationSunReduction` – When the plant has received water from a watering can or water bucket, this value will reduce the amount of sun needed to receive seeds when a plant wakes up. _(1.0 = 100% reduction in sun needed (minimum of 1))_
     - `plantPotDamageReduction` – Amount of enemy damage that is reduced when planted in any plant pot. _(1.0 = negate 100% of enemy damage.)_
     - `plantCooldownEnabled` – Toggle for cooldown when plaing plants.

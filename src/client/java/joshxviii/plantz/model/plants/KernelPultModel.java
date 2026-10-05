@@ -1,7 +1,7 @@
 package joshxviii.plantz.model.plants;
 
 import joshxviii.plantz.animation.plants.KernelPultAnimation;
-import joshxviii.plantz.renderer.entity.PlantRenderState;
+import joshxviii.plantz.renderer.entity.plant.PlantRenderState;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -33,14 +33,13 @@ public class KernelPultModel extends PlantModel {
 	private final ModelPart leaf_tip_4;
 
 	public KernelPultModel(ModelPart root) {
-		super(
-			KernelPultAnimation.init.bake(root),
-			KernelPultAnimation.idle.bake(root),
-			KernelPultAnimation.action.bake(root),
-			KernelPultAnimation.sleep.bake(root),
-				null,
-			root
-		);
+		super(root);
+
+		initAnimation = KernelPultAnimation.init.bake(root);
+		idleAnimation = KernelPultAnimation.idle.bake(root);
+		actionAnimation = KernelPultAnimation.action.bake(root);
+		sleepAnimation = KernelPultAnimation.sleep.bake(root);
+
 		this.body = root.getChild("body");
 		this.head = this.body.getChild("head");
 		this.eyebrows = this.head.getChild("eyebrows");

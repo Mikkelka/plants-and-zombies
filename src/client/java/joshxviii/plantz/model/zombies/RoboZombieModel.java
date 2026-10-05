@@ -1,9 +1,8 @@
 package joshxviii.plantz.model.zombies;
 
 import joshxviii.plantz.animation.zombies.RoboZombieAnimation;
-import joshxviii.plantz.renderer.entity.GargantuarRenderState;
-import joshxviii.plantz.renderer.entity.PazZombieRenderState;
-import joshxviii.plantz.renderer.entity.RoboZombieRenderState;
+import joshxviii.plantz.renderer.entity.zombie.PazZombieRenderState;
+import joshxviii.plantz.renderer.entity.zombie.RoboZombieRenderState;
 import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -14,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 import static joshxviii.plantz.UtilsKt.pazResource;
 
-public class RoboZombieModel extends PazZombieModel {
+public class RoboZombieModel<S extends PazZombieRenderState> extends PazZombieModel<S> {
     public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(pazResource("robo_zombie"), "main");
     private final KeyframeAnimation bashAnimation;
     private final KeyframeAnimation shootAnimation;
@@ -82,16 +81,14 @@ public class RoboZombieModel extends PazZombieModel {
     }
 
     @Override
-    public void setupAnim(@NotNull PazZombieRenderState state) {
+    public void setupAnim(@NotNull S state) {
         super.setupAnim(state);
         this.resetPose();
         this.head.xRot = state.xRot * (float) (Math.PI / 180.0);
         this.head.yRot = state.yRot * (float) (Math.PI / 180.0);
 
         if (!(state instanceof RoboZombieRenderState roboState)) return;
-        float animationPos = state.walkAnimationPos;
-        float animationSpeed = state.walkAnimationSpeed;
-        walkAnimation.applyWalk(animationPos, animationSpeed, 2f, 2f);
+        walkAnimation.applyWalk(state.walkAnimationPos, state.walkAnimationSpeed, 2f, 2f);
 
         if (roboState.isTankTransformation()) {
             tankIdleAnimation.apply(roboState.getIdleAnimationState(), roboState.ageInTicks);

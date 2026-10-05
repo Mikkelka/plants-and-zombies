@@ -18,7 +18,7 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.level.LevelAccessor
 import net.minecraft.world.level.block.state.BlockState
 
-class IcePeaShooter(type: EntityType<out Plant>, level: Level) : Plant(PazEntities.ICE_PEA_SHOOTER, level) {
+class IcePeaShooter(type: EntityType<out Plant>, level: Level) : Plant(type, level) {
 
     companion object {
         fun checkIcePeaShooterSpawnRules(
@@ -29,7 +29,7 @@ class IcePeaShooter(type: EntityType<out Plant>, level: Level) : Plant(PazEntiti
             random: RandomSource
         ): Boolean {
             val blockBelow = level.getBlockState(pos.below())
-            return checkValidSpawn(level, pos, spawnReason)
+            return checkValidSpawn(level, pos, spawnReason, random)
                     && (blockBelow.`is`(PLANTABLE) || blockBelow.`is`(BlockTags.SNOW))
         }
     }

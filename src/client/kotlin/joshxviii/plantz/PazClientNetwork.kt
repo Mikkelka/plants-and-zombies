@@ -1,15 +1,15 @@
 package joshxviii.plantz
 
 import joshxviii.plantz.PazNetwork.ZombieRaidClientCache
-import joshxviii.plantz.inventory.MailboxMenu
+import joshxviii.plantz.inventory.AbstractMailboxMenu
+import joshxviii.plantz.inventory.MailCollectionBoxMenu
 import joshxviii.plantz.networking.MailboxListResponsePayload
 import joshxviii.plantz.networking.SendMailResponsePayload
 import joshxviii.plantz.networking.ServerConfigResponsePayload
 import joshxviii.plantz.networking.ZombieRaidResponsePayload
+import joshxviii.plantz.raid.ZombieRaid
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-import net.minecraft.client.Minecraft
-
 
 object PazClientNetwork {
     fun initialize() {
@@ -22,14 +22,14 @@ object PazClientNetwork {
         ClientPlayNetworking.registerGlobalReceiver(ZombieRaidResponsePayload.ID) { payload, context ->
             if (ZombieRaidClientCache.get(payload.data.id) == null) RaidMusicManager.start()
             ZombieRaidClientCache.put(payload.data)
-            if (payload.terminate) ZombieRaidClientCache.remove(payload.data.id)
+            if (payload.data.status == ZombieRaid.ZombieRaidStatus.TERMINATE) ZombieRaidClientCache.remove(payload.data.id)
         }
 
         ClientPlayNetworking.registerGlobalReceiver(SendMailResponsePayload.ID) { payload, context ->
             context.client().execute {
                 val mc = context.client()
                 val player = mc.player ?: return@execute
-                val menu = player.containerMenu as? MailboxMenu ?: return@execute
+                val menu = player.containerMenu as? AbstractMailboxMenu ?: return@execute
                 menu.responseMessage = payload.message
                 menu.responseTimeout = 30
             }
@@ -38,8 +38,11 @@ object PazClientNetwork {
         ClientPlayNetworking.registerGlobalReceiver(MailboxListResponsePayload.ID) { payload, context ->
             context.client().execute {
                 val player = context.player()
-                val menu = player.containerMenu as? MailboxMenu ?: return@execute
+                val menu = player.containerMenu as? AbstractMailboxMenu ?: return@execute
 
+                if (menu is MailCollectionBoxMenu) {
+                    menu.selectedMailboxPos = menu.data.selectedMailbox
+                }
                 // Rebuild list from positions
                 menu.availableMailboxes = payload.mailboxes
                 menu.updateFilteredMailboxes()

@@ -5,31 +5,30 @@ import io.netty.buffer.ByteBuf
 import joshxviii.plantz.PazEntities
 import joshxviii.plantz.PazItems
 import joshxviii.plantz.PazLootTables
-import joshxviii.plantz.entity.zombie.BrownCoat
-import joshxviii.plantz.entity.zombie.BrownCoatVariant
-import joshxviii.plantz.entity.zombie.Gargantuar
-import joshxviii.plantz.entity.zombie.GargantuarVariant
-import joshxviii.plantz.entity.zombie.Imp
-import joshxviii.plantz.entity.zombie.ImpVariant
-import joshxviii.plantz.entity.zombie.SuperBrainz
-import joshxviii.plantz.entity.zombie.SuperBrainzVariant
+import joshxviii.plantz.entity.Balloon
+import joshxviii.plantz.entity.zombie.*
 import net.minecraft.core.component.DataComponents
 import net.minecraft.core.registries.Registries
 import net.minecraft.network.chat.Component
 import net.minecraft.network.codec.ByteBufCodecs
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.resources.ResourceKey
+import net.minecraft.server.level.ServerLevel
 import net.minecraft.util.ByIdMap
 import net.minecraft.util.StringRepresentable
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.world.entity.Mob
 import net.minecraft.world.entity.monster.zombie.Zombie
+import net.minecraft.world.item.DyeColor
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.DyedItemColor
+import net.minecraft.world.item.enchantment.EnchantmentHelper
 import net.minecraft.world.item.enchantment.Enchantments
+import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProviders
 import net.minecraft.world.level.storage.loot.LootTable
 import java.util.function.IntFunction
-import kotlin.collections.listOf
+import kotlin.math.max
 
 enum class WaveType(
     private val minWave: Int,
@@ -46,26 +45,51 @@ enum class WaveType(
         weightFn = { _, credits -> if (credits) 1.2f else 1.75f },
         spawnFn = { raid, credits ->
             val wave = raid.wavesSpawned
-            val omenLevel = raid.zombieRaidOmenLevel
-            val brownCoatCount = 4 + wave * omenLevel * if (credits) 6 else 4
-            val newspaperCount = 1 + wave + (omenLevel / 2)
-            val diggerCount = if (wave > 2) 1 + wave / 2 + (omenLevel / 2) else 0
-            val impCount = if (wave > 4) 1 + (wave - 5) + (omenLevel / 2) else 0
-            val allStarCount = if (wave > 4) 1 + (wave - 5) * if (credits) 2 else 1 + (omenLevel / 2) else 0
-            val discoCount = if (wave > 5) 1 + (wave - 6) / 2 + (omenLevel / 2) else 0
-            val gargantuarCount = if (wave > 8) 1 + (wave - 9) else 0
-            val engineerCount = if (credits && wave > 4) 1 + (wave - 5) + raid.wavesSpawned / 8 else 0
-            val soldierCount = if (credits && wave > 7) 1 + (wave - 8) + raid.wavesSpawned / 6 else 0
+            val omen = raid.zombieRaidOmenLevel
+
             listOf(
-                WaveSpawnEntry(PazEntities.BROWN_COAT, brownCoatCount)
-                , WaveSpawnEntry(PazEntities.NEWSPAPER_ZOMBIE, newspaperCount)
-                , WaveSpawnEntry(PazEntities.DIGGER_ZOMBIE, diggerCount)
-                , WaveSpawnEntry(PazEntities.IMP, impCount)
-                , WaveSpawnEntry(PazEntities.ALL_STAR, allStarCount)
-                , WaveSpawnEntry(PazEntities.DISCO_ZOMBIE, discoCount)
-                , WaveSpawnEntry(PazEntities.GARGANTUAR, gargantuarCount)
-                , WaveSpawnEntry(PazEntities.ENGINEER_ZOMBIE, engineerCount)
-                , WaveSpawnEntry(PazEntities.SOLDIER_ZOMBIE, soldierCount)
+                WaveSpawnEntry(
+                    PazEntities.BROWN_COAT,
+                    scaled(4f + wave * 1.8f, omen, credits, min = 3), {
+                        if (wave > 4) ::configureDefaultBalloonChance
+                    }),
+                WaveSpawnEntry(
+                    PazEntities.NEWSPAPER_ZOMBIE,
+                    scaled(1f + wave * 0.5f, omen, credits, min = 0)
+                ),
+                WaveSpawnEntry(
+                    PazEntities.DIGGER_ZOMBIE,
+                    if (wave > 2) scaled(1f + wave * 0.4f, omen, credits) else 0
+                ),
+                WaveSpawnEntry(
+                    PazEntities.IMP,
+                    if (wave > 4) scaled(1f + (wave - 4) * 0.7f, omen, credits) else 0
+                ),
+                WaveSpawnEntry(
+                    PazEntities.ALL_STAR,
+                    if (wave > 4) scaled(1f + (wave - 4) * 0.5f, omen, credits) else 0
+                ),
+                WaveSpawnEntry(
+                    PazEntities.DISCO_ZOMBIE,
+                    if (wave > 5) scaled(0.8f + (wave - 5) * 0.35f, omen, credits) else 0
+                ),
+                WaveSpawnEntry(
+                    PazEntities.GRAVE_DIGGER,
+                    if (wave > 5 && Math.random() > 0.2) 1 else 0
+                ),
+                WaveSpawnEntry(
+                    PazEntities.GARGANTUAR,
+                    if (wave == 10) 1 else if (wave == 11) 0 // always spawn during wave 10
+                    else if (wave > 11) scaled(1f + (wave - 11) * 0.3f, omen, credits, min = 0) else 0
+                ),
+                WaveSpawnEntry(
+                    PazEntities.ENGINEER_ZOMBIE,
+                    if (wave > 9) scaled(1f + (wave - 9) * 0.4f, omen, true) else 0
+                ),
+                WaveSpawnEntry(
+                    PazEntities.SOLDIER_ZOMBIE,
+                    if (credits && wave > 7) scaled(1f + (wave - 7) * 0.5f, omen, true) else 0
+                )
             )
         },
         lootTableFn = { waveNum, _ -> if (waveNum > 7) PazLootTables.MAIL_REWARD_DEFAULT_HARD else PazLootTables.MAIL_REWARD_DEFAULT_EASY }
@@ -78,11 +102,21 @@ enum class WaveType(
             0.11f + (raid.zombieRaidOmenLevel * 0.02f)
         },
         spawnFn = { raid, credits ->
-            val brownCoatCount = 5 + raid.wavesSpawned * if (credits) 4 else 2 + (raid.zombieRaidOmenLevel * 2)
-            val newspaperZombie = 1 + raid.wavesSpawned + (raid.zombieRaidOmenLevel / 2)
+            val wave = raid.wavesSpawned
+            val omen = raid.zombieRaidOmenLevel
+
             listOf(
-                WaveSpawnEntry(PazEntities.BROWN_COAT, brownCoatCount.coerceAtLeast(3), ::spawnBucketBrigade)
-                , WaveSpawnEntry(PazEntities.NEWSPAPER_ZOMBIE, newspaperZombie.coerceAtLeast(1), ::spawnBucketBrigade)
+                WaveSpawnEntry(
+                    PazEntities.BROWN_COAT,
+                    scaled(5f + wave * 1.6f, omen, credits, min = 3), {
+                        configureDefaultBalloonChance(it)
+                        configureBucketBrigade(it)
+                    }),
+                WaveSpawnEntry(
+                    PazEntities.NEWSPAPER_ZOMBIE,
+                    scaled(1f + wave * 0.7f, omen, credits, min = 1),
+                    ::configureBucketBrigade
+                )
             )
         },
         lootTableFn = { _, _ -> PazLootTables.MAIL_REWARD_BUCKET }
@@ -95,14 +129,22 @@ enum class WaveType(
             0.11f + (raid.zombieRaidOmenLevel * 0.04f) + if (credits) 0.04f else 0f
         },
         spawnFn = { raid, credits ->
-            val allStarCount = 3 + raid.wavesSpawned * if (credits) 2 else 1 + (raid.zombieRaidOmenLevel / 2)
-            val impCount = 4 + raid.wavesSpawned / if (credits) 1 else 2 + (raid.zombieRaidOmenLevel / 2)
+            val wave = raid.wavesSpawned
+            val omen = raid.zombieRaidOmenLevel
+
             listOf(
-                WaveSpawnEntry(PazEntities.ALL_STAR, allStarCount.coerceAtLeast(2))
-                , WaveSpawnEntry(PazEntities.IMP, impCount.coerceAtLeast(1), ::spawnHalftimeShowdown)
+                WaveSpawnEntry(
+                    PazEntities.ALL_STAR,
+                    scaled(3f + wave * 0.9f, omen, credits, min = 2)
+                ),
+                WaveSpawnEntry(
+                    PazEntities.IMP,
+                    scaled(4f + wave * 0.8f, omen, credits, min = 1),
+                    ::configureHalftimeShowdown
+                )
             )
         },
-        lootTableFn = { _, _ -> PazLootTables.MAIL_REWARD_HALFTIME}
+        lootTableFn = { _, _ -> PazLootTables.MAIL_REWARD_HALFTIME }
     ),
     WINTER_WONDERLAND(
         minWave = 4,
@@ -112,73 +154,126 @@ enum class WaveType(
             0.12f + (raid.zombieRaidOmenLevel * 0.04f) + if (credits) 0.05f else 0f
         },
         spawnFn = { raid, credits ->
-            val browncoatCount = 5 + (raid.wavesSpawned / 3) * (raid.zombieRaidOmenLevel / 4) * if (credits) 4 else 2
-            val impCount = 2 + raid.wavesSpawned * if (credits) 2 else 1 + (raid.zombieRaidOmenLevel / 2)
-            val yetiCount = 1 + raid.wavesSpawned / 3 + (raid.zombieRaidOmenLevel / 7)
+            val wave = raid.wavesSpawned
+            val omen = raid.zombieRaidOmenLevel
+
             listOf(
-                WaveSpawnEntry(PazEntities.BROWN_COAT, browncoatCount.coerceAtLeast(5), ::spawnWinterWonderland)
-                , WaveSpawnEntry(PazEntities.IMP, impCount.coerceAtLeast(2), ::spawnWinterWonderland)
-                , WaveSpawnEntry(PazEntities.ZOMBIE_YETI, yetiCount.coerceAtLeast(2))
+                WaveSpawnEntry(
+                    PazEntities.BROWN_COAT,
+                    scaled(5f + wave * 0.9f, omen, credits, min = 5), {
+                        configureDefaultBalloonChance(it)
+                        configureWinterWonderland(it)
+                    }),
+                WaveSpawnEntry(
+                    PazEntities.IMP,
+                    scaled(2f + wave * 0.7f, omen, credits, min = 2),
+                    ::configureWinterWonderland
+                ),
+                WaveSpawnEntry(
+                    PazEntities.ZOMBIE_YETI,
+                    scaled(1.2f + wave * 0.35f, omen, credits, min = 1)
+                )
             )
         },
-        lootTableFn = { _, _ -> PazLootTables.MAIL_REWARD_WINTER}
+        lootTableFn = { _, _ -> PazLootTables.MAIL_REWARD_WINTER }
     ),
     PIRATE_INVASION(
-        minWave = 5,
+        minWave = 8,
         maxWave = 14,
         creditsRequired = false,
         weightFn = { raid, credits ->
             0.13f + (raid.zombieRaidOmenLevel * 0.05f) + if (credits) 0.08f else 0f
         },
         spawnFn = { raid, credits ->
-            val browncoatCount = 6 + raid.wavesSpawned * if (credits) 4 else 2 + (raid.zombieRaidOmenLevel / 2)
-            val impCount = if (credits) 7 else 3 + raid.wavesSpawned / 2 + (raid.zombieRaidOmenLevel / 2)
-            val gargantuarCount = if (credits) 1 else 0 + raid.wavesSpawned / 4 + (raid.zombieRaidOmenLevel / 4)
-            val captainCount = if (credits) 3 + raid.wavesSpawned / 3 + (raid.zombieRaidOmenLevel / 3) else 0
+            val wave = raid.wavesSpawned
+            val omen = raid.zombieRaidOmenLevel
+
             listOf(
-                WaveSpawnEntry(PazEntities.BROWN_COAT, browncoatCount.coerceAtLeast(5), ::spawnPirateInvasion)
-                , WaveSpawnEntry(PazEntities.IMP, impCount.coerceAtLeast(2), ::spawnPirateInvasion)
-                , WaveSpawnEntry(PazEntities.PIRATE_CAPTAIN, captainCount)
-                , WaveSpawnEntry(PazEntities.GARGANTUAR, gargantuarCount, ::spawnPirateInvasion)
+                WaveSpawnEntry(
+                    PazEntities.BROWN_COAT,
+                    scaled(6f + wave * 1.4f, omen, credits, min = 5), {
+                        configureDefaultBalloonChance(it)
+                        configurePirateInvasion(it)
+                    }),
+                WaveSpawnEntry(
+                    PazEntities.IMP,
+                    scaled(3f + wave * 0.6f, omen, credits, min = 2),
+                    ::configurePirateInvasion
+                ),
+                WaveSpawnEntry(
+                    PazEntities.PIRATE_CAPTAIN,
+                    if (credits) scaled(2f + wave * 0.4f, omen, true, min = 1) else 0
+                ),
+                WaveSpawnEntry(
+                    PazEntities.GARGANTUAR,
+                    if (wave > 9) scaled(0.6f + wave * 0.1f, omen, credits, min = 0) else 0,
+                    ::configurePirateInvasion
+                )
             )
         },
-        lootTableFn = { _, _ -> PazLootTables.MAIL_REWARD_PIRATE}
+        lootTableFn = { _, _ -> PazLootTables.MAIL_REWARD_PIRATE }
     ),
     ROBO_ARMY(
-        minWave = 6,
+        minWave = 11,
         maxWave = 15,
         creditsRequired = true,
         weightFn = { raid, credits ->
             if (!credits) 0f else 0.2f + (raid.zombieRaidOmenLevel * 0.05f)
         },
-        spawnFn = { raid, _ ->
-            val roboCount = 3 + raid.wavesSpawned / 4
-            val engineerCount = 3 + raid.wavesSpawned / 2
-            val soldierCount = 8 + raid.wavesSpawned / 3
+        spawnFn = { raid, credits ->
+            val wave = raid.wavesSpawned
+            val omen = raid.zombieRaidOmenLevel
+
             listOf(
-                WaveSpawnEntry(PazEntities.ROBO_ZOMBIE, roboCount.coerceAtLeast(1))
-                , WaveSpawnEntry(PazEntities.ENGINEER_ZOMBIE, engineerCount.coerceAtLeast(2))
-                , WaveSpawnEntry(PazEntities.SOLDIER_ZOMBIE, soldierCount.coerceAtLeast(2))
+                WaveSpawnEntry(
+                    PazEntities.ROBO_ZOMBIE,
+                    scaled(2.5f + wave * 0.35f, omen, credits, min = 1)
+                ),
+                WaveSpawnEntry(
+                    PazEntities.ENGINEER_ZOMBIE,
+                    scaled(2.5f + wave * 0.45f, omen, credits, min = 2)
+                ),
+                WaveSpawnEntry(
+                    PazEntities.SOLDIER_ZOMBIE,
+                    scaled(6f + wave * 0.7f, omen, credits, min = 2)
+                )
             )
         },
-        lootTableFn = { _, _ -> PazLootTables.MAIL_REWARD_ARMY}
+        lootTableFn = { _, _ -> PazLootTables.MAIL_REWARD_ARMY }
     ),
     LEAGUE_OF_AWESOME(
-        minWave = 8,
+        minWave = 12,
         maxWave = 20,
         creditsRequired = true,
         weightFn = { raid, credits ->
             if (!credits) 0f else 0.2f + (raid.zombieRaidOmenLevel * 0.05f)
         },
-        spawnFn = { raid, _ ->
-            val browncoatCount = 4 + raid.wavesSpawned * 3 + (raid.zombieRaidOmenLevel / 2)
-            val superCount = 1 + raid.wavesSpawned / 4 + (raid.zombieRaidOmenLevel / 3)
+        spawnFn = { raid, credits ->
+            val wave = raid.wavesSpawned
+            val omen = raid.zombieRaidOmenLevel
+
             listOf(
-                WaveSpawnEntry(PazEntities.BROWN_COAT, browncoatCount.coerceAtLeast(5), ::spawnLeagueOfAwesome)
-                , WaveSpawnEntry(PazEntities.SUPER_BRAINZ, superCount.coerceAtLeast(1), ::spawnLeagueOfAwesome)
+                WaveSpawnEntry(
+                    PazEntities.BROWN_COAT,
+                    scaled(4f + wave * 1.5f, omen, credits, min = 5),
+                    ::configureLeagueOfAwesome
+                ),
+                WaveSpawnEntry(
+                    PazEntities.SUPER_BRAINZ,
+                    scaled(1f + wave * 0.3f, omen, credits, min = 3),
+                    ::configureLeagueOfAwesome
+                )
             )
         },
-        lootTableFn = { _, _ -> PazLootTables.MAIL_REWARD_LEAGUE}
+        lootTableFn = { _, _ -> PazLootTables.MAIL_REWARD_LEAGUE }
+    ),
+    ZOMBOSS(
+        minWave = 20,
+        maxWave = 20,
+        creditsRequired = true,
+        weightFn = { raid, credits -> 0f },
+        spawnFn = { raid, credits -> listOf() },
+        lootTableFn = { _, _ -> PazLootTables.MAIL_REWARD_ZOMBOSS }
     );
 
 
@@ -186,32 +281,56 @@ enum class WaveType(
 
     companion object {
         val CODEC: Codec<WaveType> = StringRepresentable.fromEnum(WaveType::values)
-        private val BY_ID: IntFunction<WaveType> = ByIdMap.continuous(WaveType::ordinal, WaveType.entries.toTypedArray(), ByIdMap.OutOfBoundsStrategy.ZERO);
+        private val BY_ID: IntFunction<WaveType> =
+            ByIdMap.continuous(WaveType::ordinal, WaveType.entries.toTypedArray(), ByIdMap.OutOfBoundsStrategy.ZERO);
         val STREAM_CODEC: StreamCodec<ByteBuf, WaveType> = ByteBufCodecs.idMapper<WaveType>(BY_ID, WaveType::ordinal)
 
-        fun spawnBucketBrigade(zombie: Zombie) {
-            zombie.setItemSlot(EquipmentSlot.HEAD, Items.BUCKET.defaultInstance)
-            zombie.setDropChance(EquipmentSlot.HEAD, 0.0f)
-            if (zombie.random.nextFloat() < 0.7f) {
-                zombie.setItemSlot(EquipmentSlot.CHEST, Items.IRON_CHESTPLATE.defaultInstance)
-                zombie.setDropChance(EquipmentSlot.CHEST, 0.0f)
-            }
-            if (zombie.random.nextFloat() < 0.7f) {
-                zombie.setItemSlot(EquipmentSlot.LEGS, Items.IRON_LEGGINGS.defaultInstance)
-                zombie.setDropChance(EquipmentSlot.LEGS, 0.0f)
-            }
-            if (zombie.random.nextFloat() < 0.7f) {
-                zombie.setItemSlot(EquipmentSlot.FEET, Items.IRON_BOOTS.defaultInstance)
-                zombie.setDropChance(EquipmentSlot.FEET, 0.0f)
+        fun omenScale(omen: Int): Float = 1f + (omen - 1) * 0.15f // linear omen scaling
+        fun creditsBonus(credits: Boolean): Float = if (credits) 1.25f else 1f // credits bonus
+
+        fun scaled(base: Float, omen: Int, credits: Boolean, min: Int = 0, max: Int = Int.MAX_VALUE): Int {
+            val raw = base * omenScale(omen) * creditsBonus(credits)
+            val jitter = 0.85f + Math.random().toFloat() * 0.3f // +-15 %
+            return (raw * jitter).toInt().coerceIn(min, max)
+        }
+
+
+        // configurations
+        fun configureDefaultBalloonChance(zombie: Zombie) {
+            if (zombie is BrownCoat) {
+                val random = zombie.random
+                if (random.nextFloat() < 0.08f) Balloon.browncoatBallons[zombie.variant]?.let {
+                    zombie.spawnBalloons(zombie.random.nextIntBetweenInclusive(2, 3), it)
+                }
             }
         }
 
-        fun spawnHalftimeShowdown(zombie: Zombie) {
+        fun configureBucketBrigade(zombie: Zombie) {
+            zombie.setItemSlot(EquipmentSlot.HEAD, Items.BUCKET.defaultInstance)
+            zombie.setDropChance(EquipmentSlot.HEAD, 0.0f)
+            for (slot in mutableListOf(EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET)) {
+                val level = zombie.level() as? ServerLevel ?: continue
+                val difficulty = level.getCurrentDifficultyAt(zombie.blockPosition())
+                if (zombie.random.nextFloat() < 0.7f) {
+                    val itemStack = Mob.getEquipmentForSlot(slot, 2)?.defaultInstance ?: continue
+                    if (zombie.random.nextFloat() < 0.3f * difficulty.specialMultiplier) EnchantmentHelper.enchantItemFromProvider(
+                        itemStack,
+                        level.registryAccess(),
+                        VanillaEnchantmentProviders.MOB_SPAWN_EQUIPMENT,
+                        level.getCurrentDifficultyAt(zombie.blockPosition()),
+                        zombie.random
+                    )
+                    zombie.setItemSlot(slot, itemStack)
+                }
+            }
+        }
+
+        fun configureHalftimeShowdown(zombie: Zombie) {
             zombie.setItemSlot(EquipmentSlot.HEAD, PazItems.FOOTBALL_HELMET.defaultInstance)
             zombie.setDropChance(EquipmentSlot.HEAD, 0.0f)
         }
 
-        fun spawnWinterWonderland(zombie: Zombie) {
+        fun configureWinterWonderland(zombie: Zombie) {
             if (zombie is Imp) zombie.variant = ImpVariant.YETI
             if (zombie is BrownCoat) {
                 zombie.variant = BrownCoatVariant.SNOW
@@ -233,7 +352,7 @@ enum class WaveType(
             }
         }
 
-        fun spawnPirateInvasion(zombie: Zombie) {
+        fun configurePirateInvasion(zombie: Zombie) {
             if (zombie is Gargantuar) zombie.variant = GargantuarVariant.PIRATE
             if (zombie is Imp) zombie.variant = ImpVariant.PIRATE
             if (zombie is BrownCoat) {
@@ -243,13 +362,50 @@ enum class WaveType(
                     zombie.setDropChance(EquipmentSlot.MAINHAND, 0.0f)
                 }
             }
+
+            if (zombie !is Gargantuar) {
+                for (slot in mutableListOf(
+                    EquipmentSlot.CHEST,
+                    EquipmentSlot.LEGS,
+                    EquipmentSlot.FEET
+                ).apply { if (zombie is BrownCoat) addFirst(EquipmentSlot.HEAD) }) {
+                    val level = zombie.level() as? ServerLevel ?: continue
+                    val difficulty = level.getCurrentDifficultyAt(zombie.blockPosition())
+                    if (slot == EquipmentSlot.HEAD && !zombie.getItemBySlot(slot).isEmpty) continue
+                    if (zombie.random.nextFloat() < 0.25f * difficulty.specialMultiplier) {
+                        val itemStack = Mob.getEquipmentForSlot(slot, 3)?.defaultInstance ?: continue
+
+                        if (zombie.random.nextFloat() < 0.25f) EnchantmentHelper.enchantItemFromProvider(
+                            itemStack,
+                            level.registryAccess(),
+                            VanillaEnchantmentProviders.MOB_SPAWN_EQUIPMENT,
+                            level.getCurrentDifficultyAt(zombie.blockPosition()),
+                            zombie.random
+                        )
+
+                        zombie.setItemSlot(slot, itemStack)
+                    }
+                }
+            }
         }
 
-        fun spawnLeagueOfAwesome(zombie: Zombie) {
+        fun configureLeagueOfAwesome(zombie: Zombie) {
             if (zombie is SuperBrainz) zombie.variant = SuperBrainzVariant.pickRandomVariant()
-            if (zombie is BrownCoat) { }
+            if (zombie is BrownCoat) {
+                val random = zombie.random
+                if (random.nextFloat() < 0.15f) {
+                    zombie.spawnBalloons(
+                        zombie.random.nextIntBetweenInclusive(2, 3), listOf(
+                            DyeColor.PURPLE,
+                            DyeColor.LIME,
+                            DyeColor.LIGHT_BLUE
+                        )
+                    )
+                }
+            }
         }
     }
+
 
     fun isAvailable(raid: ZombieRaid, creditsUnlocked: Boolean): Boolean {
         return raid.wavesSpawned in minWave..maxWave && (!creditsRequired || creditsUnlocked)

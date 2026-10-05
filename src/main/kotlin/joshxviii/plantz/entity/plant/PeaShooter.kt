@@ -14,7 +14,7 @@ import net.minecraft.world.entity.monster.Enemy
 import net.minecraft.world.entity.monster.zombie.Zombie
 import net.minecraft.world.level.Level
 
-class PeaShooter(type: EntityType<out Plant>, level: Level) : Plant(PazEntities.PEA_SHOOTER, level) {
+class PeaShooter(type: EntityType<out Plant>, level: Level) : Plant(type, level) {
     override fun registerGoals() {
         super.registerGoals()
 
@@ -30,8 +30,6 @@ class PeaShooter(type: EntityType<out Plant>, level: Level) : Plant(PazEntities.
                     || (target is Enemy && isTame))
         })
     }
-
-    override fun getZenGrownSeedType(): EntityType<*> = if (random.nextFloat() < 0.1f) PazEntities.REPEATER else super.getZenGrownSeedType()
 
     override fun actuallyHurt(level: ServerLevel, source: DamageSource, damage: Float) {
         super.actuallyHurt(level, source, damage)

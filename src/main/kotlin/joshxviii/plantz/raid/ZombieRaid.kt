@@ -117,11 +117,12 @@ class ZombieRaid(
         }
         val ZOMBIE_RAID_BAR_START: Component = Component.translatable("event.plantz.zombie_raid.start").withStyle(ChatFormatting.GOLD)
         val ZOMBIE_RAID_BAR_START_CREDITS: Component = Component.translatable("event.plantz.zombie_raid.start.after_credits").withStyle(ChatFormatting.GOLD)
-        val ZOMBIE_RAID_VICTORY: Component = Component.translatable("event.plantz.zombie_raid.victory").withStyle(ChatFormatting.YELLOW)
+        val ZOMBIE_RAID_VICTORY: Component = Component.translatable("event.plantz.zombie_raid.victory").withStyle(ChatFormatting.GOLD)
         val ZOMBIE_RAID_VICTORY_TITLE: Component = Component.translatable("event.plantz.zombie_raid.victory_title").withStyle(ChatFormatting.GOLD).withStyle(ChatFormatting.BOLD)
         val ZOMBIE_RAID_DEFEAT: Component = Component.translatable("event.plantz.zombie_raid.defeat").withStyle(ChatFormatting.RED)
         val ZOMBIE_RAID_DEFEAT_TITLE: Component = Component.translatable("event.plantz.zombie_raid.defeat_title").withStyle(ChatFormatting.DARK_RED).withStyle(ChatFormatting.BOLD)
-        const val WAVE_DURATION_TICKS: Int = 3000 // 2.5 minutes
+        const val WAVE_DURATION: Int = 3000 // 2.5 minutes
+        const val FINAL_WAVE_DURATION: Int = WAVE_DURATION * 2 // 5 minutes
         const val PRE_RAID_TICKS: Int = 100
         const val POST_RAID_TICKS: Int = 80
         const val SPAWN_DISTANCE: Int = 96
@@ -134,6 +135,7 @@ class ZombieRaid(
     private val waveToLeaderMap: MutableMap<Int, Zombie> = Maps.newHashMap<Int, Zombie>()
     val random: RandomSource = RandomSource.create()
     val zombieRaidEvent = ServerBossEvent(Mth.createInsecureUUID(random), ZOMBIE_RAID_BAR_START, BossEvent.BossBarColor.GREEN, BossEvent.BossBarOverlay.NOTCHED_10)
+    // TODO either save the wave map or save the raid ID on the zombie. needed for vanishing zombies and loading in the raid's health
     private val waveZombieMap: MutableMap<Int, MutableSet<Zombie>> = Maps.newHashMap<Int, MutableSet<Zombie>>()
     var waveSpawnPos : BlockPos? = null
 
@@ -142,7 +144,8 @@ class ZombieRaid(
         NEXT_WAVE("next_wave"),
         VICTORY("victory"),
         LOSS("loss"),
-        STOPPED("stopped");
+        STOPPED("stopped"),
+        TERMINATE("terminate");
 
         override fun getSerializedName(): String = state
 
@@ -246,6 +249,7 @@ class ZombieRaid(
                 player.sendSystemMessage(ZOMBIE_RAID_DEFEAT)
                 showTitleMessage(ZOMBIE_RAID_DEFEAT_TITLE)
             }
+            vanishAllZombies(level)
             return
         }
 
@@ -266,7 +270,7 @@ class ZombieRaid(
     private fun validPlayer(): Predicate<ServerPlayer> {
         return Predicate { player: ServerPlayer ->
             val pos = player.blockPosition()
-            player.isAlive && player.level().getZombieRaids().getNearbyRaid(pos, 9216) === this
+            player.isAlive && player.level().getZombieRaids().getNearbyRaid(pos, SPAWN_DISTANCE * SPAWN_DISTANCE) === this
         }
     }
 
@@ -312,7 +316,7 @@ class ZombieRaid(
     }
 
     private fun spawnNextWave(level: ServerLevel, pos: BlockPos) {
-        waveTimer = WAVE_DURATION_TICKS
+        waveTimer = if (isFinalWave()) FINAL_WAVE_DURATION else WAVE_DURATION
         var leaderSet = false
         totalZombieHealth = 0.0f
         val creditsUnlocked = hasRaidStarterSeenCredits(level)
@@ -378,6 +382,19 @@ class ZombieRaid(
             }
         }
     }
+
+    private fun vanishAllZombies(level: ServerLevel) {
+        level.playLocalSound(center, SoundEvents.WITHER_DEATH, SoundSource.UI, 1f, 0.4f, false)
+        waveZombieMap.values.forEach { zombies ->
+            zombies.forEach { zombie ->
+                zombie.discard()
+                level.sendParticles(ParticleTypes.LARGE_SMOKE, zombie.x, zombie.y, zombie.z, 10, 0.5, 0.5, 0.5, 0.02)
+            }
+        }
+        totalZombieHealth = 0f
+        setDirty(level)
+    }
+
     private fun setDirty(level: ServerLevel) { level.getZombieRaids().setDirty() }
 
     fun setLeader(wave: Int, zombie: Zombie) {
@@ -387,7 +404,7 @@ class ZombieRaid(
     }
     fun getLeader(wave: Int): Zombie? = waveToLeaderMap[wave]
 
-    fun addWaveMob(zombie: Zombie, wave: Int = wavesSpawned, level: ServerLevel): Boolean {
+    private fun addWaveMob(zombie: Zombie, wave: Int = wavesSpawned, level: ServerLevel): Boolean {
         waveZombieMap.computeIfAbsent(wave) { Sets.newHashSet<Zombie>() }
         val zombies = waveZombieMap[wave] as MutableSet<Zombie>
         if (zombies.contains(zombie)) return false
@@ -405,11 +422,11 @@ class ZombieRaid(
         return true
     }
 
-    fun sendClientUpdate(level: ServerLevel, terminate: Boolean = false) {
+    private fun sendClientUpdate(level: ServerLevel, terminate: Boolean = false) {
         val flag = level.getBlockEntity(center) as? FlagBlockEntity
         val data = ZombieRaidClientData(
             id = zombieRaidEvent.id,
-            status = status,
+            status = if (terminate) ZombieRaidStatus.TERMINATE else status,
             currentWaveType = waveTypes.lastOrNull()?: WaveType.DEFAULT,
             wavesSpawned = wavesSpawned,
             activeTime = ticksActive.toInt(),
@@ -421,7 +438,7 @@ class ZombieRaid(
             seenCredits = starterHasSeenCredits
         )
 
-        val packet = ZombieRaidResponsePayload(data, terminate)
+        val packet = ZombieRaidResponsePayload(data)
         zombieRaidEvent.players.forEach { player ->
             player.connection.send(ClientboundCustomPayloadPacket(packet))
         }
@@ -500,10 +517,10 @@ class ZombieRaid(
 
     fun stop() {
         active = false
-        val data = ZombieRaidClientData(id = zombieRaidEvent.id)
+        val data = ZombieRaidClientData(id = zombieRaidEvent.id, status = ZombieRaidStatus.TERMINATE)
         status = ZombieRaidStatus.STOPPED
         zombieRaidEvent.players.forEach { player ->// terminate raid connection
-            player.connection.send(ClientboundCustomPayloadPacket(ZombieRaidResponsePayload(data, true)))
+            player.connection.send(ClientboundCustomPayloadPacket(ZombieRaidResponsePayload(data)))
         }
         zombieRaidEvent.removeAllPlayers()
     }

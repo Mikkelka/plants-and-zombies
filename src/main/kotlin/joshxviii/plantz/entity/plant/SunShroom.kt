@@ -9,12 +9,13 @@ import net.minecraft.world.level.Level
 class SunShroom(
     type: EntityType<out Plant>,
     level: Level,
-) : Plant(PazEntities.SUN_SHROOM, level) {
+) : Plant(type, level) {
     override fun attackGoals() {}
 
     override fun registerGoals() {
         super.registerGoals()
         this.goalSelector.addGoal(1, GenerateSunGoal(
+            cooldownTime = 1300,
             usingEntity = this,
             actionDelay = 10,
             generatesAtNight = true,

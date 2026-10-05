@@ -1,7 +1,7 @@
 package joshxviii.plantz.model.plants;
 
 import joshxviii.plantz.animation.plants.PotatoMineAnimation;
-import joshxviii.plantz.renderer.entity.PlantRenderState;
+import joshxviii.plantz.renderer.entity.plant.PlantRenderState;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -20,14 +20,13 @@ public class PotatoMineModel extends PlantModel {
 	private final ModelPart blinker;
 
 	public PotatoMineModel(ModelPart root) {
-		super(
-			PotatoMineAnimation.init.bake(root),
-			PotatoMineAnimation.idle.bake(root),
-			null,
-			PotatoMineAnimation.sleep.bake(root),
-			PotatoMineAnimation.cooldown.bake(root),
-			root
-		);
+		super(root);
+
+		initAnimation = PotatoMineAnimation.init.bake(root);
+		idleAnimation = PotatoMineAnimation.idle.bake(root);
+		sleepAnimation = PotatoMineAnimation.sleep.bake(root);
+		cooldownAnimation = PotatoMineAnimation.cooldown.bake(root);
+
 		this.body = root.getChild("body");
 		this.tiny_dirt = this.body.getChild("tiny_dirt");
 		this.dirt = this.body.getChild("dirt");

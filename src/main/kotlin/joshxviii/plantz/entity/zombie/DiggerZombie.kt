@@ -16,6 +16,7 @@ import net.minecraft.world.Difficulty
 import net.minecraft.world.DifficultyInstance
 import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.entity.*
+import net.minecraft.world.entity.ai.goal.FloatGoal
 import net.minecraft.world.entity.ai.navigation.PathNavigation
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
@@ -46,6 +47,7 @@ class DiggerZombie(type: EntityType<out DiggerZombie>, level: Level) : PazZombie
 
     override fun registerGoals() {
         super.registerGoals()
+        goalSelector.addGoal(1, FloatGoal(this))
         goalSelector.addGoal(2, MineBlocksToTargetGoal(this))
     }
 
@@ -77,12 +79,14 @@ class DiggerZombie(type: EntityType<out DiggerZombie>, level: Level) : PazZombie
         return result
     }
 
-    override fun canPickUpLoot(): Boolean = true
+    override fun canEquipDuckyInWater() = false
+    override fun isLeftHanded(): Boolean = false
     override fun getPreferredWeaponType(): TagKey<Item> = PazTags.ItemTags.DIGGER_PREFERRED_WEAPONS
     override fun wantsToPickUp(level: ServerLevel, itemStack: ItemStack): Boolean {
         if(itemStack.`is`(ItemTags.ARMOR_ENCHANTABLE)) return false
         return super.wantsToPickUp(level, itemStack)
     }
+
 
     override fun finalizeSpawn(
         level: ServerLevelAccessor,
@@ -90,9 +94,8 @@ class DiggerZombie(type: EntityType<out DiggerZombie>, level: Level) : PazZombie
         spawnReason: EntitySpawnReason,
         groupData: SpawnGroupData?
     ): SpawnGroupData? {
-        val data = super.finalizeSpawn(level, difficulty, spawnReason, ZombieGroupData(false, false))
+        val data = super.finalizeSpawn(level, difficulty, spawnReason, groupData)
 
-        isLeftHanded = false
         setCanBreakDoors(true)
         setItemSlot(EquipmentSlot.MAINHAND, Items.IRON_PICKAXE.defaultInstance)
         setDropChance(EquipmentSlot.MAINHAND, 0.0f)

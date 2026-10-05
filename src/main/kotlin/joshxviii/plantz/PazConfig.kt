@@ -21,15 +21,17 @@ data class ServerConfig(
     var zenPotTimeReduction: Double = 0.25,
     var hydrationSunReduction: Double = 0.5,
     var plantPotDamageReduction: Double = 0.5,
+    var poweredUpCooldownReduction: Double = 0.2,
     var coffeeBuffDuration: Int = 48_000,
     var sunCostTamingThreshold: Int = 30,
     var plantCooldownEnabled: Boolean = false,
     var plantCooldownTime: Double = 4.0,
     var plantCooldownTimePerSun: Double = 2.5,
     var solarBatteryMax: Int = 512,
-    var defaultPlantEntityLimit: Int = 30,
+    var defaultPlantEntityLimit: Int = 25,
     var customPlantEntityLimits: MutableMap<String, Int> = mutableMapOf(
         "plantz:melonpult"              to 15,
+        "plantz:winter_melon"           to 15,
         "plantz:doomshroom"             to 15,
         "plantz:coffeebean"             to -1,
         "plantz:grave_buster"           to -1,
@@ -46,7 +48,7 @@ data class ServerConfig(
         "plantz:wallnut"                to 5,
         "plantz:explode_o_nut"          to 5,
         "plantz:chomper"                to 7,
-        "plantz:cherrybomb"             to 10,
+        "plantz:cherrybomb"             to 7,
         "plantz:potatomine"             to 3,
         "plantz:repeater"               to 7,
         "plantz:ice_peashooter"         to 7,
@@ -57,6 +59,7 @@ data class ServerConfig(
         "plantz:cabbagepult"            to 5,
         "plantz:kernelpult"             to 6,
         "plantz:melonpult"              to 10,
+        "plantz:winter_melon"           to 12,
         "plantz:bonkchoy"               to 4,
         "plantz:tanglekelp"             to 2,
         "plantz:puffshroom"             to 0,
@@ -64,7 +67,8 @@ data class ServerConfig(
         "plantz:fumeshroom"             to 6,
         "plantz:sunshroom"              to 4,
         "plantz:hypnoshroom"            to 7,
-        "plantz:doomshroom"             to 16,
+        "plantz:iceshroom"              to 5,
+        "plantz:doomshroom"             to 14,
         "plantz:seashroom"              to 0,
         "plantz:coffeebean"             to 2,
         "plantz:grave_buster"           to 3,
@@ -148,6 +152,9 @@ object PazConfig {
 
     val PLANT_POT_DAMAGE_REDUCTION: Double
         get() = 1f - server.plantPotDamageReduction.coerceIn(0.0, 1.0)
+
+    val POWERED_UP_COOLDOWN_REDUCTION: Double
+        get() = 1f - server.poweredUpCooldownReduction.coerceIn(0.0, 1.0)
 
     val PLANT_COOLDOWN_ENABLED: Boolean
         get() = server.plantCooldownEnabled

@@ -8,6 +8,7 @@ import joshxviii.plantz.PazEntities.DISCO_ZOMBIE
 import joshxviii.plantz.PazEntities.ENGINEER_ZOMBIE
 import joshxviii.plantz.PazEntities.GARGANTUAR
 import joshxviii.plantz.PazEntities.GNOME
+import joshxviii.plantz.PazEntities.GRAVE_DIGGER
 import joshxviii.plantz.PazEntities.IMP
 import joshxviii.plantz.PazEntities.NEWSPAPER_ZOMBIE
 import joshxviii.plantz.PazEntities.PIRATE_CAPTAIN
@@ -15,15 +16,21 @@ import joshxviii.plantz.PazEntities.ROBO_ZOMBIE
 import joshxviii.plantz.PazEntities.SOLDIER_ZOMBIE
 import joshxviii.plantz.PazEntities.SUPER_BRAINZ
 import joshxviii.plantz.PazEntities.ZOMBIE_YETI
+import joshxviii.plantz.block.entity.SunBatteryBlockEntity
+import joshxviii.plantz.entity.Balloon
 import joshxviii.plantz.item.*
 import joshxviii.plantz.item.component.BlocksProjectileDamage
 import joshxviii.plantz.item.component.BrainzAlloyCost
 import joshxviii.plantz.item.component.StoredSun
 import joshxviii.plantz.item.component.StoredWater
 import joshxviii.plantz.item.component.SunCost
+import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback
 import net.fabricmc.fabric.api.item.v1.DefaultItemComponentEvents
 import net.fabricmc.fabric.api.registry.FuelValueEvents
 import net.fabricmc.fabric.impl.item.ItemComponentTooltipProviderRegistryImpl
+import net.minecraft.ChatFormatting
+import net.minecraft.core.Direction
+import net.minecraft.core.Holder
 import net.minecraft.core.Registry
 import net.minecraft.core.component.DataComponents
 import net.minecraft.core.dispenser.BlockSource
@@ -31,18 +38,27 @@ import net.minecraft.core.dispenser.DefaultDispenseItemBehavior
 import net.minecraft.core.dispenser.MinecartDispenseItemBehavior
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.registries.Registries
+import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceKey
+import net.minecraft.server.level.ServerLevel
 import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.entity.EntitySpawnReason
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.EquipmentSlotGroup
 import net.minecraft.world.entity.ai.attributes.AttributeModifier
 import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.item.*
+import net.minecraft.world.item.Item.BASE_ATTACK_DAMAGE_ID
+import net.minecraft.world.item.Item.BASE_ATTACK_SPEED_ID
 import net.minecraft.world.item.Items.GLASS_BOTTLE
 import net.minecraft.world.food.FoodProperties
 import net.minecraft.world.item.component.ItemAttributeModifiers
+import net.minecraft.world.item.component.SwingAnimation
+import net.minecraft.world.item.component.Tool
 import net.minecraft.world.item.component.UseCooldown
+import net.minecraft.world.item.component.Weapon
 import net.minecraft.world.item.equipment.ArmorMaterials
 import net.minecraft.world.item.equipment.ArmorType
 import net.minecraft.world.item.equipment.EquipmentAssets
@@ -78,6 +94,22 @@ object PazItems {
             .component(PazComponents.STORED_WATER, StoredWater())
     )
     @JvmField
+    val GARDENING_GLOVE: Item = registerItem(
+        "gardening_glove", ::GardeningGloveItem,
+        properties = Item.Properties()
+            .stacksTo(1)
+            .rarity(Rarity.UNCOMMON)
+            .repairable(Items.LEATHER)
+            .durability(325)
+            .component(DataComponents.TOOL, GardeningGloveItem.createToolProperties())
+            .attributes(
+                ItemAttributeModifiers.builder()
+                    .add(Attributes.ENTITY_INTERACTION_RANGE, AttributeModifier(BASE_ATTACK_DAMAGE_ID, 1.5, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.ANY)
+                    .add(Attributes.ATTACK_SPEED, AttributeModifier(BASE_ATTACK_SPEED_ID, -0.1, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.ANY)
+                    .build()
+            )
+    )
+    @JvmField
     val BRAINZIUM: Item = registerItem(
         "brainzium",
         properties = Item.Properties()
@@ -110,7 +142,8 @@ object PazItems {
     val DUCKY_TUBE: Item = registerItem(
         "ducky_tube", ::DuckyTubeItem,
         properties = Item.Properties()
-            .durability(225)
+            .durability(200)
+            .repairable(Items.PHANTOM_MEMBRANE)
             .attributes(
                 ItemAttributeModifiers.builder()
                     .add(
@@ -244,6 +277,7 @@ object PazItems {
     @JvmField val DISCO_ZOMBIE_SPAWN_EGG: Item = registerSpawnEgg(DISCO_ZOMBIE)
     @JvmField val BACKUP_DANCER_SPAWN_EGG: Item = registerSpawnEgg(BACKUP_DANCER)
     @JvmField val ALL_STAR_SPAWN_EGG: Item = registerSpawnEgg(ALL_STAR)
+    @JvmField val GRAVE_DIGGER_SPAWN_EGG: Item = registerSpawnEgg(GRAVE_DIGGER)
     @JvmField val SOLDIER_ZOMBIE_SPAWN_EGG: Item = registerSpawnEgg(SOLDIER_ZOMBIE)
     @JvmField val ROBO_ZOMBIE_SPAWN_EGG: Item = registerSpawnEgg(ROBO_ZOMBIE)
     @JvmField val PIRATE_CAPTAIN_SPAWN_EGG: Item = registerSpawnEgg(PIRATE_CAPTAIN)
@@ -317,9 +351,61 @@ object PazItems {
         DispenserBlock.registerBehavior(
             SEED_PACKET, object : DefaultDispenseItemBehavior() {
             public override fun execute(source: BlockSource, dispensed: ItemStack): ItemStack {
-                return super.execute(source, dispensed)
+                val level = source.level
+
+                val dispenserPos = source.pos
+                val facing = source.state().getValue(DispenserBlock.FACING)
+                val plantPos = dispenserPos.relative(facing)
+
+                val result = SeedPacketItem.tryPlantFromDispenser(
+                    level = level,
+                    itemStack = dispensed,
+                    dispenserPos = dispenserPos,
+                    pos = plantPos,
+                    face = facing,
+                    horizontalDir = if (facing.axis.isHorizontal) facing else Direction.getRandom(level.random),
+                )
+
+                if (result) {
+                    dispensed.shrink(1)
+                    playAnimation(source, facing)
+                    return dispensed
+                }
+                else return dispensed
             }
         })
+
+        balloonByColor.values.forEach {
+            DispenserBlock.registerBehavior(
+                it, object : DefaultDispenseItemBehavior() {
+                    public override fun execute(source: BlockSource, dispensed: ItemStack): ItemStack {
+                        val level = source.level
+
+                        val dispenserPos = source.pos
+                        val facing = source.state().getValue(DispenserBlock.FACING)
+                        val balloonPos = dispenserPos.relative(facing)
+
+                        val balloonItem = dispensed.item as? BalloonItem ?: return super.execute(source, dispensed)
+                        val balloonEntity = PazEntities.BALLOON.create(level, EntitySpawnReason.DISPENSER)?: return dispensed
+                        balloonEntity.dyeColor = balloonItem.color
+                        balloonEntity.snapTo(net.minecraft.world.phys.Vec3.atCenterOf(balloonPos))
+                        balloonEntity.applyImpulse(facing.unitVec3, pow = 0.15f, uncertainty = 20.0f)
+
+                        //TODO make the balloon attach to any entity in front of the dispenser
+
+                        if (level.addFreshEntity(balloonEntity)) {
+                            dispensed.shrink(1)
+                            playAnimation(source, facing)
+                            return dispensed
+                        } else {
+                            balloonEntity.discard()
+                            return dispensed
+                        }
+                    }
+                }
+            )
+        }
+
 
         DispenserBlock.registerProjectileBehavior(SUN_BOTTLE)
 

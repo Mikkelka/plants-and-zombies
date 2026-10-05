@@ -111,7 +111,7 @@ class EngineerZombie(type: EntityType<out EngineerZombie>, level: Level) : PazZo
         spawnReason: EntitySpawnReason,
         groupData: SpawnGroupData?
     ): SpawnGroupData? {
-        val data = super.finalizeSpawn(level, difficulty, spawnReason, ZombieGroupData(false, false))
+        val data = super.finalizeSpawn(level, difficulty, spawnReason, groupData)
 
         setCanBreakDoors(true)
         setItemSlot(EquipmentSlot.OFFHAND, PazItems.BLUEPRINT.defaultInstance)
@@ -170,7 +170,6 @@ class EngineerZombie(type: EntityType<out EngineerZombie>, level: Level) : PazZo
                 val fluidState = blockState.fluidState
                 if (belowState.isFaceSturdy(level, pos.below(), Direction.UP)) {
                     if (!level.isEmptyBlock(pos)) {
-                        val blockState: BlockState = blockState
                         val shape = blockState.getCollisionShape(level, pos)
                         if (!shape.isEmpty) topOffset = shape.max(Direction.Axis.Y)
                     }
@@ -186,7 +185,7 @@ class EngineerZombie(type: EntityType<out EngineerZombie>, level: Level) : PazZo
             if (success) {
                 val bot : ZombieRobot = ZOMBIE_BOTS.random().create(level, EntitySpawnReason.MOB_SUMMONED)?: return
                 bot.snapTo(BlockPos(Vec3i(x.toInt(),(pos.y+topOffset).toInt(),z.toInt())), angle * Mth.RAD_TO_DEG, 0.0f)
-                bot.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), EntitySpawnReason.REINFORCEMENT, null)
+                bot.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), EntitySpawnReason.REINFORCEMENT, PazZombieGroupData(isRaider = engineerZombie.isRaider()))
                 bot.owner = engineerZombie
                 level.addFreshEntity(bot)
                 level.gameEvent(GameEvent.ENTITY_PLACE, Vec3(x, pos.y+topOffset, z), GameEvent.Context.of(engineerZombie))

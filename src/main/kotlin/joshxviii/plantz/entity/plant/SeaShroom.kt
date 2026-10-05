@@ -18,7 +18,7 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.level.ServerLevelAccessor
 import net.minecraft.world.level.block.state.BlockState
 
-class SeaShroom(type: EntityType<out Plant>, level: Level) : Plant(PazEntities.SEA_SHROOM, level) {
+class SeaShroom(type: EntityType<out Plant>, level: Level) : Plant(type, level) {
 
     companion object {
         fun checkSeaShroomSpawnRules(
@@ -29,11 +29,10 @@ class SeaShroom(type: EntityType<out Plant>, level: Level) : Plant(PazEntities.S
             random: RandomSource
         ): Boolean {
             val isRaining = level.level.isRaining
-            val inWater = level.getFluidState(pos).`is`(FluidTags.WATER)
             val rainBonus = if (isRaining) 2.25f else 1f
 
-            return checkValidSpawn(level, pos, spawnReason)
-                        && inWater && random.nextFloat() < (0.25 * rainBonus) && pos.y > level.seaLevel - 3
+            return checkWaterSpawn(level, pos, spawnReason, random)
+                    && random.nextFloat() < (0.25 * rainBonus)
         }
     }
 

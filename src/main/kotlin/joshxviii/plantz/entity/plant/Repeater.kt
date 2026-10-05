@@ -14,7 +14,7 @@ import net.minecraft.world.entity.monster.Enemy
 import net.minecraft.world.entity.monster.zombie.Zombie
 import net.minecraft.world.level.Level
 
-class Repeater(type: EntityType<out Plant>, level: Level) : Plant(PazEntities.REPEATER, level) {
+class Repeater(type: EntityType<out Plant>, level: Level) : Plant(type, level) {
 
     companion object {
         val ACTION_COUNT: EntityDataAccessor<Int> = SynchedEntityData.defineId<Int>(Repeater::class.java, EntityDataSerializers.INT)
@@ -51,7 +51,4 @@ class Repeater(type: EntityType<out Plant>, level: Level) : Plant(PazEntities.RE
                     || (target is Enemy && isTame))
         })
     }
-
-    override fun getZenGrownSeedType(): EntityType<*> = if (random.nextFloat() < 0.6f) PazEntities.PEA_SHOOTER else super.getZenGrownSeedType()
-
 }

@@ -1,7 +1,7 @@
 package joshxviii.plantz.model.plants;
 
 import joshxviii.plantz.animation.plants.SunShroomBabyAnimation;
-import joshxviii.plantz.renderer.entity.PlantRenderState;
+import joshxviii.plantz.renderer.entity.plant.PlantRenderState;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -17,14 +17,13 @@ public class SunShroomBabyModel extends SunShroomModel {
 	private final ModelPart cap;
 
 	public SunShroomBabyModel(ModelPart root) {
-		super(
-			SunShroomBabyAnimation.init.bake(root),
-			SunShroomBabyAnimation.idle.bake(root),
-			SunShroomBabyAnimation.action.bake(root),
-			SunShroomBabyAnimation.sleep.bake(root),
-			null,
-			root
-		);
+		super(root);
+
+		initAnimation = SunShroomBabyAnimation.init.bake(root);
+		idleAnimation = SunShroomBabyAnimation.idle.bake(root);
+		actionAnimation = SunShroomBabyAnimation.action.bake(root);
+		sleepAnimation = SunShroomBabyAnimation.sleep.bake(root);
+
 		this.body = root.getChild("body");
 		this.head = this.body.getChild("head");
 		this.cap = this.head.getChild("cap");

@@ -17,12 +17,17 @@ import joshxviii.plantz.entity.plant.*
 import joshxviii.plantz.entity.projectile.*
 import joshxviii.plantz.entity.zombie.*
 import joshxviii.plantz.mixin.MobAccessor
+import joshxviii.plantz.raid.ZombieRaid
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.fabricmc.fabric.api.`object`.builder.v1.entity.FabricDefaultAttributeRegistry
+import net.fabricmc.fabric.mixin.networking.client.accessor.MinecraftAccessor
+import net.minecraft.commands.arguments.TeamArgument
 import net.minecraft.core.Registry
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.registries.Registries
 import net.minecraft.resources.ResourceKey
+import net.minecraft.server.commands.TeamCommand
+import net.minecraft.server.jsonrpc.internalapi.MinecraftApi
 import net.minecraft.world.entity.*
 import net.minecraft.world.entity.Mob.createMobAttributes
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier
@@ -31,8 +36,12 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal
 import net.minecraft.world.entity.monster.zombie.Zombie
 import net.minecraft.world.entity.monster.zombie.ZombifiedPiglin
 import net.minecraft.world.entity.projectile.Projectile
+import net.minecraft.world.scores.Team
 
 object PazEntities {
+
+    private val registeredPlantTypes = mutableSetOf<EntityType<*>>()
+    val plantTypes: Set<EntityType<*>> get() = registeredPlantTypes
 
     fun initialize() {
 
@@ -41,12 +50,13 @@ object PazEntities {
             if (entity is Zombie) (entity as MobAccessor).targetSelector.addGoal(4, NearestAttackableTargetGoal(entity, Gnome::class.java, 5, true, false, null))
 
             if (entity is PathfinderMob && entity.`is`(ZOMBIE_RAIDERS)) {
+                (entity as MobAccessor).goalSelector.addGoal(0, PathfindToFlagGoal(entity, minimumDistance = ZombieRaid.SPAWN_DISTANCE * 1.5))
                 (entity as MobAccessor).goalSelector.addGoal(2, DestroyFlagGoal(entity))
                 (entity as MobAccessor).goalSelector.addGoal(3, PathfindToFlagGoal(entity))
             }
 
             if (entity is Mob && entity.`is`(ATTACKS_PLANTS) && entity !is ZombifiedPiglin) {
-                (entity as MobAccessor).targetSelector.addGoal(2, NearestAttackableTargetGoal(entity, WallNut::class.java, 6, true, true) { target, level -> ((target as? WallNut ?: target as? ExplodeONut)?.let { it.distanceToSqr(entity) < 3.5 } ?: false)})
+                (entity as MobAccessor).targetSelector.addGoal(2, NearestAttackableTargetGoal(entity, WallNut::class.java, 6, true, true) { target, level -> ((target as? WallNut)?.let { it.distanceToSqr(entity) < 3.5 } ?: false)})
                 (entity as MobAccessor).targetSelector.addGoal(3, NearestAttackableTargetGoal(entity, Plant::class.java, 5, true, false) { target, level ->
                     target !is WallNut && !target.`is`(IGNORED_BY_PLANT_ATTACKERS) })
             }
@@ -67,7 +77,7 @@ object PazEntities {
         "wallnut",
         EntityType.Builder.of(::WallNut, MobCategory.CREATURE),
         width = 1.0f,
-        height = 1.15f,
+        height = 1.125f,
         attributes = Plant.Companion.PlantAttributes(
             maxHealth = 60.0,
         )
@@ -76,7 +86,7 @@ object PazEntities {
         "explode_o_nut",
         EntityType.Builder.of(::ExplodeONut, MobCategory.CREATURE),
         width = 1.0f,
-        height = 1.15f,
+        height = 1.125f,
         attributes = Plant.Companion.PlantAttributes(
             maxHealth = 60.0,
         )
@@ -195,6 +205,17 @@ object PazEntities {
             followRange = 38.0,
         )
     )
+    @JvmField val WINTER_MELON: EntityType<WinterMelon> = registerPlant(
+        "winter_melon",
+        EntityType.Builder.of(::WinterMelon, MobCategory.CREATURE),
+        width = 0.9f,
+        height = 0.8f,
+        attributes = Plant.Companion.PlantAttributes(
+            maxHealth = 35.0,
+            attackDamage = 2.25,
+            followRange = 38.0,
+        )
+    )
     @JvmField val BONK_CHOY: EntityType<BonkChoy> = registerPlant(
         "bonkchoy",
         EntityType.Builder.of(::BonkChoy, MobCategory.CREATURE),
@@ -265,6 +286,17 @@ object PazEntities {
         attributes = Plant.Companion.PlantAttributes(
             maxHealth = 4.0,
             followRange = 20.0
+        )
+    )
+    @JvmField val ICE_SHROOM: EntityType<IceShroom> = registerPlant(
+        "iceshroom", EntityType.Builder.of(::IceShroom, MobCategory.CREATURE),
+        width = 0.6f,
+        height = 1.0f,
+        eyeHeight = 0.6f,
+        attributes = Plant.Companion.PlantAttributes(
+            maxHealth = 15.0,
+            followRange = 5.0,
+            attackDamage = 2.0,
         )
     )
     @JvmField val DOOM_SHROOM: EntityType<DoomShroom> = registerPlant(
@@ -411,6 +443,19 @@ object PazEntities {
             spawnReinforcementsChance = 1.5,
         )
     )
+    @JvmField val GRAVE_DIGGER: EntityType<GraveDigger> =  registerZombie(
+        "grave_digger",
+        EntityType.Builder.of(::GraveDigger, MobCategory.MONSTER)
+            .sized(0.63f, 1.95f)
+            .eyeHeight(1.74f)
+            .clientTrackingRange(8),
+        attributes = PazZombie.Companion.PazZombieAttributes(
+            attackDamage = 2.5,
+            movementSpeed = 0.22,
+            maxHealth = 40.0,
+            followRange = 32.0,
+        )
+    )
     @JvmField val SOLDIER_ZOMBIE: EntityType<SoldierZombie> = registerZombie(
         "soldier_zombie",
         EntityType.Builder.of(::SoldierZombie, MobCategory.MONSTER)
@@ -507,8 +552,8 @@ object PazEntities {
             .clientTrackingRange(8),
         attributes = PazZombie.Companion.PazZombieAttributes(
             armor = 6.0,
-            attackDamage = 8.0,
-            maxHealth = 600.0,
+            attackDamage = 7.0,
+            maxHealth = 550.0,
             movementSpeed = 0.21,
             knockbackResistance = 1.4,
             explosionKnockbackResistance = 0.7,
@@ -588,6 +633,7 @@ object PazEntities {
     @JvmField val KERNEL: EntityType<Kernel> = registerProjectile("kernel", EntityType.Builder.of({_,l->Kernel(l)}, MobCategory.MISC), width = 0.42f, height = 0.42f)
     @JvmField val BUTTER: EntityType<Butter> = registerProjectile("butter", EntityType.Builder.of({_,l->Butter(l)}, MobCategory.MISC), width = 0.75f, height = 0.5f)
     @JvmField val MELON: EntityType<Melon> = registerProjectile("melon", EntityType.Builder.of({_,l->Melon(l)}, MobCategory.MISC), width = 1.0f, height = 0.8f)
+    @JvmField val FROZEN_MELON: EntityType<FrozenMelon> = registerProjectile("frozen_melon", EntityType.Builder.of({_,l->FrozenMelon(l)}, MobCategory.MISC), width = 1.0f, height = 0.8f)
     @JvmField val PAINT_BALL: EntityType<PaintBall> = registerProjectile("paint_ball", EntityType.Builder.of({ _, l->PaintBall(l)}, MobCategory.MISC), width = 0.42f, height = 0.42f)
     @JvmField val LASER_BULLET: EntityType<LaserBullet> = registerProjectile("laser_bullet", EntityType.Builder.of({ _, l-> LaserBullet(l)}, MobCategory.MISC), width = 0.5f, height = 0.5f)
     @JvmField val MISSILE: EntityType<Missile> = registerProjectile("missile", EntityType.Builder.of({ _, l->Missile(l)}, MobCategory.MISC), width = 0.42f, height = 0.42f)
@@ -631,6 +677,7 @@ object PazEntities {
         builder.sized(width, height).eyeHeight(eyeHeight)
         val type = register(name, builder)
         FabricDefaultAttributeRegistry.register(type, attributes.apply(createMobAttributes()))
+        registeredPlantTypes.add(type)
         return type
     }
 

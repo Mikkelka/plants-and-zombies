@@ -1,7 +1,7 @@
 package joshxviii.plantz.model.plants;
 
 import joshxviii.plantz.animation.plants.CabbagePultAnimation;
-import joshxviii.plantz.renderer.entity.PlantRenderState;
+import joshxviii.plantz.renderer.entity.plant.PlantRenderState;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -28,14 +28,13 @@ public class CabbagePultModel extends PlantModel {
 	private final ModelPart leaf_4;
 
 	public CabbagePultModel(ModelPart root) {
-		super(
-			CabbagePultAnimation.init.bake(root),
-			CabbagePultAnimation.idle.bake(root),
-			CabbagePultAnimation.action.bake(root),
-			CabbagePultAnimation.sleep.bake(root),
-			null,
-			root
-		);
+		super(root);
+
+		initAnimation = CabbagePultAnimation.init.bake(root);
+		idleAnimation = CabbagePultAnimation.idle.bake(root);
+		actionAnimation = CabbagePultAnimation.action.bake(root);
+		sleepAnimation = CabbagePultAnimation.sleep.bake(root);
+
 		this.body = root.getChild("body");
 		this.head = this.body.getChild("head");
 		this.eyebrows = this.head.getChild("eyebrows");

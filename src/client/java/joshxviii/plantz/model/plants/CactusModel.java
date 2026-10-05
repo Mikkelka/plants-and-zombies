@@ -3,7 +3,7 @@ package joshxviii.plantz.model.plants;// Made with Blockbench 5.0.7
 // Paste this class into your mod and generate all required imports
 
 import joshxviii.plantz.animation.plants.CactusAnimation;
-import joshxviii.plantz.renderer.entity.PlantRenderState;
+import joshxviii.plantz.renderer.entity.plant.PlantRenderState;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -26,14 +26,13 @@ public class CactusModel extends PlantModel{
 	private final ModelPart arm_L;
 
 	public CactusModel(ModelPart root) {
-		super(
-			CactusAnimation.init.bake(root),
-			CactusAnimation.idle.bake(root),
-			CactusAnimation.action.bake(root),
-			CactusAnimation.sleep.bake(root),
-			null,
-			root
-		);
+		super(root);
+
+		initAnimation = CactusAnimation.init.bake(root);
+		idleAnimation = CactusAnimation.idle.bake(root);
+		actionAnimation = CactusAnimation.action.bake(root);
+		sleepAnimation = CactusAnimation.sleep.bake(root);
+
 		this.body = root.getChild("body");
 		this.trunk = this.body.getChild("trunk");
 		this.head = this.trunk.getChild("head");

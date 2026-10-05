@@ -13,7 +13,7 @@ import net.minecraft.world.entity.monster.zombie.Zombie
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.Level
 
-class ElectricPeaShooter(type: EntityType<out Plant>, level: Level) : Plant(PazEntities.ELECTRIC_PEA_SHOOTER, level) {
+class ElectricPeaShooter(type: EntityType<out Plant>, level: Level) : Plant(type, level) {
     override fun registerGoals() {
         super.registerGoals()
 
@@ -30,8 +30,6 @@ class ElectricPeaShooter(type: EntityType<out Plant>, level: Level) : Plant(PazE
                     || (target is Player && !isTame))
         })
     }
-
-    override fun getZenGrownSeedType(): EntityType<*> = if (random.nextFloat() < 0.95f) PazEntities.PEA_SHOOTER else super.getZenGrownSeedType()
 
     override fun tick() {
         super.tick()

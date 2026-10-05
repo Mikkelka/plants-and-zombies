@@ -3,6 +3,7 @@ package joshxviii.plantz.entity.zombie
 import joshxviii.plantz.PazBlocks
 import joshxviii.plantz.PazDataSerializers.BROWN_COAT_VARIANT
 import joshxviii.plantz.PazTags
+import joshxviii.plantz.entity.Balloon
 import net.minecraft.network.syncher.EntityDataAccessor
 import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.server.level.ServerLevel
@@ -10,6 +11,7 @@ import net.minecraft.tags.StructureTags
 import net.minecraft.util.RandomSource
 import net.minecraft.world.DifficultyInstance
 import net.minecraft.world.entity.*
+import net.minecraft.world.item.DyeColor
 import net.minecraft.world.item.Items
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.ServerLevelAccessor
@@ -65,7 +67,6 @@ class BrownCoat(type: EntityType<out BrownCoat>, level: Level) : PazZombie(type,
         val data = super.finalizeSpawn(level, difficulty, spawnReason, groupData)
         val random = level.random
         val difficultyModifier = difficulty.specialMultiplier
-        setCanPickUpLoot(true)
         setCanBreakDoors(true)
         val structureManager = (level as ServerLevel).structureManager()
         val isShipwreckSpawn = structureManager.getStructureWithPieceAt(blockPosition(), StructureTags.SHIPWRECK).isValid
@@ -80,10 +81,17 @@ class BrownCoat(type: EntityType<out BrownCoat>, level: Level) : PazZombie(type,
         if (getItemBySlot(EquipmentSlot.HEAD).isEmpty){
             if (random.nextFloat() < 0.25) {
                 setItemSlot(EquipmentSlot.HEAD, PazBlocks.CONE.asItem().defaultInstance)
-                setDropChance(EquipmentSlot.HEAD, 0.2f)
+                setDropChance(EquipmentSlot.HEAD, 0.07f)
             }
             else if (random.nextFloat() < 0.1 && getItemBySlot(EquipmentSlot.HEAD).isEmpty) {
                 setItemSlot(EquipmentSlot.HEAD, Items.BUCKET.defaultInstance)
+            }
+        }
+
+        val spawnBalloons = (spawnReason != EntitySpawnReason.EVENT && spawnReason != EntitySpawnReason.REINFORCEMENT && random.nextFloat() < 0.02)
+        if (spawnBalloons) {
+            if (!isBaby) Balloon.browncoatBallons[variant]?.let{
+                spawnBalloons(random.nextIntBetweenInclusive(2,3), it)
             }
         }
 

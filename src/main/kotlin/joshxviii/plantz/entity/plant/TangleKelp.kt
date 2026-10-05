@@ -29,7 +29,7 @@ import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.Vec3
 import kotlin.math.sqrt
 
-class TangleKelp(type: EntityType<out Plant>, level: Level) : Plant(PazEntities.TANGLE_KELP, level) {
+class TangleKelp(type: EntityType<out Plant>, level: Level) : Plant(type, level) {
 
     companion object {
         fun checkTangleKelpSpawnRules(
@@ -40,11 +40,10 @@ class TangleKelp(type: EntityType<out Plant>, level: Level) : Plant(PazEntities.
             random: RandomSource
         ): Boolean {
             val isRaining = level.level.isRaining
-            val inWater = level.getFluidState(pos).`is`(FluidTags.WATER)
             val rainBonus = if (isRaining) 2.25f else 1f
 
-            return checkValidSpawn(level, pos, spawnReason)
-                    && inWater && random.nextFloat() < (0.1 * rainBonus)
+            return checkWaterSpawn(level, pos, spawnReason, random)
+                    && random.nextFloat() < (0.1 * rainBonus)
         }
         val TANGLE_TIME_ID: EntityDataAccessor<Int> = SynchedEntityData.defineId<Int>(TangleKelp::class.java, EntityDataSerializers.INT)
     }

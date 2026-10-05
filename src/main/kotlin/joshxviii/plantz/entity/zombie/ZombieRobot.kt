@@ -119,7 +119,6 @@ abstract class ZombieRobot(type: EntityType<out ZombieRobot>, level: Level) : Pa
     override fun canPickUpLoot(): Boolean = false
     override fun canBreakDoors(): Boolean = false
     override fun canHoldItem(itemStack: ItemStack): Boolean = false
-    override fun isBaby() = false
 
     override fun registerGoals() {
         this.goalSelector.addGoal(3, RandomLookAroundGoal(this))
@@ -147,10 +146,7 @@ abstract class ZombieRobot(type: EntityType<out ZombieRobot>, level: Level) : Pa
         spawnReason: EntitySpawnReason,
         groupData: SpawnGroupData?
     ): SpawnGroupData? {
-        val data = super.finalizeSpawn(level, difficulty, spawnReason, ZombieGroupData(false, false))
-
-
-
+        val data = super.finalizeSpawn(level, difficulty, spawnReason, groupData)
         return data
     }
 

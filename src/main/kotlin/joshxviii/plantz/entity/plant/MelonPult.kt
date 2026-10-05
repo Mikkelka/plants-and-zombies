@@ -1,6 +1,7 @@
 package joshxviii.plantz.entity.plant
 
 import joshxviii.plantz.PazEntities
+import joshxviii.plantz.PazTags
 import joshxviii.plantz.ai.goal.ProjectileAttackGoal
 import joshxviii.plantz.entity.projectile.Melon
 import net.minecraft.world.entity.EntityType
@@ -12,7 +13,7 @@ import net.minecraft.world.entity.monster.zombie.Zombie
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec2
 
-class MelonPult(type: EntityType<out Plant>, level: Level) : Plant(PazEntities.MELON_PULT, level) {
+class MelonPult(type: EntityType<out Plant>, level: Level) : Plant(type, level) {
 
     override fun registerGoals() {
         super.registerGoals()

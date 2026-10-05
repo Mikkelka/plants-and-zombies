@@ -202,24 +202,26 @@ abstract class PazProjectile(
         }
     }
 
+    override fun onHit(hitResult: HitResult) {
+        super.onHit(hitResult)
+    }
+
     override fun onHitEntity(hitResult: EntityHitResult) {
         super.onHitEntity(hitResult)
         val target = hitResult.entity
-        val serverLevel = this.level() as? ServerLevel
-        if (serverLevel != null) {
-            val owner = getOwner()
-            owner?.setLastHurtMob(target)
+        val serverLevel = this.level() as? ServerLevel?: return
+        val owner = getOwner()
+        owner?.setLastHurtMob(target)
 
-            // get damage from attribute
-            val source = this.damageSources().source(damageType, this, owner)
-                if(target.hurtServer(serverLevel, source, damage)) {
-                    if (target is LivingEntity) {
-                        val knockbackDirection = calculateHorizontalHurtKnockbackDirection(target, source)
-                        target.knockback(knockback, -knockbackDirection.leftDouble(), -knockbackDirection.rightDouble(), source, damage)
-                        playSound(getHitSound(), 0.3f, 1.8f)
-                        afterHitEntityEffect(target)
-                    }
-                }
+        // get damage from attribute
+        val source = this.damageSources().source(damageType, this, owner)
+        if(target.hurtServer(serverLevel, source, damage)) {
+            if (target is LivingEntity) {
+                val knockbackDirection = calculateHorizontalHurtKnockbackDirection(target, source)
+                target.knockback(knockback, -knockbackDirection.leftDouble(), -knockbackDirection.rightDouble(), source, damage)
+                playSound(getHitSound(), 0.3f, 1.8f)
+                afterHitEntityEffect(target)
+            }
         }
         if (getPierceLevel() > 0) {
             if (piercingIgnoreEntityIds.size >= getPierceLevel()+1) {
@@ -369,9 +371,9 @@ abstract class PazProjectile(
     override fun canHitEntity(entity: Entity): Boolean {
         if (entity is Projectile) return false
         if (piercingIgnoreEntityIds.contains(entity.id)) return false
-        val owner = entityOwner
+        val owner = entityOwner ?: return super.canHitEntity(entity)
         if ((entity is Plant && owner is Plant && entity.owner !is Enemy) || (entity is Enemy && owner is Enemy && extractRootOwner(owner) !is Player)) return false
-        if (this.hasSameRootOwner(entity)) return false
+        if (owner.hasSameRootOwner(entity)) return false
         return super.canHitEntity(entity)
     }
 

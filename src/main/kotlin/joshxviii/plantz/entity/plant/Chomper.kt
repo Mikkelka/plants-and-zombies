@@ -20,7 +20,7 @@ import net.minecraft.world.entity.monster.zombie.Zombie
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.Level
 
-class Chomper(type: EntityType<out Plant>, level: Level) : Plant(PazEntities.CHOMPER, level) {
+class Chomper(type: EntityType<out Plant>, level: Level) : Plant(type, level) {
 
     companion object {
         private val CHOMP_ATTACK_MODIFIER = AttributeModifier(
@@ -98,12 +98,12 @@ class Chomper(type: EntityType<out Plant>, level: Level) : Plant(PazEntities.CHO
         actionPredicate = { chomperEntity.chewTime <= 0 }
     ) {
         companion object {
-            const val CHEW_TIME = 600
+            const val CHEW_TIME = 700
         }
 
         override fun doAction() : Boolean {
             val target = usingEntity.target?: return false
-            if(!target.`is`(CANNOT_CHOMP)) {
+            if(!target.`is`(CANNOT_CHOMP) || target.maxHealth < 100) {
                 //Add modifier to increase damage for insta kills
                 usingEntity.getAttribute(Attributes.ATTACK_DAMAGE)?.addOrUpdateTransientModifier(CHOMP_ATTACK_MODIFIER)
             }

@@ -2,8 +2,8 @@ package joshxviii.plantz.model.zombies;
 
 import joshxviii.plantz.ai.ZombieState;
 import joshxviii.plantz.animation.zombies.SuperBrainzAnimation;
-import joshxviii.plantz.renderer.entity.PazZombieRenderState;
-import joshxviii.plantz.renderer.entity.SuperBrainzRenderState;
+import joshxviii.plantz.renderer.entity.zombie.PazZombieRenderState;
+import joshxviii.plantz.renderer.entity.zombie.SuperBrainzRenderState;
 import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.model.AnimationUtils;
 import net.minecraft.client.model.geom.ModelLayerLocation;
@@ -16,7 +16,7 @@ import org.joml.Quaternionf;
 
 import static joshxviii.plantz.UtilsKt.pazResource;
 
-public class SuperBrainzModel extends PazZombieModel {
+public class SuperBrainzModel<S extends PazZombieRenderState> extends PazZombieModel<S> {
     public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(pazResource("super_brainz"), "main");
     private final KeyframeAnimation walkAnimation;
     private final KeyframeAnimation flyAnimation;
@@ -92,7 +92,7 @@ public class SuperBrainzModel extends PazZombieModel {
     }
 
     @Override
-    public void setupAnim(@NotNull PazZombieRenderState state) {
+    public void setupAnim(@NotNull S state) {
         super.setupAnim(state);
         this.resetPose();
         AnimationUtils.animateZombieArms(this.leftArm, this.rightArm, false, state);

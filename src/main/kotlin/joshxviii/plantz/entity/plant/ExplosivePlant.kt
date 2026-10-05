@@ -1,14 +1,17 @@
 package joshxviii.plantz.entity.plant
 
+import joshxviii.plantz.NukeBlastParticleOptions
+import joshxviii.plantz.NukeSmokeParticleOptions
+import joshxviii.plantz.NukeWaveParticleOptions
 import joshxviii.plantz.PazConfig
 import joshxviii.plantz.PazDamageTypes
-import joshxviii.plantz.PazDataSerializers.DATA_SWELL_DIR
 import joshxviii.plantz.PazSounds
 import net.minecraft.ChatFormatting
 import net.minecraft.core.Holder
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.network.chat.Component
 import net.minecraft.network.syncher.EntityDataAccessor
+import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.resources.ResourceKey
 import net.minecraft.server.level.ServerLevel
@@ -26,13 +29,39 @@ import net.minecraft.world.level.ExplosionDamageCalculator
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.SimpleExplosionDamageCalculator
 import java.util.Optional
+import kotlin.math.sqrt
+import kotlin.time.times
 
 abstract class ExplosivePlant(type: EntityType<out ExplosivePlant>, level: Level) : Plant(type, level) {
     companion object {
+
+        fun Plant.scaledExplosion(
+            waveColor: Int = 0xD0370D,
+            blastColor: Int = 0xFFE88D,
+            smokeColor: Int = 0xB87878
+        ) {
+            val level = level() as? ServerLevel ?: return
+            addParticlesAroundSelf(
+                particle = ParticleTypes.LARGE_SMOKE,
+                amount = 20*sqrt(scale).toInt()..24*sqrt(scale).toInt(),
+                speed = 0.02,
+            )
+            level.sendParticles(NukeWaveParticleOptions(color = waveColor, scale = 2f * scale),
+                x, y, z, 1, 0.0, 0.0, 0.0, 0.0
+            )
+            level.sendParticles(NukeBlastParticleOptions(color = blastColor, scale = 1.5f * scale),
+                x, y, z, 1, 0.0, 0.0, 0.0, 0.0
+            )
+            level.sendParticles(NukeSmokeParticleOptions(color = smokeColor, scale = 0.4f * scale),
+                x, y+1, z, 16, 0.0, 0.5, 0.0, 0.0
+            )
+        }
+
+
         val EXPLOSION_CALCULATOR: ExplosionDamageCalculator = SimpleExplosionDamageCalculator(false, true, Optional.of<Float>(1f), Optional.ofNullable(null))
         val DESTRUCTIVE_EXPLOSION_CALCULATOR: ExplosionDamageCalculator = SimpleExplosionDamageCalculator(true, false, Optional.of<Float>(1.5f), Optional.ofNullable(null))
 
-        val SWELL_DIR: EntityDataAccessor<Int> = SynchedEntityData.defineId<Int>(ExplosivePlant::class.java, DATA_SWELL_DIR)
+        val SWELL_DIR: EntityDataAccessor<Int> = SynchedEntityData.defineId<Int>(ExplosivePlant::class.java, EntityDataSerializers.INT)
     }
 
     var swellDir: Int
@@ -98,7 +127,7 @@ abstract class ExplosivePlant(type: EntityType<out ExplosivePlant>, level: Level
             source,
             EXPLOSION_CALCULATOR,
             x, y, z,
-            radius,
+            radius*sqrt(scale),
             false,
             Level.ExplosionInteraction.MOB,
             ParticleTypes.SMOKE,
@@ -111,7 +140,7 @@ abstract class ExplosivePlant(type: EntityType<out ExplosivePlant>, level: Level
             null,
             DESTRUCTIVE_EXPLOSION_CALCULATOR,
             x, y, z,
-            radius*.5f,
+            radius*.5f*sqrt(scale),
             false,
             Level.ExplosionInteraction.MOB,
             ParticleTypes.SMOKE,
@@ -119,7 +148,7 @@ abstract class ExplosivePlant(type: EntityType<out ExplosivePlant>, level: Level
             WeightedList.of(),
             SoundEvents.ITEM_BREAK
         )
-        if (discardOnExplode) discard()
+        if (discardOnExplode()) discard()
     }
     open fun discardOnExplode(): Boolean = true
 }

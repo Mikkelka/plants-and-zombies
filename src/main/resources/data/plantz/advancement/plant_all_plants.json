@@ -146,6 +146,14 @@
         }
       }
     },
+    "plantz:winter_melon": {
+      "trigger": "minecraft:tame_animal",
+      "conditions": {
+        "entity": {
+          "type": "plantz:winter_melon"
+        }
+      }
+    },
     "plantz:bonkchoy": {
       "trigger": "minecraft:tame_animal",
       "conditions": {
@@ -199,6 +207,14 @@
       "conditions": {
         "entity": {
           "type": "plantz:hypnoshroom"
+        }
+      }
+    },
+    "plantz:iceshroom": {
+      "trigger": "minecraft:tame_animal",
+      "conditions": {
+        "entity": {
+          "type": "plantz:iceshroom"
         }
       }
     },

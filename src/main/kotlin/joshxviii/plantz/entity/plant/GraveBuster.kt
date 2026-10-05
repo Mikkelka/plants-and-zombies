@@ -21,7 +21,7 @@ import net.minecraft.world.level.storage.loot.LootTable
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams
 
-class GraveBuster(type: EntityType<out Plant>, level: Level) : Plant(PazEntities.GRAVE_BUSTER, level) {
+class GraveBuster(type: EntityType<out Plant>, level: Level) : Plant(type, level) {
 
     override fun registerGoals() {
         super.registerGoals()
@@ -36,7 +36,7 @@ class GraveBuster(type: EntityType<out Plant>, level: Level) : Plant(PazEntities
     override fun tick() {
         super.tick()
 
-        if (cooldown > -1) {
+        if (cooldown == -1) {
             val level = level() as? ServerLevel ?: return
             if (tickCount % 9 == 0) playSound(SoundEvents.TUFF_BRICKS_HIT)
             if (tickCount % 2 == 0) level.sendParticles(
@@ -51,10 +51,10 @@ class GraveBuster(type: EntityType<out Plant>, level: Level) : Plant(PazEntities
     ) : ActionGoal(
         graveBuster, cooldownTime = 20, actionDelay = 37,
     ) {
+        override fun startOnCooldown(): Boolean = true
 
         override fun canUse(): Boolean {
-            return (usingEntity.tickCount > cooldownTime
-                    && usingEntity.isAlive
+            return (usingEntity.isAlive
                     && graveBuster.isTame
                     && !(usingEntity is Plant && (usingEntity.isAsleep || usingEntity.isGrowingSeeds)))
         }

@@ -3,25 +3,35 @@ package joshxviii.plantz.entity.plant
 import joshxviii.plantz.*
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.InteractionHand
 import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.entity.AreaEffectCloud
+import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.LivingEntity
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal
-import net.minecraft.world.entity.monster.Enemy
+import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.entity.monster.zombie.Zombie
 import net.minecraft.world.level.Level
 
-class HypnoShroom(type: EntityType<out Plant>, level: Level) : Plant(PazEntities.HYPNOSHROOM, level) {
+class HypnoShroom(type: EntityType<out Plant>, level: Level) : Plant(type, level) {
     override fun registerGoals() {
         super.registerGoals()
+    }
 
-        this.targetSelector.addGoal(4, NearestAttackableTargetGoal(this, LivingEntity::class.java, 5, true, false) { target, level ->
-            target !is Plant
-                    && (target is Zombie
-                    || (target is Enemy && isTame))
-        })
+    override fun attackGoals() {}
+
+    override fun doPush(entity: Entity) {
+        super.doPush(entity)
+        if (entity is Zombie && entity.swingTime == 0) {// when colliding with a zombie, the zombie will attack
+            val level = entity.level() as? ServerLevel
+            if (level != null && entity.isAlive) {
+                val damage = entity.getAttribute(Attributes.ATTACK_DAMAGE)?.value?.toFloat() ?: 1f
+                if (hurtServer(level, entity.damageSources().mobAttack(entity), damage)) {
+                    entity.swing(InteractionHand.MAIN_HAND)
+                }
+            }
+        }
     }
 
     override fun actuallyHurt(level: ServerLevel, source: DamageSource, damage: Float) {
@@ -31,7 +41,7 @@ class HypnoShroom(type: EntityType<out Plant>, level: Level) : Plant(PazEntities
         if (attacker is LivingEntity && !attacker.isInvulnerable) {
             addParticlesAroundSelf(
                 particle = PazServerParticles.HYPNO_SPORE,
-                amount = 25..30,
+                amount = 45..50,
                 horizontalSpreadScale = 0.6,
                 verticalSpreadScale = 0.6,
                 height = 0.6f
@@ -45,16 +55,17 @@ class HypnoShroom(type: EntityType<out Plant>, level: Level) : Plant(PazEntities
 
     override fun die(source: DamageSource) {
         super.die(source)
-        spawnHypnosisCloud()
+        if (!isAsleep) spawnHypnosisCloud()
     }
 
     private fun spawnHypnosisCloud() {
-        val cloud = AreaEffectCloud(level(), x, y, z)
+        val cloud = AreaEffectCloud(level(), x, y+0.1, z)
         cloud.radius = 2.5f
         cloud.radiusOnUse = -0.5f
         cloud.waitTime = 10
         cloud.duration = 300
         cloud.setPotionDurationScale(0.25f)
+        cloud.setCustomParticle(PazServerParticles.HYPNO_SPORE)
         cloud.radiusPerTick = -cloud.radius / cloud.duration.toFloat()
         cloud.addEffect(MobEffectInstance(PazEffects.HYPNOTIZE, 1000, 0))
         level().addFreshEntity(cloud)

@@ -4,8 +4,10 @@ import LeashableEntity
 import joshxviii.plantz.PazDataSerializers.DATA_DYE_COLOR
 import joshxviii.plantz.PazEntities
 import joshxviii.plantz.PazServerParticles
+import joshxviii.plantz.entity.zombie.BrownCoatVariant
 import joshxviii.plantz.entity.zombie.PazZombie
 import joshxviii.plantz.item.BalloonItem
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup.level
 import net.minecraft.network.syncher.EntityDataAccessor
 import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.server.level.ServerLevel
@@ -33,6 +35,13 @@ class Balloon(
     companion object {
         val DYE_COLOR: EntityDataAccessor<DyeColor> = SynchedEntityData.defineId(Balloon::class.java, DATA_DYE_COLOR)
 
+        val browncoatBallons = mapOf(
+            BrownCoatVariant.BROWN to listOf(DyeColor.RED, DyeColor.YELLOW, DyeColor.BLUE),
+            BrownCoatVariant.DESERT to listOf(DyeColor.ORANGE, DyeColor.BROWN),
+            BrownCoatVariant.SNOW to listOf(DyeColor.LIGHT_BLUE, DyeColor.WHITE),
+            BrownCoatVariant.BUCCANEER to listOf(DyeColor.BLACK, DyeColor.RED)
+        )
+
         private const val MAX_PULL_PITCH = 25.0f
         private const val PITCH_SPEED_MULTIPLIER = 180.0f
         private const val PITCH_LERP_SPEED = 0.25f
@@ -41,21 +50,37 @@ class Balloon(
         private const val HOLDER_GRAVITY_LIFT_MULTIPLIER = 0.4
         private const val HOLDER_PULL_STIFFNESS = 0.0075
         private const val MAX_HOLDER_PULL_FORCE = 0.16
-        private const val MAX_HOLDER_UPWARD_VELOCITY = 0.5
-
-        fun spawnAndEquip(level: Level, pos: Vec3, dyeColor: DyeColor, entity: LivingEntity) {
-            val balloon = Balloon(PazEntities.BALLOON, level)
-            balloon.setPos(pos.x, pos.y, pos.z)
-            balloon.dyeColor = dyeColor
-
-        }
+        private const val MAX_HOLDER_UPWARD_VELOCITY = 0.3
+        private const val POPPING_HEIGHT = 96
     }
+
+    var clientTiltZ: Float = 0f
+    var clientTiltX: Float = 0f
     private val interpolation = InterpolationHandler(this)
 
     private var balloonLeashData: LeashData? = null
     var dyeColor: DyeColor
         get() = this.entityData.get(DYE_COLOR)
         set(value) = this.entityData.set(DYE_COLOR, value)
+
+    fun pop() {
+        val level = level() as? ServerLevel ?: return
+        playSound(SoundEvents.LAVA_POP) // TODO custom sounds
+        level.sendParticles(
+            PazServerParticles.POP,
+            x, y + boundingBox.ysize * 0.5, z,
+            1,
+            0.0, 0.0, 0.0, 0.0
+        )
+        discard()
+    }
+
+    private fun checkPoppingHeight() {
+        if (tickCount > 200) {
+            val floorHeight = y - level().getHeight(Heightmap.Types.WORLD_SURFACE, blockPosition()).toDouble()
+            if (floorHeight > POPPING_HEIGHT) pop()
+        }
+    }
 
     override fun getInterpolation(): InterpolationHandler = interpolation
 
@@ -87,6 +112,7 @@ class Balloon(
 
     override fun tick() {
         super.tick()
+        checkPoppingHeight()
         while (yRot - yRotO < -180.0f) yRotO -= 360.0f
         while (yRot - yRotO >= 180.0f) yRotO += 360.0f
 
@@ -118,13 +144,13 @@ class Balloon(
         val holder = leashHolder as? LivingEntity ?: return
         if ((holder as? Player)?.abilities?.flying == true) return
         if (y < holder.y) return
-        val verticalStretch = y - holder.y - leashElasticDistance()
+        val verticalStretch = y - holder.y - 2.0
         if (verticalStretch <= 0.0) return
 
         val floorHeight = y - level().getHeight(Heightmap.Types.WORLD_SURFACE, blockPosition()).toDouble()
         val heightLimitForce = (floorHeight / 64).coerceIn(0.0, 1.0)
 
-        val crouchMultiplier = if (holder.isCrouching) 0.5 else 1.0
+        val crouchMultiplier = if (holder.isCrouching) 0.55 else 1.0
         val gravityLift = holder.getAttributeValue(Attributes.GRAVITY) * HOLDER_GRAVITY_LIFT_MULTIPLIER
         val springLift = verticalStretch * HOLDER_PULL_STIFFNESS
         val totalLift = ((gravityLift + springLift) * (crouchMultiplier - heightLimitForce))
@@ -143,7 +169,7 @@ class Balloon(
     }
 
     override fun dropLeash() {
-        super.dropLeash()
+        removeLeash()
     }
 
     private fun pushCollidingEntities() {
@@ -211,17 +237,9 @@ class Balloon(
         source: DamageSource,
         damage: Float
     ): Boolean {
-        return if (isRemoved) true
-        else if (this.isInvulnerableToBase(source)) false
+        return isRemoved || if (this.isInvulnerableToBase(source)) false
         else {
-            playSound(SoundEvents.LAVA_POP) // TODO custom sounds
-            level.sendParticles(
-                PazServerParticles.POP,
-                x, y + boundingBox.ysize * 0.5, z,
-                1,
-                0.0, 0.0, 0.0, 0.0
-            )
-            discard()
+            pop()
             true
         }
     }

@@ -3,13 +3,14 @@ package joshxviii.plantz.model.plants;// Made with Blockbench 5.0.7
 // Paste this class into your mod and generate all required imports
 
 import joshxviii.plantz.animation.plants.GraveBusterAnimation;
-import joshxviii.plantz.renderer.entity.PlantRenderState;
+import joshxviii.plantz.renderer.entity.plant.PlantRenderState;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector3f;
 
 import static joshxviii.plantz.UtilsKt.pazResource;
 
@@ -28,14 +29,13 @@ public class GraveBusterModel extends PlantModel{
 	private final ModelPart teeth_2;
 
 	public GraveBusterModel(ModelPart root) {
-		super(
-			GraveBusterAnimation.init.bake(root),
-			GraveBusterAnimation.idle.bake(root),
-			GraveBusterAnimation.action.bake(root),
-			GraveBusterAnimation.sleep.bake(root),
-			null,
-			root
-		);
+		super(root);
+
+		initAnimation = GraveBusterAnimation.init.bake(root);
+		idleAnimation = GraveBusterAnimation.idle.bake(root);
+		actionAnimation = GraveBusterAnimation.action.bake(root);
+		sleepAnimation = GraveBusterAnimation.sleep.bake(root);
+
 		this.body = root.getChild("body");
 		this.bodyStartY = this.body.y;
 		this.head = this.body.getChild("head");
@@ -99,17 +99,10 @@ public class GraveBusterModel extends PlantModel{
 	@Override
 	public void setupAnim(@NotNull PlantRenderState state) {
 		super.setupAnim(state);
-		if (state.getCooldown() > -1) {
-			float progress = Mth.lerp(
-				state.getPartialTick(),
-				Mth.clamp((BODY_DROP_DURATION - state.getCooldown()) / (float) BODY_DROP_DURATION, 0.0F, 1.0F),
-				Mth.clamp((BODY_DROP_DURATION - state.getCooldown()) / (float) BODY_DROP_DURATION, 0.0F, 1.0F)
-			);
-			body.y = bodyStartY + progress * BODY_DROP_DISTANCE;
+		if (state.getCooldown() == -1) {
 			body.xRot = 0f;
 			body.yRot = 0f;
 		} else {
-			body.y = bodyStartY;
 			body.xRot = state.xRot * (float) (Math.PI / 180.0) * 0.25f;
 			body.yRot = state.yRot * (float) (Math.PI / 180.0);
 		}

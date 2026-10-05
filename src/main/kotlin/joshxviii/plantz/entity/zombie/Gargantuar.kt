@@ -19,6 +19,7 @@ import net.minecraft.world.DifficultyInstance
 import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.damagesource.DamageTypes
 import net.minecraft.world.entity.*
+import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.entity.ai.control.LookControl
 import net.minecraft.world.entity.ai.control.MoveControl
 import net.minecraft.world.entity.ai.goal.FloatGoal
@@ -41,7 +42,7 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
 
     companion object {
         val SMASH_DAMAGE_CALCULATOR: ExplosionDamageCalculator = SimpleExplosionDamageCalculator(false, true, Optional.of(2.5f), Optional.ofNullable(null))
-        const val SMASH_COOLDOWN_TIME = 100
+        const val SMASH_COOLDOWN_TIME = 190
 
         val DATA_VARIANT_ID: EntityDataAccessor<GargantuarVariant> = SynchedEntityData.defineId(Gargantuar::class.java, GARGANTUAR_VARIANT)
 
@@ -59,7 +60,7 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
     val punchAttackAnimation : AnimationState = AnimationState()
     val throwImpAnimation : AnimationState = AnimationState()
 
-    var smashCooldown = 0
+    var smashCooldown = SMASH_COOLDOWN_TIME
 
     var variant: GargantuarVariant
         get() = this.entityData.get(DATA_VARIANT_ID)
@@ -104,12 +105,24 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
         goalSelector.addGoal(1, FloatGoal(this))
         goalSelector.addGoal(3, NavigateToTargetGoal(this))
         goalSelector.addGoal(2, ThrowImpGoal(this))
+        goalSelector.addGoal(1, MeleeAttackActionGoal(// punch
+            this,
+            damageType = DamageTypes.MOB_ATTACK,
+            actionDelay = 15,
+            usePredicate = {
+                punchAttackTime<=0 && throwTime<=0 && smashCooldown>0
+            },
+            actionPredicate = {smashCooldown>0},
+            actionStartEffect = {
+                punchAttackTime=1
+            }
+        ))
         goalSelector.addGoal(2, MeleeAttackActionGoal(// smash
             this,
             damageType = DamageTypes.MOB_ATTACK,
             actionDelay = 16,
             usePredicate = {
-                smashAttackTime<=0 && throwTime<=0 && smashCooldown<=0
+                smashAttackTime<=0 && throwTime<=0 && punchAttackTime<=0 && smashCooldown<=0
             },
             actionStartEffect = {
                 smashAttackTime=1
@@ -129,7 +142,7 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
                     this,
                     damageSources().source(PazDamageTypes.ZOMBIE_SMASH, this),
                     SMASH_DAMAGE_CALCULATOR, pos.x, pos.y, pos.z,
-                    3.5f,
+                    3.0f,
                     false,
                     Level.ExplosionInteraction.MOB,
                     ParticleTypes.LARGE_SMOKE,
@@ -154,17 +167,6 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
                 }
 
                 playSound(SoundEvents.MACE_SMASH_GROUND_HEAVY, 1.0f, 0.9f)
-            }
-        ))
-        goalSelector.addGoal(3, MeleeAttackActionGoal(// punch
-            this,
-            damageType = DamageTypes.MOB_ATTACK,
-            actionDelay = 15,
-            usePredicate = {
-                punchAttackTime<=0 && smashAttackTime<=0 && throwTime<=0
-            },
-            actionStartEffect = {
-                punchAttackTime=1
             }
         ))
     }
@@ -274,7 +276,9 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
     }
 
     override fun canPickUpLoot(): Boolean = false
-    override fun randomizeReinforcementsChance() {}
+    override fun randomizeReinforcementsChance() {
+        getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE)!!.baseValue = 0.0
+    }
 
     override fun getPassengerRidingPosition(passenger: Entity): Vec3 {
         val direction = calculateViewVector(0f, yBodyRot-180).scale(0.8)
@@ -294,7 +298,7 @@ class Gargantuar(type: EntityType<out Gargantuar>, level: Level) : PazZombie(typ
         groupData: SpawnGroupData?
     ): SpawnGroupData? {
         state = ZombieState.EMERGING
-        val data = super.finalizeSpawn(level, difficulty, spawnReason, ZombieGroupData(false, false))
+        val data = super.finalizeSpawn(level, difficulty, spawnReason, groupData)
 
         return data
     }
