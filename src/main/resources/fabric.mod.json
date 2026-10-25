@@ -8,8 +8,8 @@
 		"joshxviii"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://github.com/Mikkelka/plants-and-zombies/tree/codex/fabric-26.2-v1.5",
+		"sources": "https://github.com/Mikkelka/plants-and-zombies/tree/codex/fabric-26.2-v1.5"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/plantz/icon.png",

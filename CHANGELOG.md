@@ -1,3 +1,22 @@
+# Fork 1.5+mc26.2 (2026-10-25)
+
+- Based on the official `v1.5` release (`7e89d925`), with Minecraft 26.2 API
+  adaptations for movement, rendering, advancements, knockback and worldgen.
+- Updated entity predicates in advancements and loot tables for Minecraft 26.2,
+  and corrected the Brainz Alloy recipe reference.
+- Bundle the original TerraBlender 26.2 JAR. Require Java 25 and accept Minecraft
+  26.2 while excluding 26.3 in mod metadata.
+- Build and validate 377 resources/criteria without starting Minecraft; 40 Mixin
+  member/descriptor/instruction references were also checked statically.
+- User confirmed successful in-game use on 2026-10-25.
+- Document the upstream mirror, two maintained port branches and update workflow.
+  Extend CI coverage to data files, the port validator and build configuration.
+
+The original upstream changelog follows. Its 1.6 heading is an upstream planning
+section and does not mean this port contains the separate upstream 1.6 branch.
+
+---
+
 # Changelog 1.6
 ### Additions
 #### General:
