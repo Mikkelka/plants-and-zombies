@@ -6,6 +6,9 @@
   TerraBlender JAR, and validate resources using the target Minecraft codecs.
 - Document the upstream mirror, the two maintained Minecraft branches and the
   workflow for future updates (2026-10-25).
+- Record separate chat ownership, updates on request, shared-checkout precautions
+  and preservation of both versions' local JARs. The 26.3 rebuild and 381 data
+  checks passed on 2026-10-25; no rebuild is needed for these documentation changes.
 - Extend CI coverage to data files, the port validator and build configuration.
 
 The original upstream changelog follows. The 26.2 port has a separate upstream

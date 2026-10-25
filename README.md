@@ -17,6 +17,11 @@ See [PORTING.md](PORTING.md) for version requirements, validation status,
 CI downloads and the workflow for importing future upstream updates.
 See [CHANGELOG.md](CHANGELOG.md) for port changes and the original changelog.
 
+Each Minecraft version has its own maintenance chat. This branch is maintained
+by the 26.3 chat; the 26.2 chat updates its separate branch. Ask the appropriate
+chat to import future upstream updates while keeping its Minecraft target. See
+[maintenance responsibilities](PORTING.md#separate-maintenance-chats).
+
 ---
 
 <p align="center">

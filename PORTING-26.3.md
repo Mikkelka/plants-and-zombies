@@ -3,6 +3,18 @@
 This port targets Minecraft Java Edition 26.3 and is based on upstream `main`
 through `ddf05fb7`. It retains the current raid, spawning, loot, and save fixes.
 
+## Maintenance purpose
+
+`codex/fabric-26.3-upstream` is the ongoing Minecraft 26.3 maintenance branch.
+The chat assigned to 26.3 imports requested updates from the original project
+while preserving this Minecraft target and its compatible dependencies. The
+26.2 chat independently maintains `codex/fabric-26.2-v1.5`.
+
+See [PORTING.md](PORTING.md#separate-maintenance-chats) for chat ownership,
+shared-checkout precautions, upstream updates and artifact handling. Keep the
+same branch for future mod releases and update the recorded upstream baseline,
+mod version and validation results after each requested update.
+
 ## Requirements and build
 
 - Java 25
@@ -42,6 +54,10 @@ client/server or loading a world. It checks Minecraft 26.3 resource codecs,
 required nested tag references, local dynamic-registry resource references,
 advancement parents/rewards, and obsolete loot/spawn keys. It currently checks
 381 resources/advancement criteria, including all four structure overrides.
+
+Latest local rebuild: 2026-10-25, using an isolated export of this branch.
+The build, 381 data checks and packaged-JAR inspection passed. This documentation
+update changes no runtime code and does not require another build.
 
 Vanilla stand-ins are used for mod values, and custom item components are excluded.
 These checks do not verify code-registered item/block/entity identities, complete

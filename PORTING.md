@@ -14,6 +14,29 @@ Use the two port branches for ongoing work, including later mod releases. The
 version comes from `gradle.properties`. Do not merge either port back into main
 or copy Minecraft-specific changes wholesale between the ports.
 
+## Separate maintenance chats
+
+Each Minecraft version has its own maintenance chat:
+
+- The 26.3 chat maintains `codex/fabric-26.3-upstream` and keeps Minecraft 26.3.
+- The 26.2 chat maintains `codex/fabric-26.2-v1.5` and keeps Minecraft 26.2.
+
+When the original project publishes changes, the user asks each chat separately
+to import the selected update into its existing branch. Upstream changes do not
+automatically update either port, and a new mod release does not change the
+branch's Minecraft target. `main` remains the upstream mirror.
+
+Before editing or building, check the actual branch, working tree and target
+version. Two chats using the same project directory share one active checkout;
+their branch selections are not isolated. Use separate Git worktrees for
+concurrent work, and do not switch a checkout another chat is actively using.
+
+For each requested update, follow the upstream-import and validation steps below,
+update the version/baseline records, and report the target Minecraft version,
+imported upstream commit, mod version, validation performed and output JAR.
+Commit to the intended port branch and push when requested. Continue using an
+existing upstream PR for that branch rather than opening a new PR for each fix.
+
 ## Current versions and validation
 
 | | Minecraft 26.2 port | Minecraft 26.3 port |
@@ -31,6 +54,12 @@ check of 40 Mixin member, descriptor and instruction references. Specific
 multiplayer or saved-world migration scenarios were not separately recorded.
 This report applies to the 26.2 port; it does not establish gameplay validation
 for the independently maintained 26.3 port.
+
+The 26.3 branch was rebuilt on 2026-10-25 from its own source in an isolated
+temporary directory. The build and 381 resource/criterion checks passed. Its
+latest runtime/source JARs were placed alongside the 26.2 JARs in `build/libs`,
+and the old 26.3 compatibility builds were removed from that folder. See
+`PORTING-26.3.md` for the 26.3-specific adaptations and gameplay-testing limits.
 
 The 26.2 port currently contains the released `v1.5` content, not the later
 1.5.1 work on upstream main. Updating main does not automatically update a port.
@@ -50,17 +79,26 @@ download the mod JAR, not the `-sources.jar`.
 
 ## Taking an upstream update
 
-Start with a clean working tree and preserve user files. Sync the mirror:
+Start with a clean working tree, verify the assigned port branch and preserve
+user files. Fetch the available updates:
 
 ```powershell
 git fetch origin
 git fetch upstream --tags
+```
+
+Import the selected upstream ref directly into the assigned port branch. Syncing
+the `main` mirror is a separate action when requested; it is not a prerequisite
+for updating a port. If syncing the mirror, use a checkout that no other chat is
+using and verify `main` is still an upstream-only mirror:
+
+```powershell
 git switch main
 git merge --ff-only upstream/main
 git push origin main
 ```
 
-Then switch to the Minecraft branch being updated. Review and merge the chosen
+In the port's own checkout, review and merge the chosen
 upstream release tag or commit into that branch; do not automatically take all
 of upstream main when the intended base is a published release. Record the
 selected upstream baseline in this document and the fork section of
@@ -96,6 +134,13 @@ Names above describe the current versions. `build/libs/` may still contain older
 builds, so check the versioned filename and the embedded `fabric.mod.json`.
 Inspect its Minecraft range, entrypoints and nested TerraBlender JAR before
 publishing. Keep build output out of Git; use CI artifacts for downloads.
+
+For local delivery, keep the latest runtime JAR and matching `-sources.jar` for
+each of 26.2 and 26.3 together in the designated `build/libs` folder. Rebuilding
+one port must preserve the other port's files. Do not run an unconditional
+`clean` there; use an isolated build directory or preserve and restore the other
+version first. When cleanup is requested, remove only obsolete files for the
+specified version/folder, after the replacement build has passed its checks.
 
 `build` runs `validatePortResources`, which decodes world generation, loot
 tables, recipes, trades, predicates and advancement criteria with that branch's
