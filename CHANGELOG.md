@@ -1,3 +1,18 @@
+# Fork 1.5+mc26.3
+
+- Port upstream `ddf05fb7` to Minecraft 26.3 on Fabric, including upstream fixes
+  after the official `v1.5` release.
+- Adapt APIs and resource formats for Minecraft 26.3, bundle the original
+  TerraBlender JAR, and validate resources using the target Minecraft codecs.
+- Document the upstream mirror, the two maintained Minecraft branches and the
+  workflow for future updates (2026-10-25).
+- Extend CI coverage to data files, the port validator and build configuration.
+
+The original upstream changelog follows. The 26.2 port has a separate upstream
+baseline and validation record; see `PORTING.md`.
+
+---
+
 # Minecraft 26.3 (Fabric)
 ### Compatibility
 - Port gameplay, rendering, world generation, registries, and data formats to Minecraft 26.3.

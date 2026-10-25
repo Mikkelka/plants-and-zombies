@@ -46,3 +46,6 @@ replay_*.log
 /.kotlin
 /dev_build.number
 /lib
+
+# Runtime logs
+/logs/
