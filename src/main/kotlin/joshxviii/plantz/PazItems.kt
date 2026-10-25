@@ -376,7 +376,7 @@ object PazItems {
                         val balloonItem = dispensed.item as? BalloonItem ?: return super.execute(source, dispensed)
                         val balloonEntity = PazEntities.BALLOON.create(level, EntitySpawnReason.DISPENSER)?: return dispensed
                         balloonEntity.dyeColor = balloonItem.color
-                        balloonEntity.snapTo(balloonPos.center)
+                        balloonEntity.snapTo(net.minecraft.world.phys.Vec3.atCenterOf(balloonPos))
                         balloonEntity.applyImpulse(facing.unitVec3, pow = 0.15f, uncertainty = 20.0f)
 
                         if (level.addFreshEntity(balloonEntity)) {

@@ -7,6 +7,7 @@ import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import it.unimi.dsi.fastutil.ints.IntList
 import joshxviii.plantz.*
+import joshxviii.plantz.advancement.ZombieRaidContext
 import joshxviii.plantz.block.entity.FlagBlockEntity
 import joshxviii.plantz.entity.plant.Plant
 import joshxviii.plantz.entity.zombie.PazZombie
@@ -248,7 +249,7 @@ class ZombieRaid(
             status = ZombieRaidStatus.VICTORY
             postRaidTicks = POST_RAID_TICKS
             zombieRaidEvent.players.forEach { player ->// advancement
-                PazCriteria.WIN_ZOMBIE_RAID.trigger(player, true)
+                PazCriteria.WIN_ZOMBIE_RAID.trigger(player, ZombieRaidContext(center))
                 PazCriteria.WIN_HARDEST_RAID.trigger(player, numWaves>=MAXIMUM_WAVE_COUNT && starterHasSeenCredits)
                 val effect = MobEffectInstance(PazEffects.GARDEN_HERO, GARDEN_HERO_EFFECT_DURATION, (waveTypes.size-1).coerceAtLeast(0), false, true)
                 (player as GardenHeroRewards).`plantz$setWaveList`(waveTypes)

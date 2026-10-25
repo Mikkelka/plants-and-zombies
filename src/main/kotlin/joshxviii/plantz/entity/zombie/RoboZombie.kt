@@ -184,7 +184,7 @@ class RoboZombie(type: EntityType<out RoboZombie>, level: Level) : PazZombie(typ
     override fun canPickUpLoot(): Boolean = false
     override fun canClimbWalls(): Boolean = isTransformed || super.canClimbWalls()
 
-    override fun getMoveControl(): MoveControl = if (missileTime>0) noMoveControl else super.getMoveControl()
+    override fun getMoveControl(): MoveControl<*> = if (missileTime>0) noMoveControl else super.getMoveControl()
 
     override fun tick() {
         super.tick()

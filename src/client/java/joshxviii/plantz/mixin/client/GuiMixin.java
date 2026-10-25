@@ -6,8 +6,8 @@ import joshxviii.plantz.gui.ZombieHudMarkers;
 import joshxviii.plantz.effect.PaintedMobEffect;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.Hud;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
@@ -26,11 +26,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * @author Josh
  */
-@Mixin(Gui.class)
+@Mixin(Hud.class)
 public abstract class GuiMixin {
-
-    @Shadow
-    protected abstract void extractTextureOverlay(GuiGraphicsExtractor graphics, Identifier texture, float alpha);
 
     @Unique
     private final Identifier FREEZE_OUTLINE_LOCATION = Identifier.withDefaultNamespace("textures/misc/powder_snow_outline.png");
@@ -72,5 +69,11 @@ public abstract class GuiMixin {
         //graphics.fill(RenderPipelines.GUI, 0, 0, graphics.guiWidth(), top, -16777216);
         //graphics.fill(RenderPipelines.GUI, 0, top, left, bottom, -16777216);
         //graphics.fill(RenderPipelines.GUI, right, top, graphics.guiWidth(), bottom, -16777216);
+    }
+
+    @Unique
+    private void extractTextureOverlay(GuiGraphicsExtractor graphics, Identifier texture, float alpha) {
+        int color = ARGB.white(alpha);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, texture, 0, 0, 0.0F, 0.0F, graphics.guiWidth(), graphics.guiHeight(), graphics.guiWidth(), graphics.guiHeight(), color);
     }
 }

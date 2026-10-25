@@ -48,7 +48,7 @@ class DiscoZombie(type: EntityType<out DiscoZombie>, level: Level) : PazZombie(t
         entityData.define(SUMMON_TIME_ID, 0)
     }
 
-    override fun getMoveControl(): MoveControl = if (summoningTime>0) noMoveControl else super.getMoveControl()
+    override fun getMoveControl(): MoveControl<*> = if (summoningTime>0) noMoveControl else super.getMoveControl()
     override fun isWithinMeleeAttackRange(target: LivingEntity): Boolean = if (summoningTime>0) false else super.isWithinMeleeAttackRange(target)
 
     override fun tick() {

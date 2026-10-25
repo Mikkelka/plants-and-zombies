@@ -82,7 +82,9 @@ class BeamAttackGoal(
                     target.knockback(
                         knockback,
                         start.x - target.x,
-                        start.z - target.z
+                        start.z - target.z,
+                        source,
+                        damage
                     )
                 }
                 piercedEntities?.add(target)

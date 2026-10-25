@@ -15,6 +15,7 @@ import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.DifficultyInstance
 import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.world.damagesource.DamageTypes
 import net.minecraft.world.entity.*
 import net.minecraft.world.entity.ai.attributes.AttributeModifier
 import net.minecraft.world.entity.ai.attributes.Attributes
@@ -85,13 +86,16 @@ class AllStar(type: EntityType<out AllStar>, level: Level) : PazZombie(type, lev
         super.doPush(entity)
         if (chargingTime>=0 && this.isAlive) {
             if (entity is Zombie) entity.knockback(
-                0.7, position().x - entity.position().x, position().z - entity.position().z
+                0.7, position().x - entity.position().x, position().z - entity.position().z,
+                this.damageSources().source(DamageTypes.GENERIC), 0.0f
             )
             else if (entity is LivingEntity) {
                 val level = level() as? ServerLevel?: return
-                entity.hurtServer(level, this.damageSources().source(PazDamageTypes.ZOMBIE_TRAMPLE, this), 1.5f)
+                val source = this.damageSources().source(PazDamageTypes.ZOMBIE_TRAMPLE, this)
+                entity.hurtServer(level, source, 1.5f)
                 entity.knockback(
-                    2.0, position().x - entity.position().x, position().z - entity.position().z
+                    2.0, position().x - entity.position().x, position().z - entity.position().z,
+                    source, 1.5f
                 )
             }
         }

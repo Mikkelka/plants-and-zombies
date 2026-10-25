@@ -22,7 +22,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:sunflower"
+          "minecraft:entity_type": "plantz:sunflower"
         }
       }
     },
@@ -30,7 +30,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:peashooter"
+          "minecraft:entity_type": "plantz:peashooter"
         }
       }
     },
@@ -38,7 +38,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:wallnut"
+          "minecraft:entity_type": "plantz:wallnut"
         }
       }
     },
@@ -46,7 +46,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:explode_o_nut"
+          "minecraft:entity_type": "plantz:explode_o_nut"
         }
       }
     },
@@ -54,7 +54,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:chomper"
+          "minecraft:entity_type": "plantz:chomper"
         }
       }
     },
@@ -62,7 +62,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:cherrybomb"
+          "minecraft:entity_type": "plantz:cherrybomb"
         }
       }
     },
@@ -70,7 +70,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:potatomine"
+          "minecraft:entity_type": "plantz:potatomine"
         }
       }
     },
@@ -78,7 +78,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:repeater"
+          "minecraft:entity_type": "plantz:repeater"
         }
       }
     },
@@ -86,7 +86,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:ice_peashooter"
+          "minecraft:entity_type": "plantz:ice_peashooter"
         }
       }
     },
@@ -94,7 +94,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:fire_peashooter"
+          "minecraft:entity_type": "plantz:fire_peashooter"
         }
       }
     },
@@ -102,7 +102,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:electric_peashooter"
+          "minecraft:entity_type": "plantz:electric_peashooter"
         }
       }
     },
@@ -110,7 +110,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:cactus"
+          "minecraft:entity_type": "plantz:cactus"
         }
       }
     },
@@ -118,7 +118,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:lightning_reed"
+          "minecraft:entity_type": "plantz:lightning_reed"
         }
       }
     },
@@ -126,7 +126,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:cabbagepult"
+          "minecraft:entity_type": "plantz:cabbagepult"
         }
       }
     },
@@ -134,7 +134,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:kernelpult"
+          "minecraft:entity_type": "plantz:kernelpult"
         }
       }
     },
@@ -142,7 +142,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:melonpult"
+          "minecraft:entity_type": "plantz:melonpult"
         }
       }
     },
@@ -150,7 +150,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:winter_melon"
+          "minecraft:entity_type": "plantz:winter_melon"
         }
       }
     },
@@ -158,7 +158,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:bonkchoy"
+          "minecraft:entity_type": "plantz:bonkchoy"
         }
       }
     },
@@ -166,7 +166,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:tanglekelp"
+          "minecraft:entity_type": "plantz:tanglekelp"
         }
       }
     },
@@ -174,7 +174,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:puffshroom"
+          "minecraft:entity_type": "plantz:puffshroom"
         }
       }
     },
@@ -182,7 +182,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:fumeshroom"
+          "minecraft:entity_type": "plantz:fumeshroom"
         }
       }
     },
@@ -190,7 +190,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:scaredyshroom"
+          "minecraft:entity_type": "plantz:scaredyshroom"
         }
       }
     },
@@ -198,7 +198,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:sunshroom"
+          "minecraft:entity_type": "plantz:sunshroom"
         }
       }
     },
@@ -206,7 +206,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:hypnoshroom"
+          "minecraft:entity_type": "plantz:hypnoshroom"
         }
       }
     },
@@ -214,7 +214,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:iceshroom"
+          "minecraft:entity_type": "plantz:iceshroom"
         }
       }
     },
@@ -222,7 +222,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:doomshroom"
+          "minecraft:entity_type": "plantz:doomshroom"
         }
       }
     },
@@ -230,7 +230,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:seashroom"
+          "minecraft:entity_type": "plantz:seashroom"
         }
       }
     },
@@ -238,7 +238,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:coffeebean"
+          "minecraft:entity_type": "plantz:coffeebean"
         }
       }
     },
@@ -246,7 +246,7 @@
       "trigger": "minecraft:tame_animal",
       "conditions": {
         "entity": {
-          "type": "plantz:grave_buster"
+          "minecraft:entity_type": "plantz:grave_buster"
         }
       }
     }

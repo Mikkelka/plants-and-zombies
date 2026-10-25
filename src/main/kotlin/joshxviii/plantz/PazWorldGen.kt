@@ -2,6 +2,7 @@ package joshxviii.plantz
 
 import com.mojang.datafixers.util.Pair
 import joshxviii.plantz.PazWorldGen.GRAVEYARD
+import net.minecraft.core.HolderGetter
 import net.minecraft.core.Registry
 import net.minecraft.core.registries.Registries
 import net.minecraft.resources.ResourceKey
@@ -21,7 +22,9 @@ object PazWorldGen: TerraBlenderApi {
 
     override fun onTerraBlenderInitialized() {
         Regions.register(OverworldRegion("graveyard"))
-        SurfaceRuleManager.addSurfaceRules(SurfaceRuleManager.RuleCategory.OVERWORLD, PazMain.MODID, SurfaceRuleData.makeRules())
+        SurfaceRuleManager.addSurfaceRules(SurfaceRuleManager.RuleCategory.OVERWORLD, PazMain.MODID) { biomeGetter ->
+            SurfaceRuleData.makeRules(biomeGetter)
+        }
     }
 
     @JvmField val GRAVEYARD = registerBiome("graveyard")
@@ -60,7 +63,7 @@ object SurfaceRuleData {
     private val MYCELIUM_BLOCK = makeStateRule(Blocks.MYCELIUM)
     private val STONE = makeStateRule(Blocks.STONE)
 
-    internal fun makeRules(): RuleSource {
+    internal fun makeRules(biomes: HolderGetter<Biome>): RuleSource {
         val isAtOrAboveWaterLevel = SurfaceRules.waterBlockCheck(-1, 0)
 
         val myceliumSurface = SurfaceRules.sequence(
@@ -85,7 +88,7 @@ object SurfaceRuleData {
 
         return SurfaceRules.sequence(
             SurfaceRules.ifTrue(
-                SurfaceRules.isBiome(GRAVEYARD),
+                SurfaceRules.isBiome(biomes, GRAVEYARD),
                 SurfaceRules.sequence(
                     myceliumSurface,
                     undergroundStone

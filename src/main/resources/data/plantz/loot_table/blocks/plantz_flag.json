@@ -27,7 +27,7 @@
           "condition": "minecraft:entity_properties",
           "entity": "attacker",
           "predicate": {
-            "type": "#minecraft:zombies"
+            "minecraft:entity_type": "#minecraft:zombies"
           }
         }
       ]

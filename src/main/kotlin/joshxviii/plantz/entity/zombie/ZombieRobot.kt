@@ -74,7 +74,7 @@ abstract class ZombieRobot(type: EntityType<out ZombieRobot>, level: Level) : Pa
         this.entityData.set(DATA_OWNERUUID_ID, Optional.ofNullable(owner).map { EntityReference.of(it) })
     }
 
-    fun setOwnerReference(owner: EntityReference<LivingEntity>) {
+    fun setOwnerReference(owner: EntityReference<LivingEntity>?) {
         this.entityData.set(DATA_OWNERUUID_ID, Optional.ofNullable(owner))
     }
 
@@ -86,7 +86,7 @@ abstract class ZombieRobot(type: EntityType<out ZombieRobot>, level: Level) : Pa
 
     override fun addAdditionalSaveData(output: ValueOutput) {
         super.addAdditionalSaveData(output)
-        EntityReference.store(ownerReference, output, "Owner")
+        EntityReference.store(getOwnerReference(), output, "Owner")
         output.putInt("actionTime", actionTime)
     }
 
@@ -94,7 +94,7 @@ abstract class ZombieRobot(type: EntityType<out ZombieRobot>, level: Level) : Pa
         super.readAdditionalSaveData(input)
         val owner = EntityReference.readWithOldOwnerConversion<LivingEntity>(input, "Owner", this.level())
         if (owner != null) {
-            try { setOwnerReference(owner) } catch (ignored: Throwable) { }
+            this.entityData.set(DATA_OWNERUUID_ID, Optional.of(owner))
         } else this.entityData.set(DATA_OWNERUUID_ID, Optional.empty())
         input.getIntOr("actionTime", 0)
     }

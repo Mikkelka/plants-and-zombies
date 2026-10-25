@@ -26,7 +26,7 @@
           "condition": "minecraft:entity_properties",
           "entity": "attacker",
           "predicate": {
-            "type": "#plantz:drop_loot_when_killed_by"
+            "minecraft:entity_type": "#plantz:drop_loot_when_killed_by"
           }
         },
         {
@@ -69,7 +69,7 @@
           "condition": "minecraft:entity_properties",
           "entity": "attacker",
           "predicate": {
-            "type": "#plantz:drop_loot_when_killed_by"
+            "minecraft:entity_type": "#plantz:drop_loot_when_killed_by"
           }
         },
         {

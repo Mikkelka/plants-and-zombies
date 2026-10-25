@@ -3,9 +3,10 @@ package joshxviii.plantz.advancement
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import joshxviii.plantz.PazCriteria
-import net.minecraft.advancements.Criterion
-import net.minecraft.advancements.criterion.*
-import net.minecraft.advancements.criterion.SimpleCriterionTrigger
+import net.minecraft.advancements.predicates.ContextAwarePredicate
+import net.minecraft.advancements.predicates.entity.EntityPredicate
+import net.minecraft.advancements.triggers.Criterion
+import net.minecraft.advancements.triggers.SimpleCriterionTrigger
 import net.minecraft.server.level.ServerPlayer
 import java.util.*
 

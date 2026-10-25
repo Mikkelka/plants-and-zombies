@@ -156,7 +156,7 @@ data class HSV(
 }
 
 fun createFallingBlock(level: Level, pos: Vec3, blockState: BlockState): FallingBlockEntity? {
-    val block = EntityType.FALLING_BLOCK.create(level, EntitySpawnReason.SPAWN_ITEM_USE)?: return null
+    val block = EntityTypes.FALLING_BLOCK.create(level, EntitySpawnReason.SPAWN_ITEM_USE)?: return null
     val tag = block.saveAsCompoundTag()
     tag.store("BlockState", BlockState.CODEC, blockState);
     TypedEntityData.of(block.type, tag).loadInto(block)
