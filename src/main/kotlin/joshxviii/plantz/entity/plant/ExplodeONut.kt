@@ -63,6 +63,7 @@ class ExplodeONut(type: EntityType<out Plant>, level: Level) : WallNut(type, lev
         )
 
         scaledExplosion()
+        restorePumpkinFromArmor()
         discard()
     }
 }
