@@ -8,6 +8,7 @@ import net.minecraft.core.BlockPos
 import net.minecraft.core.Holder
 import net.minecraft.core.particles.ParticleOptions
 import net.minecraft.core.particles.ParticleTypes
+import net.minecraft.core.component.DataComponents
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket
 import net.minecraft.network.syncher.EntityDataAccessor
 import net.minecraft.network.syncher.EntityDataSerializers
@@ -26,6 +27,8 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.entity.projectile.Projectile
 import net.minecraft.world.entity.projectile.ProjectileDeflection
 import net.minecraft.world.entity.projectile.ProjectileUtil
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 import net.minecraft.world.level.ClipContext
 import net.minecraft.world.level.ExplosionDamageCalculator
 import net.minecraft.world.level.Level
@@ -45,7 +48,7 @@ abstract class PazProjectile(
     val spawnOffset: Vec2 = Vec2.ZERO,
     val damageType: ResourceKey<DamageType> = PazDamageTypes.PLANT,
     var damage : Float = entityOwner?.attributes?.getValue(Attributes.ATTACK_DAMAGE)?.toFloat()?:1.0f,
-    var knockback : Double = entityOwner?.attributes?.getValue(Attributes.ATTACK_KNOCKBACK)?:0.0
+    var knockback : Double = entityOwner?.attributes?.getValue(Attributes.ATTACK_KNOCKBACK)?:0.0,
 ) : Projectile(type, level) {
 
     protected var inGroundTime: Int = 0
@@ -398,5 +401,3 @@ abstract class PazProjectile(
         )
     }
 }
-
-

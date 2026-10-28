@@ -23,8 +23,9 @@ import joshxviii.plantz.item.component.*
 import net.fabricmc.fabric.api.item.v1.DefaultItemComponentEvents
 import net.fabricmc.fabric.api.registry.FuelValueEvents
 import net.fabricmc.fabric.impl.item.ItemComponentTooltipProviderRegistryImpl
-import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
+import net.minecraft.core.Holder
+import net.minecraft.core.HolderSet
 import net.minecraft.core.Registry
 import net.minecraft.core.component.DataComponentMap
 import net.minecraft.core.component.DataComponents
@@ -34,9 +35,11 @@ import net.minecraft.core.dispenser.MinecartDispenseItemBehavior
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.registries.Registries
 import net.minecraft.resources.ResourceKey
-import net.minecraft.server.level.ServerLevel
+import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundEvents
-import net.minecraft.sounds.SoundSource
+import net.minecraft.tags.DamageTypeTags
+import net.minecraft.tags.ItemTags
+import net.minecraft.world.damagesource.DamageType
 import net.minecraft.world.entity.*
 import net.minecraft.world.entity.ai.attributes.AttributeModifier
 import net.minecraft.world.entity.ai.attributes.Attributes
@@ -45,6 +48,9 @@ import net.minecraft.world.item.*
 import net.minecraft.world.item.Item.BASE_ATTACK_DAMAGE_ID
 import net.minecraft.world.item.Item.BASE_ATTACK_SPEED_ID
 import net.minecraft.world.item.Items.GLASS_BOTTLE
+import net.minecraft.world.item.component.BlocksAttacks
+import net.minecraft.world.item.component.BlocksAttacks.DamageReduction
+import net.minecraft.world.item.component.BlocksAttacks.ItemDamageFunction
 import net.minecraft.world.item.component.ItemAttributeModifiers
 import net.minecraft.world.item.component.UseCooldown
 import net.minecraft.world.item.equipment.ArmorMaterials
@@ -53,8 +59,9 @@ import net.minecraft.world.item.equipment.EquipmentAssets
 import net.minecraft.world.item.equipment.Equippable
 import net.minecraft.world.level.block.ComposterBlock
 import net.minecraft.world.level.block.DispenserBlock
-import net.minecraft.world.level.gameevent.GameEvent
 import net.minecraft.world.phys.AABB
+import java.util.*
+import java.util.List
 import java.util.function.Function
 
 object PazItems {
@@ -114,12 +121,18 @@ object PazItems {
     val NEWSPAPER: Item = registerItem(
         "newspaper", ::NewspaperItem,
         properties = Item.Properties()
-            .component(PazComponents.BLOCKS_PROJECTILE_DAMAGE, BlocksProjectileDamage(
-                slot = EquipmentSlotGroup.HAND,
-                breakChance = 0.1f,
-                mustBeUsing = true
+            .component(DataComponents.BLOCKS_ATTACKS, BlocksAttacks(
+                0.25f,
+                1.0f,
+                listOf(DamageReduction(90.0f, Optional.empty<HolderSet<DamageType>>(), 0.0f, 1.0f)),
+                ItemDamageFunction.DEFAULT,
+                Optional.empty<HolderSet<DamageType>>(),
+                Optional.of(PazSounds.PROJECTILE_HIT_PAPER),
+                Optional.of(SoundEvents.SHIELD_BREAK)
             )
-            ).component(DataComponents.BREAK_SOUND, SoundEvents.SHIELD_BREAK)
+            )
+            .component(PazComponents.BLOCKING_ITEM_BREAK_CHANCE, 0.08f)
+            .component(DataComponents.BREAK_SOUND, SoundEvents.SHIELD_BREAK)
     )
     @JvmField
     val TACO: Item = registerItem(
@@ -194,9 +207,9 @@ object PazItems {
         "football_helmet", ::FootballHelmetItem,
         properties = Item.Properties()
             .humanoidArmor(ArmorMaterials.CHAINMAIL, ArmorType.HELMET)
-            .component(PazComponents.BLOCKS_PROJECTILE_DAMAGE, BlocksProjectileDamage(
-                breakChance = 0.025f)
+            .component(PazComponents.PROTECTS_HEAD, ProtectsHeadDataComponent()
             )
+            .component(PazComponents.BLOCKING_ITEM_BREAK_CHANCE, 0.015f)
             .component(
                 DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.HEAD)
                     .setEquipSound(SoundEvents.ARMOR_EQUIP_IRON)
@@ -206,11 +219,15 @@ object PazItems {
                 DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.builder()
                     .add(
                         Attributes.ARMOR,
-                        AttributeModifier(pazResource("football_armor"), 4.0, AttributeModifier.Operation.ADD_VALUE),
+                        AttributeModifier(pazResource("football_armor"), 10.0, AttributeModifier.Operation.ADD_VALUE),
+                        EquipmentSlotGroup.HEAD
+                    ).add(
+                        Attributes.ARMOR_TOUGHNESS,
+                        AttributeModifier(pazResource("football_armor_toughness"), 2.0, AttributeModifier.Operation.ADD_VALUE),
                         EquipmentSlotGroup.HEAD
                     ).add(
                         Attributes.KNOCKBACK_RESISTANCE,
-                        AttributeModifier(pazResource("football_knockback_resistance"), 0.1, AttributeModifier.Operation.ADD_VALUE),
+                        AttributeModifier(pazResource("football_knockback_resistance"), 0.15, AttributeModifier.Operation.ADD_VALUE),
                         EquipmentSlotGroup.HEAD
                     ).build()
             )
@@ -299,20 +316,42 @@ object PazItems {
     }
 
     fun bucketHeadItem(builder: DataComponentMap.Builder, item: Item) {
-        builder.set(PazComponents.BLOCKS_PROJECTILE_DAMAGE, BlocksProjectileDamage(breakChance = .05f))
+        builder.set(PazComponents.PROTECTS_HEAD, ProtectsHeadDataComponent(
+            blockSound = PazSounds.PROJECTILE_HIT_BUCKET
+        ))
+        builder.set(PazComponents.BLOCKING_ITEM_BREAK_CHANCE, 0.02f)
         builder.set(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.HEAD)
             .setEquipSound(SoundEvents.ARMOR_EQUIP_IRON)
             .build()
         )
-        builder.getOrCreate(DataComponents.ATTRIBUTE_MODIFIERS) { ItemAttributeModifiers.builder().build() }.withModifierAdded(
-            Attributes.ARMOR,
-            AttributeModifier(pazResource("bucket_armor"), 1.0, AttributeModifier.Operation.ADD_VALUE),
-            EquipmentSlotGroup.HEAD
-        ).withModifierAdded(
-            Attributes.KNOCKBACK_RESISTANCE,
-            AttributeModifier(pazResource("bucket_knockback_resistance"), 0.05, AttributeModifier.Operation.ADD_VALUE),
-            EquipmentSlotGroup.HEAD
+        builder.set(DataComponents.ATTRIBUTE_MODIFIERS, builder.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.builder().build())
+            .withModifierAdded(
+                Attributes.ARMOR,
+                AttributeModifier(pazResource("bucket_armor"), 8.0, AttributeModifier.Operation.ADD_VALUE),
+                EquipmentSlotGroup.HEAD
+            ).withModifierAdded(
+                Attributes.ARMOR_TOUGHNESS,
+                AttributeModifier(pazResource("bucket_armor_toughness"), 2.0, AttributeModifier.Operation.ADD_VALUE),
+                EquipmentSlotGroup.HEAD
+            ).withModifierAdded(
+                Attributes.KNOCKBACK_RESISTANCE,
+                AttributeModifier(pazResource("bucket_knockback_resistance"), 0.1, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL),
+                EquipmentSlotGroup.HEAD
+            )
         )
+    }
+
+    fun doorShield(builder: DataComponentMap.Builder, item:  Item) {
+        builder.set(DataComponents.BLOCKS_ATTACKS, BlocksAttacks(
+            0.25f,
+            1.0f,
+            listOf(DamageReduction(90.0f, Optional.empty<HolderSet<DamageType>>(), 0.0f, 1.0f)),
+            ItemDamageFunction.DEFAULT,
+            Optional.empty<HolderSet<DamageType>>(),
+            Optional.of(SoundEvents.SHIELD_BLOCK),
+            Optional.of(SoundEvents.SHIELD_BREAK)
+        ))
+        builder.set(PazComponents.BLOCKING_ITEM_BREAK_CHANCE, 0.05f)
     }
 
     fun initialize() {
@@ -329,10 +368,11 @@ object PazItems {
         ItemComponentTooltipProviderRegistryImpl.addLast(PazComponents.STORED_SUN)
         ItemComponentTooltipProviderRegistryImpl.addLast(PazComponents.SUN_COST)
         ItemComponentTooltipProviderRegistryImpl.addLast(PazComponents.BRAINZ_ALLOY_COST)
-        ItemComponentTooltipProviderRegistryImpl.addLast(PazComponents.BLOCKS_PROJECTILE_DAMAGE)
+        ItemComponentTooltipProviderRegistryImpl.addLast(PazComponents.PROTECTS_HEAD)
 
         DefaultItemComponentEvents.MODIFY.register { ctx ->
             ctx.modify({ it.defaultInstance.`is`(BUCKET_WEARABLE)}, ::bucketHeadItem)
+            //ctx.modify({ it.defaultInstance.`is`(ItemTags.DOORS)}, ::doorShield)
         }
 
         // Dispenser behavior

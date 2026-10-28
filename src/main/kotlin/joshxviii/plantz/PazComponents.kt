@@ -1,7 +1,8 @@
 package joshxviii.plantz
 
+import com.mojang.serialization.Codec
 import joshxviii.plantz.item.component.BrainzAlloyCost
-import joshxviii.plantz.item.component.BlocksProjectileDamage
+import joshxviii.plantz.item.component.ProtectsHeadDataComponent
 import joshxviii.plantz.item.component.StoredSun
 import joshxviii.plantz.item.component.StoredWater
 import joshxviii.plantz.item.component.SunCost
@@ -47,10 +48,18 @@ object PazComponents {
     }
 
     @JvmField
-    val BLOCKS_PROJECTILE_DAMAGE: DataComponentType<BlocksProjectileDamage> = register(
-        "blocks_projectile_damage"
-    ) { it.persistent(BlocksProjectileDamage.CODEC)
-        .networkSynchronized(BlocksProjectileDamage.STREAM_CODEC)
+    val PROTECTS_HEAD: DataComponentType<ProtectsHeadDataComponent> = register(
+        "protects_head"
+    ) { it.persistent(ProtectsHeadDataComponent.CODEC)
+        .networkSynchronized(ProtectsHeadDataComponent.STREAM_CODEC)
+        .cacheEncoding()
+    }
+
+    @JvmField
+    val BLOCKING_ITEM_BREAK_CHANCE: DataComponentType<Float> = register(
+        "blocking_item_break_chance"
+    ) { it.persistent(Codec.floatRange(0.0f, 1.0f))
+        .networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.FLOAT)
         .cacheEncoding()
     }
 

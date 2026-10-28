@@ -3,7 +3,7 @@ package joshxviii.plantz
 import joshxviii.plantz.block.*
 import joshxviii.plantz.block.entity.*
 import joshxviii.plantz.item.FlagItem
-import joshxviii.plantz.item.component.BlocksProjectileDamage
+import joshxviii.plantz.item.component.ProtectsHeadDataComponent
 import joshxviii.plantz.item.component.StoredWater.Companion.DEFAULT_CAPACITY
 import net.fabricmc.fabric.api.`object`.builder.v1.block.entity.FabricBlockEntityTypeBuilder
 import net.fabricmc.fabric.api.`object`.builder.v1.world.poi.PoiHelper
@@ -190,7 +190,10 @@ object PazBlocks {
             .pushReaction(PushReaction.DESTROY),
         ::ConeBlock,
         Item.Properties()
-            .component(PazComponents.BLOCKS_PROJECTILE_DAMAGE, BlocksProjectileDamage(breakChance = 0.12f))
+            .component(PazComponents.PROTECTS_HEAD, ProtectsHeadDataComponent(
+                blockSound = PazSounds.PROJECTILE_HIT_CONE
+            ))
+            .component(PazComponents.BLOCKING_ITEM_BREAK_CHANCE, 0.08f)
             .component(
                 DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.HEAD)
                     .setEquipSound(SoundEvents.ARMOR_EQUIP_LEATHER)
@@ -199,11 +202,15 @@ object PazBlocks {
                 DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.builder()
                     .add(
                         Attributes.ARMOR,
-                        AttributeModifier(pazResource("cone_armor"), 0.5, AttributeModifier.Operation.ADD_VALUE),
+                        AttributeModifier(pazResource("cone_armor"), 4.0, AttributeModifier.Operation.ADD_VALUE),
+                        EquipmentSlotGroup.HEAD
+                    ).add(
+                        Attributes.ARMOR_TOUGHNESS,
+                        AttributeModifier(pazResource("cone_armor_toughness"), 1.5, AttributeModifier.Operation.ADD_VALUE),
                         EquipmentSlotGroup.HEAD
                     ).add(
                         Attributes.KNOCKBACK_RESISTANCE,
-                        AttributeModifier(pazResource("cone_knockback_resistance"), 0.1, AttributeModifier.Operation.ADD_VALUE),
+                        AttributeModifier(pazResource("cone_knockback_resistance"), 0.05, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL),
                         EquipmentSlotGroup.HEAD
                     ).build()
             )
