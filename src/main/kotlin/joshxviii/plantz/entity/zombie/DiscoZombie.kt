@@ -138,8 +138,8 @@ class DiscoZombie(type: EntityType<out DiscoZombie>, level: Level) : PazZombie(t
             summonTime = SUMMON_DELAY_TIME + summoner.random.nextInt(50)
             val target = summoner.target?: return
             val angleToTarget = (summoner.yRot * Math.PI.toFloat()) / 180.0f
-            val minY = min(target.y, summoner.y) - 2.0
-            val maxY = max(target.y, summoner.y) + 2.0
+            val minY = (min(target.y, summoner.y) - 2.0).coerceIn(summoner.y-3.0, summoner.y+2.0)
+            val maxY = (max(target.y, summoner.y) + 2.0).coerceIn(summoner.y-3.0, summoner.y+2.0)
             val amount = getSummonAmount()
             val a = (2*Math.PI / amount)// spread angle evenly based on summons amount
             for(i in 1..amount) {
