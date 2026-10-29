@@ -330,6 +330,7 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
 
     var waterTime = -1
     var retreatTime = -1
+    var emergeTime = -1
     override fun tick() {
         super.tick()
         moveDirO = moveDir
@@ -372,10 +373,13 @@ abstract class PazZombie(type: EntityType<out PazZombie>, level: Level) : Zombie
                 emergeAnimation.startIfStopped(tickCount)
                 retreatAnimation.stop()
                 floatAnimation.stop()
-                if (tickCount > emergingTime()) state = ZombieState.IDLE
+                if (emergeTime++ > emergingTime()) {
+                    state = ZombieState.IDLE
+                    emergeTime = -1
+                }
 
-                if (tickCount < 15) {
-                    if(tickCount==1) playSound(SoundEvents.ROOTED_DIRT_HIT, 1.0f, 0.2f)
+                if (emergeTime < 15) {
+                    if(emergeTime%8==0) playSound(SoundEvents.ROOTED_DIRT_HIT, 1.0f, 0.2f)
                     serverLevel?.sendParticles(
                         BlockParticleOption(ParticleTypes.BLOCK, serverLevel.getBlockState(blockPosition().below())),
                         x, y + 0.05, z, 8, 0.25, 0.0, 0.25, 0.4

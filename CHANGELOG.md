@@ -6,8 +6,12 @@
 - Added Citron
 
 # Changelog 1.5.2
+### Changes / Additions
+- During the final wave at the 1-minute mark, all remaining zombies will teleport closer to the flag.
+- While a plant is equipped with the Plant Pot Helmet, The Gardening Glove can be used to place the plant back on the ground.
 ### Hotfix
 - Pumpkins are no longer duplicated when using a Gardening Glove.
+- 
 
 # Changelog 1.5.1
 ### Changes / Additions
