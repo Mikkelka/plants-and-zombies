@@ -5,7 +5,7 @@
 | Branch | Purpose |
 | --- | --- |
 | [`main`](https://github.com/Mikkelka/plants-and-zombies/tree/main) | Exact mirror of [`joshxviii/plants-and-zombies:main`](https://github.com/joshxviii/plants-and-zombies/tree/main). No fork-specific commits or port merges. |
-| [`codex/fabric-26.2-v1.5`](https://github.com/Mikkelka/plants-and-zombies/tree/codex/fabric-26.2-v1.5) | Maintained Minecraft 26.2 port. Starts from the official `v1.5` release, `7e89d925`. |
+| [`codex/fabric-26.2-v1.5`](https://github.com/Mikkelka/plants-and-zombies/tree/codex/fabric-26.2-v1.5) | Maintained Minecraft 26.2 port. Started from `v1.5` (`7e89d925`); current baseline is upstream main `afa14f39` (1.5.2, 2026-10-29). |
 | [`codex/fabric-26.3-upstream`](https://github.com/Mikkelka/plants-and-zombies/tree/codex/fabric-26.3-upstream) | Maintained Minecraft 26.3 port. Its initial upstream baseline is `ddf05fb7`, including fixes after `v1.5`. |
 | [`codex/archive-main-before-upstream-sync-2026-10-25`](https://github.com/Mikkelka/plants-and-zombies/tree/codex/archive-main-before-upstream-sync-2026-10-25) | Historical 26.2 fork at `1ed273d3`, preserved before replacing fork main with upstream. Not an active port. |
 
@@ -18,22 +18,29 @@ or copy Minecraft-specific changes wholesale between the ports.
 
 | | Minecraft 26.2 port | Minecraft 26.3 port |
 | --- | --- | --- |
-| Mod version | `1.5+mc26.2` | `1.5+mc26.3` |
+| Mod version | `1.5.2+mc26.2` | `1.5+mc26.3` |
 | Java | 25 | 25 |
 | Gradle wrapper / Loom | 9.6.1 / 1.17.17 | 9.8.0 / 1.19.3 |
 | Fabric Loader used to build | 0.19.3 | 0.19.5 |
 | Fabric API used to build | `0.156.0+26.2` | `0.162.0+26.3` |
 | TerraBlender (bundled) | `26.2-26.2.0.0.2` | `26.3-26.3.0.0.9` |
 
-On 2026-10-25 the user confirmed that the Minecraft 26.2 build works in game.
-The build also passed resource validation (377 resources/criteria) and a static
-check of 40 Mixin member, descriptor and instruction references. Specific
-multiplayer or saved-world migration scenarios were not separately recorded.
-This report applies to the 26.2 port; it does not establish gameplay validation
-for the independently maintained 26.3 port.
+On 2026-10-29, `1.5.2+mc26.2` passed the Java 25 build and validation of 389
+resources/criteria. The new head-protection and blocking-item Mixin target
+signatures, plus the raid damage invocation, were checked against Minecraft
+26.2 bytecode. The JAR metadata and original bundled TerraBlender were inspected.
+This updated build has not been tested in game.
 
-The 26.2 port currently contains the released `v1.5` content, not the later
-1.5.1 work on upstream main. Updating main does not automatically update a port.
+On 2026-10-25 the user confirmed that the earlier `1.5+mc26.2` build works in
+game. That build passed validation of 377 resources/criteria and a static check
+of 40 Mixin references. Specific multiplayer or saved-world migration scenarios
+were not separately recorded. That report does not establish gameplay
+validation for this update or for the independently maintained 26.3 port.
+
+The 26.2 port now includes upstream 1.5.1 content and 1.5.2 fixes through
+`afa14f390fbd21f1c9d4db3d2662ed6d710f972d`. This is a selected upstream main
+commit; upstream's latest GitHub release tag is still `v1.5`. The 26.3 port was
+not updated alongside it. Updating main does not automatically update a port.
 
 ## Installing a port
 
@@ -89,7 +96,7 @@ git diff --check
 
 On Linux use `./gradlew build --console=plain`. Outputs are in `build/libs/`:
 
-- 26.2: `plants-and-zombies-1.5+mc26.2.jar`
+- 26.2: `plants-and-zombies-1.5.2+mc26.2.jar`
 - 26.3: `plants-and-zombies-1.5+mc26.3.jar`
 
 Names above describe the current versions. `build/libs/` may still contain older

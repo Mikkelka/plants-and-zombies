@@ -249,6 +249,14 @@
           "minecraft:entity_type": "plantz:grave_buster"
         }
       }
+    },
+    "plantz:pumpkin": {
+      "trigger": "minecraft:tame_animal",
+      "conditions": {
+        "entity": {
+          "minecraft:entity_type": "plantz:pumpkin"
+        }
+      }
     }
   },
   "sends_telemetry_event": false

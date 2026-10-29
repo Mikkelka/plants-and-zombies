@@ -35,6 +35,8 @@
   "advancements.plantz.craft_plant_flag.description": "脳の旗を使ってプラントの旗を作る",
   "advancements.plantz.taco_time": "ダブルタコスタイム！",
   "advancements.plantz.taco_time.description": "ウェーブ10に到達して勝利すると、ボーナス報酬が2倍に！",
+  "advancements.plantz.all_gnomes": "俺はノーム、俺はガーデンノームさ",
+  "advancements.plantz.all_gnomes.description": "ガーデンノームを全種類集める",
   "advancements.plantz.win_zombie_raid": "芝生安全保障省",
   "advancements.plantz.win_zombie_raid.description": "ゾンビ襲撃を制する！",
   "advancements.plantz.win_hardest_raid": "ゾンボスの軍隊",
@@ -83,10 +85,12 @@
   "event.plantz.zombie_raid.huge_wave": "ゾンビの大群が接近中！",
   "event.plantz.zombie_raid.special_wave": "特殊ウェーブ：",
   "event.plantz.zombie_raid.boss_wave": "ボスウェーブ：",
-  "event.plantz.zombie_raid.boss_title": "%s",
+  "event.plantz.zombie_raid.boss": "%s",
+  "event.plantz.zombie_raid.boss.spawn": "ボスが現れた：%s",
   "event.plantz.zombie_raid.special_wave.bucket_brigade": "バケツ部隊！",
   "event.plantz.zombie_raid.special_wave.halftime_showdown": "ハーフタイム決戦！",
   "event.plantz.zombie_raid.special_wave.winter_wonderland": "ウィンターワンダーランド！",
+  "event.plantz.zombie_raid.special_wave.zomboween": "ゾンビウィーン！",
   "event.plantz.zombie_raid.special_wave.pirate_invasion": "海賊の襲撃！",
   "event.plantz.zombie_raid.special_wave.league_of_awesome": "すごい者たちのリーグ！",
   "event.plantz.zombie_raid.special_wave.robo_army": "ロボット軍団！",
@@ -96,7 +100,7 @@
   "event.plantz.zombie_raid.defeat_title": "敗北",
 
   "effect.plantz.zombie_omen": "ゾンビの予感",
-  "effect.plantz.toxic": "毒性",
+  "effect.plantz.toxic": "中毒",
   "effect.plantz.frozen": "凍る",
   "effect.plantz.chilled": "冷え",
   "effect.plantz.hypnotize": "催眠",
@@ -201,6 +205,7 @@
   "item.plantz.green_garden_gnome": "緑色のガーデンノーム",
   "item.plantz.red_garden_gnome": "赤色のガーデンノーム",
   "item.plantz.yellow_garden_gnome": "黄色のガーデンノーム",
+  "item.plantz.golden_garden_gnome": "金のガーデンノーム",
 
   "item.plantz.lawn_flamingo": "フラミンゴの置物",
 
@@ -309,6 +314,7 @@
   "entity.plantz.seashroom": "シーシュルーム",
   "entity.plantz.coffeebean": "コーヒービーン",
   "entity.plantz.grave_buster": "グレイブバスター",
+  "entity.plantz.pumpkin": "パンプキン",
 
   "entity.plantz.browncoat": "ゾンビ",
   "entity.plantz.newspaper_zombie": "新聞ゾンビ",

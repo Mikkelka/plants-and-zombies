@@ -1,6 +1,7 @@
 package joshxviii.plantz.block.entity
 
 import joshxviii.plantz.PazBlocks
+import joshxviii.plantz.PazConfig
 import joshxviii.plantz.PazEntities.ALL_STAR
 import joshxviii.plantz.PazEntities.BROWN_COAT
 import joshxviii.plantz.PazEntities.DIGGER_ZOMBIE
@@ -35,7 +36,6 @@ class GravestoneBlockEntity(
     PazBlocks.GRAVESTONE_BLOCK_ENTITY, worldPosition, blockState
 ) {
     companion object {
-        private const val PLAYER_RANGE = 18
         private const val SPAWN_DELAY_MIN = 400
         private const val SPAWN_DELAY_MAX = 600
         private const val MAX_ZOMBIES = 4
@@ -61,7 +61,7 @@ class GravestoneBlockEntity(
             center.x,
             center.y,
             center.z,
-            PLAYER_RANGE.toDouble()
+            PazConfig.GRAVESTONE_ACTIVATION_RANGE
         )
         if (!nearbyPlayer) return false
 

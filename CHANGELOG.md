@@ -1,3 +1,22 @@
+# Fork 1.5.2+mc26.2 (2026-10-29)
+
+- Merge upstream main through `afa14f390fbd21f1c9d4db3d2662ed6d710f972d`,
+  including the 1.5.1 content and subsequent 1.5.2 fixes. This baseline is an
+  upstream main commit, not a new GitHub release tag.
+- Import Pumpkin armor and interactions, Zomboween rewards and variants,
+  raid spawning/UI/teleport fixes, the Digger rework, updated seed mutations,
+  golden garden gnomes and upstream translations.
+- Preserve the Minecraft 26.2 toolchain, API adaptations, mod version range and
+  original bundled TerraBlender. Adapt the flag beam and new Pumpkin/balloon
+  entity predicates, and retain the configurable gravestone activation range.
+- Align four outdated Russian translation keys with upstream's English keys;
+  all eight imported translation files pass the language check.
+- Java 25 build and validation of 389 resources/criteria passed. Check the new
+  blocking/head-protection Mixin signatures and raid damage invocation against
+  26.2 bytecode, and inspect the versioned JAR and bundled dependency.
+- No Minecraft launch or in-game validation of this update. The earlier user
+  gameplay confirmation below applies only to `1.5+mc26.2`.
+
 # Fork 1.5+mc26.2 (2026-10-25)
 
 - Based on the official `v1.5` release (`7e89d925`), with Minecraft 26.2 API
@@ -22,10 +41,101 @@ section and does not mean this port contains the separate upstream 1.6 branch.
 #### General:
 - Added Time Machine.
   - ***Currently not obtainable outside of Creative mode.***
+- Added Citron
+
+# Changelog 1.5.2
+### Changes / Additions
+- During the final wave at the 1-minute mark, all remaining zombies will teleport closer to the flag.
+- While a plant is equipped with the Plant Pot Helmet, The Gardening Glove can be used to place the plant back on the ground.
+### Hotfix
+- Pumpkins are no longer duplicated when using a Gardening Glove.
+
+# Changelog 1.5.1
+### Changes / Additions
+- Added Pumpkin Plant.
+  - Can be obtained as rewards for the Zomboween special wave or from carving pumpkins.
+  - When applied to a plant, it will completely tank any given damage until destroyed.
+- Updated Seed Mutation chances:
+```
+  - Peashooter: 50% Electric Peashooter seeds during Thunderstorms.
+  - Peashooter: 50% Fire Peashooter seeds while in hot biomes.
+  - Peashooter: 10% Repeater seeds anywhere.
+  - Electric Peashooter: 15% Peashooter seeds during Clear/Rainy weather.
+  - Fire Peashooter: 15% Peashooter seeds while NOT in hot biomes.
+  - Repeater: No longer has a mutation (always drops repeater).
+  - Melon Pult: 33.3% Winter Melon seeds in cold biomes.
+  - Winter Melon: 15% Melon Pult while NOT in cold biomes.
+  - Wallnut: 8% Explode-o-Nut seeds anywhere.
+  - Explode-o-Nut: 20% Wallnut seeds anywhere.
+```
+- Added "Zomboween" special wave.
+  - Has a chance to occur 2 weeks before and 1 day after October 31st.
+  - Can happen within waves 4–11.
+- Added a Boss Bar during boss waves.
+  - If a Boss is not defeated by the end of a boss wave, the raid will be lost.
+- Reworked the Digger Zombie's behavior.
+  - When 16–40 blocks away from its target, The Digger Zombie will attempt to tunnel into the ground closer to its target.
+- Added Vampire Browncoat variant.
+  - Has a chance to appear during Halloween season.
+- Balloon Zombies can drop balloons when killed.
+- Unleashed Balloons will pop after 2 minutes.
+- Hypnotized mobs will now target non-hypnotized mobs of the same type as well as other enemies.
+- Reduced how often and how many graves the grave digger will dig.
+- During a raid, the center flag will display a beacon beam while far away.
+- Plants will now only snap onto blocks that they can survive on.
+- Plant and Brainz Flags can only be placed while holding shift.
+- Plant and Zombie projectiles are now ignored by:
+  - Armor Stands
+  - Boats
+  - Minecarts
+  - Item Frames
+- The Skillet item from [Farmer's Delight](https://modrinth.com/mod/farmers-delight-refabricated) can now be equipped on your head.
+- Added nametag ester eggs for the Sunflower (Vampire) and Fire Peashooter (Blaze).
+### Fixes / Technical Changes
+- Reduced Grave Digger spawn chance during raids.
+- Plants and Zombies no longer pop their own balloons.
+- Zombie Robots built by the Engineer will vanish at the end of the raid.
+- Reduced the range for Robo Zombie.
+- Raid zombies will no longer spawn on top of trees.
+- Optimized zombie pathfinding during raids.
+- Optimized some checks on idle plants.
+- Puff Shrooms, Sun Shrooms, and Scaredy Shrooms now spawn again. :,)
+- Fixed a bug that caused the game to hang when processing certain plants while saving.
+- Added a new server config option: `graveStoneActivationRange`.
+  - Sets the range at which Gravestone can spawn zombies. The default value is 24.0
+- Added a new server config option: `pumpkinArmorAmount`.
+  - Sets the amount of pumpkin armor gets applied. The default value is 35.
+- Updated seed packet mutations to accept an item as a result:
+  - The `result` field either accept and `entity_type` or and object:
+    - `item` - an item id
+    - `count` - a value range. Defaults to `{ "min": 1, "max": 1 }` (optional)
+#### Example files:
+```
+{
+  "mutations": [
+    {
+      "biome": "minecraft:forest",
+      "chance": 1.0,
+      "result": {
+        "item": "minecraft:apple"
+      }
+    },
+    {
+      "chance": 0.5,
+      "result": {
+        "item": "minecraft:emerald",
+        "count": {
+          "min": 2,
+          "max": 8
+        }
+      }
+    }
+  ]
+}
+```
 
 # Changelog 1.5
-### Additions
-#### General:   
+### General:
 - Plantz Flag will now power-up nearby plants, reducing their cooldown by 20%. This effect does not stack.
 - When placing plants in plant pots, their initial rotation will be orientated the same as the pot.
 - While a plant is equipped using the Plant Pot Helmet, you can place them back in plant pots by shift clicking.
@@ -68,7 +178,7 @@ section and does not mean this port contains the separate upstream 1.6 branch.
   - The effect will cover the player's screen with the dye color of the effect
 - Added "Hero of the Garden" Effect
   - While the effect is active, interacting with a mailbox will grant loot for each completed wave in the raid.
-#### Plants:
+### Plants:
 - Added Electric Peashooter
   - Acquired by striking a peashooter with lightning.
 - Added Lightning Reed
@@ -98,8 +208,9 @@ section and does not mean this port contains the separate upstream 1.6 branch.
     - Winter Melon has a 75% chance to produce Melonpult seeds.
 - Repeaters no longer spawn naturally.
 - Wall Nuts can now be rolled around by either using Gardening Gloves or by being pushed with a piston.
-#### Zombies:
+### Zombies:
 - Updated the Zombie Raid event.
+  - Added new raid music by [@Patrika](https://www.youtube.com/@pattrika)
   - Wild plants within the radius of the raid will vanish, and new plants will not spawn in the area until the raid has been complete.
   - After losing a raid, all the zombies in the raid will vanish and no rewards will be given.
   - The amount of waves a raid is determined by: (A base of 2) + (bad omen level * 2) + (the game's difficulty: 0, 1, 2, or 3) + (2 if the end credits have been seen).
@@ -140,11 +251,11 @@ section and does not mean this port contains the separate upstream 1.6 branch.
 - Added Robo Zombie
   - Spawns during the "Robo Army" special wave.
 - Added Pirate Captain Zombie
-  - Spawns during the "Pirate Invasion" special wave. 
+  - Spawns during the "Pirate Invasion" special wave.
 - Added Super Brainz
   - Spawns during the "League of Awesome" special wave.
 - Zombies will now attack Wall Nuts when walking into them.
-### Technical Changes
+## Technical Changes
 - Items that have the Block Projectile item component will no longer deflect piercing projectiles.
 - Added BrainzAlloyCost item component.
 - Added configuration options.
@@ -164,18 +275,23 @@ section and does not mean this port contains the separate upstream 1.6 branch.
       - `chance` - value between 0-1. (defaults to 1.0)
       - `result` - An entity id. (Required)
   - Mutation objects are evaluated from top to bottom, the first mutation that matches the conditions will be accepted.
-  #### Example file: 
+  #### Example file:
   ```
   {
     "mutations": [
       {
-        "biomes": "#plantz:plant/has_winter_melon",
-        "chance": 0.75,
-        "result": "plantz:winter_melon"
+        "weather": "thunder",
+        "chance": 0.4,
+        "result": "plantz:electric_peashooter"
       },
       {
-        "chance": 0.6,
-        "result": "plantz:melonpult"
+        "biome": "#plantz:plant/has_fire_peashooter",
+        "chance": 0.33,
+        "result": "plantz:fire_peashooter"
+      },
+      {
+        "chance": 0.1,
+        "result": "plantz:repeater"
       }
     ]
   }
@@ -196,7 +312,7 @@ section and does not mean this port contains the separate upstream 1.6 branch.
   }
   ```
   - Icon png: `assets/minecraft/models/plant_icon/pig.png`
-  
+
 
 # Changelog 1.4.2
 ### Hotfix
@@ -253,7 +369,7 @@ section and does not mean this port contains the separate upstream 1.6 branch.
     - Found in oceans and rivers and from fishing.
 - Added Ducky Tube
 	- Makes the user float in water while equipped.
-    - Browncoats and Newspaper Zombies can spawn in lakes and oceans with the Ducky Tube. 
+    - Browncoats and Newspaper Zombies can spawn in lakes and oceans with the Ducky Tube.
     - Zombies with Ducky Tubes spawn more often while it's raining.
 - Added Watering Can
   - Can be obtained from a level 3 farmer or from fishing.

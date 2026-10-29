@@ -175,7 +175,7 @@ class EngineerZombie(type: EntityType<out EngineerZombie>, level: Level) : PazZo
                 buildTime = BUILD_DELAY_TIME + engineerZombie.random.nextInt(40)
                 val bot : ZombieRobot = ZOMBIE_BOTS.random().create(level, EntitySpawnReason.MOB_SUMMONED)?: return
                 bot.snapTo(buildPos, engineerZombie.yRot, 0.0f)
-                bot.finalizeSpawn(level, level.getCurrentDifficultyAt(buildPos), EntitySpawnReason.REINFORCEMENT, PazZombieGroupData(isRaider = false))
+                bot.finalizeSpawn(level, level.getCurrentDifficultyAt(buildPos), EntitySpawnReason.REINFORCEMENT, PazZombieGroupData(isRaider = true, isCountedTowardRaidHealth = false))
                 bot.setOwner(engineerZombie)
                 level.addFreshEntity(bot)
                 level.gameEvent(GameEvent.ENTITY_PLACE, Vec3.atCenterOf(buildPos), GameEvent.Context.of(engineerZombie))

@@ -1,8 +1,12 @@
 # Plants & Zombies - Minecraft 26.2 port
 
-This branch maintains an unofficial Fabric port of the official **Plants &
-Zombies 1.5** release to **Minecraft 26.2**. The user confirmed successful
-in-game use on 2026-10-25.
+This branch maintains an unofficial Fabric port of **Plants & Zombies 1.5.2**
+to **Minecraft 26.2**, based on upstream main at `afa14f39` (2026-10-29).
+The update includes the 1.5.1 content and subsequent 1.5.2 fixes.
+
+The Java 25 build and validation of 389 resources/criteria passed on 2026-10-29.
+This updated build has not been tested in game. The user's successful in-game
+test on 2026-10-25 applies to the earlier `1.5+mc26.2` build.
 
 - **This port:** [`codex/fabric-26.2-v1.5`](https://github.com/Mikkelka/plants-and-zombies/tree/codex/fabric-26.2-v1.5)
 - **Minecraft 26.3 port:** [`codex/fabric-26.3-upstream`](https://github.com/Mikkelka/plants-and-zombies/tree/codex/fabric-26.3-upstream)
@@ -11,7 +15,7 @@ in-game use on 2026-10-25.
 Install Java 25, Fabric Loader, Fabric API for Minecraft 26.2 and Fabric
 Language Kotlin. TerraBlender is bundled. Build with
 `./gradlew.bat build --console=plain`; the mod JAR is
-`build/libs/plants-and-zombies-1.5+mc26.2.jar`.
+`build/libs/plants-and-zombies-1.5.2+mc26.2.jar`.
 
 See [PORTING.md](PORTING.md) for version requirements, validation status,
 CI downloads and the workflow for importing future upstream updates.

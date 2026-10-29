@@ -7,6 +7,7 @@ import joshxviii.plantz.entity.plant.saveAsCompoundTag
 import joshxviii.plantz.raid.WaveType
 import net.minecraft.ChatFormatting
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction
 import net.minecraft.core.Vec3i
 import net.minecraft.core.component.DataComponents
 import net.minecraft.nbt.CompoundTag
@@ -42,12 +43,40 @@ import net.minecraft.world.level.pathfinder.Path
 import net.minecraft.world.level.storage.loot.LootTable
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
+import java.time.LocalDate
+import java.time.Month
+import java.time.MonthDay
+import java.time.temporal.ChronoUnit
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 fun pazResource(path: String): Identifier = Identifier.fromNamespaceAndPath(MODID, path)
+
+object SeasonalEvents {
+    fun dayNow(): LocalDate = LocalDate.now()
+
+    fun isNear(
+        monthDay: MonthDay,
+        daysBefore: Long = 14,
+        daysAfter: Long = 1,
+        today: LocalDate = dayNow(),
+    ): Boolean {
+        for (yearOffset in -1..1) {
+            val event = monthDay.atYear(today.year + yearOffset)
+            val daysUntil = ChronoUnit.DAYS.between(today, event)
+            if (daysUntil in -daysAfter..daysBefore) return true
+        }
+        return false
+    }
+
+    fun isHalloween(): Boolean =
+        isNear(MonthDay.of(Month.OCTOBER, 31))
+
+    fun isChristmas(): Boolean =
+        isNear(MonthDay.of(Month.DECEMBER, 25))
+}
 
 interface GardenHeroRewards {
     fun `plantz$getWaveList`(): MutableList<WaveType>
@@ -63,11 +92,6 @@ interface GardenHeroRewards {
     }
 }
 
-interface ZombieRaider {
-    fun `plantz$getIsFromRaid`(): Boolean
-    fun `plantz$setIsFromRaid`(value: Boolean)
-}
-
 interface PlantHeadAttachment {
     fun `plantz$hasPlantOnHead`(): Boolean
     fun `plantz$getPlant`(): Plant?
@@ -75,7 +99,7 @@ interface PlantHeadAttachment {
     fun `plantz$getPlantData`(): CompoundTag
     fun `plantz$setPlantData`(value: CompoundTag)
     companion object {
-        fun potBlockInteraction(state: BlockState, level: Level, pos: BlockPos, player: Player) : InteractionResult {
+        fun potHelmetPlaceInteraction(level: Level, pos: BlockPos, player: Player) : InteractionResult {
             if (level !is ServerLevel) return InteractionResult.PASS
             val hasPlant = (player as PlantHeadAttachment).`plantz$hasPlantOnHead`()
             if (hasPlant && player.isShiftKeyDown) {
@@ -213,7 +237,7 @@ fun Entity.positionPlant(plant: Plant) {
         position.y - offset.y,
         position.z - offset.z
     )
-    plant.yBodyRot = this.yHeadRot
+    plant.yRot = this.yHeadRot
 }
 
 fun Player.hasSpaceForSun(item: ItemStack): Boolean {
@@ -268,6 +292,8 @@ fun Player.removeItemFromInventory(itemType: Item?, amount: Int = 1): Int {
     if(itemType == null || itemType == Items.AIR) return 0
     return inventory.clearOrCountMatchingItems({ it.`is`(itemType) }, amount, inventoryMenu.getCraftSlots())
 }
+
+fun clampYRot(yaw: Float): Float = Direction.fromYRot(yaw.toDouble()).toYRot()
 
 fun Float.percentFormat(): String = "%.0f%%".format(this * 100)
 
@@ -372,8 +398,8 @@ fun LivingEntity.attackRange(): Double {
     return hitboxWidth + attackRange
 }
 
-fun LivingEntity.withinAttackRange(entity: Entity): Boolean {
-    return entity.distanceToSqr(this) <= this.attackRange().pow(2)
+fun LivingEntity.withinAttackRange(entity: Entity, plus: Double = 0.0): Boolean {
+    return entity.distanceToSqr(this) <= this.attackRange().plus(plus).pow(2)
 }
 
 fun Path?.getEndPos(): BlockPos? = this?.endNode?.let { BlockPos(it.x, it.y, it.z) }

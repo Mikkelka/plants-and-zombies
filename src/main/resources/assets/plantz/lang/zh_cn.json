@@ -35,6 +35,8 @@
   "advancements.plantz.craft_plant_flag.description": "用脑子旗帜合成一面植物旗帜",
   "advancements.plantz.taco_time": "双倍玉米卷时间！",
   "advancements.plantz.taco_time.description": "坚守到第10波，获胜即可赢取双倍奖励！",
+  "advancements.plantz.all_gnomes": "我是地精，我是花园地精",
+  "advancements.plantz.all_gnomes.description": "集齐所有种类的花园地精",
   "advancements.plantz.win_zombie_raid": "庭院无忧",
   "advancements.plantz.win_zombie_raid.description": "击退僵尸袭击！",
   "advancements.plantz.win_hardest_raid": "僵王博士的军队",
@@ -83,10 +85,12 @@
   "event.plantz.zombie_raid.huge_wave": "一大波僵尸正在接近！",
   "event.plantz.zombie_raid.special_wave": "特殊波次：",
   "event.plantz.zombie_raid.boss_wave": "Boss波次：",
-  "event.plantz.zombie_raid.boss_title": "%s",
+  "event.plantz.zombie_raid.boss": "%s",
+  "event.plantz.zombie_raid.boss.spawn": "Boss已出现：%s",
   "event.plantz.zombie_raid.special_wave.bucket_brigade": "铁桶小队！",
   "event.plantz.zombie_raid.special_wave.halftime_showdown": "中场对决！",
   "event.plantz.zombie_raid.special_wave.winter_wonderland": "寒冬奇境！",
+  "event.plantz.zombie_raid.special_wave.zomboween": "万尸夜！",
   "event.plantz.zombie_raid.special_wave.pirate_invasion": "海盗入侵！",
   "event.plantz.zombie_raid.special_wave.league_of_awesome": "非凡联盟！",
   "event.plantz.zombie_raid.special_wave.robo_army": "机械军团！",
@@ -96,7 +100,7 @@
   "event.plantz.zombie_raid.defeat_title": "失败",
 
   "effect.plantz.zombie_omen": "僵尸预兆",
-  "effect.plantz.toxic": "毒性",
+  "effect.plantz.toxic": "中毒",
   "effect.plantz.frozen": "冻结",
   "effect.plantz.chilled": "寒冷",
   "effect.plantz.hypnotize": "魅惑",
@@ -201,6 +205,7 @@
   "item.plantz.green_garden_gnome": "绿色花园地精",
   "item.plantz.red_garden_gnome": "红色花园地精",
   "item.plantz.yellow_garden_gnome": "黄色花园地精",
+  "item.plantz.golden_garden_gnome": "黄金花园地精",
 
   "item.plantz.lawn_flamingo": "草坪火烈鸟",
 
@@ -309,6 +314,7 @@
   "entity.plantz.seashroom": "海蘑菇",
   "entity.plantz.coffeebean": "咖啡豆",
   "entity.plantz.grave_buster": "噬碑藤",
+  "entity.plantz.pumpkin": "南瓜头",
 
   "entity.plantz.browncoat": "僵尸",
   "entity.plantz.newspaper_zombie": "报纸僵尸",

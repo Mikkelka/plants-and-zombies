@@ -1,12 +1,12 @@
 package joshxviii.plantz.item
 
+import joshxviii.plantz.PlantHeadAttachment
 import joshxviii.plantz.removeItemFromInventory
 import net.minecraft.ChatFormatting
 import net.minecraft.core.component.DataComponentGetter
 import net.minecraft.core.component.DataComponents
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component
-import net.minecraft.server.level.ServerLevel
 import net.minecraft.tags.BlockTags
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResult
@@ -58,6 +58,13 @@ class GardeningGloveItem(properties: Properties) : Item(properties) {
             }
             item.hurtAndBreak(1, owner, hand)
         }
+
+        fun removePlant(item: ItemStack, owner: LivingEntity?, hand: InteractionHand) {
+            item.remove(DataComponents.ENTITY_DATA)
+            owner?.let{
+                hurtAndDropPlant(item, owner, hand)
+            }
+        }
     }
 
     override fun getUseAnimation(itemStack: ItemStack): ItemUseAnimation {
@@ -88,9 +95,12 @@ class GardeningGloveItem(properties: Properties) : Item(properties) {
             }
             return InteractionResult.SUCCESS
         }
-        if (!isHolding) return InteractionResult.TRY_WITH_EMPTY_HAND
-
-        if (level !is ServerLevel) return InteractionResult.SUCCESS
+        if (!isHolding) {
+            player?.let{
+                return PlantHeadAttachment.potHelmetPlaceInteraction(level, context.clickedPos, player)
+            }
+            return InteractionResult.TRY_WITH_EMPTY_HAND
+        }
 
         val result = SeedPacketItem.tryPlant(
             level = level,
@@ -104,10 +114,7 @@ class GardeningGloveItem(properties: Properties) : Item(properties) {
         )
 
         if (result == InteractionResult.SUCCESS) {
-            stack.remove(DataComponents.ENTITY_DATA)
-            player?.let {
-                hurtAndDropPlant(stack, it, context.hand)
-            }
+            removePlant(stack, context.player, context.hand)
         }
         return result
     }
