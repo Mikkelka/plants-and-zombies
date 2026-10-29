@@ -1,20 +1,17 @@
 package joshxviii.plantz.item
 
-import joshxviii.plantz.entity.plant.Plant
-import joshxviii.plantz.entity.plant.processSeedPacketInteraction
+import joshxviii.plantz.PlantHeadAttachment
 import joshxviii.plantz.removeItemFromInventory
 import net.minecraft.ChatFormatting
 import net.minecraft.core.component.DataComponentGetter
 import net.minecraft.core.component.DataComponents
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.chat.Component
-import net.minecraft.server.level.ServerLevel
 import net.minecraft.tags.BlockTags
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.item.ItemEntity
-import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.ItemUseAnimation
@@ -98,7 +95,12 @@ class GardeningGloveItem(properties: Properties) : Item(properties) {
             }
             return InteractionResult.SUCCESS
         }
-        if (!isHolding) return InteractionResult.TRY_WITH_EMPTY_HAND
+        if (!isHolding) {
+            player?.let{
+                return PlantHeadAttachment.potHelmetPlaceInteraction(level, context.clickedPos, player)
+            }
+            return InteractionResult.TRY_WITH_EMPTY_HAND
+        }
 
         val result = SeedPacketItem.tryPlant(
             level = level,

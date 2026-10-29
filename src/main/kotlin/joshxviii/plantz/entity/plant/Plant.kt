@@ -705,6 +705,8 @@ abstract class Plant(type: EntityType<out Plant>, level: Level) : TamableAnimal(
             pumpkin.state = PlantState.IDLE
             pumpkin.health = armor
             pumpkin.yRot = yRot
+            pumpkin.yHeadRot = yHeadRot
+            pumpkin.yBodyRot = yBodyRot
             (this.owner as? Player)?.let { pumpkin.tame(it) }
         }
         if (level.addFreshEntity(pumpkin)) {
@@ -862,8 +864,6 @@ abstract class Plant(type: EntityType<out Plant>, level: Level) : TamableAnimal(
         if (spawnReason == EntitySpawnReason.SPAWN_ITEM_USE) state = PlantState.INIT
         if (spawnReason == EntitySpawnReason.NATURAL) {
             val yaw = Direction.getRandom(random).toYRot()
-            yHeadRot = yaw
-            yBodyRot = yaw
             yRot = yaw
         }
 
@@ -977,6 +977,9 @@ abstract class Plant(type: EntityType<out Plant>, level: Level) : TamableAnimal(
             (attachedEntity as PlantHeadAttachment).`plantz$setPlantData`(CompoundTag())
             (attachedEntity as PlantHeadAttachment).`plantz$setPlant`(null)
             attachedEntity = null
+            yRot = clampYRot(yRot)
+            yHeadRot = clampYRot(yHeadRot)
+            yBodyRot = clampYRot(yBodyRot)
         }
     }
 

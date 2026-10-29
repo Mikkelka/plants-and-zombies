@@ -210,6 +210,7 @@ class PumpkinArmorLayer<M : EntityModel<PlantRenderState>>(
         pumpkinState.lightCoords = state.lightCoords
         pumpkinState.ageInTicks = state.ageInTicks
         pumpkinState.isAsleep = state.isAsleep
+
         pumpkinState.sleepAnimationState.copyFrom(state.sleepAnimationState)
         pumpkinState.idleAnimationState.copyFrom(state.idleAnimationState)
 
