@@ -1,6 +1,6 @@
 # Working on this fork
 
-- Read `PORTING.md` before updating a Minecraft port. Inspect the current branch,
+- Read `docs/MAINTENANCE.md` before updating a Minecraft port. Inspect the current branch,
   working tree, remotes and upstream baseline before editing.
 - `main` is the fork's active development branch, currently Minecraft 26.3.
   The user selected this branch/tag workflow on 2026-11-07, superseding the old
@@ -33,8 +33,11 @@
 - Routine verification is build/data validation. Do not launch Minecraft or run
   `runClient` unless the user explicitly asks. Attribute reported gameplay
   results to the user and the version actually tested.
-- Update the fork section of `CHANGELOG.md`, README and `PORTING.md` when the
+- Update the fork section of `CHANGELOG.md`, README and `docs/MAINTENANCE.md` when the
   baseline, dependencies, installation requirements or validation status change.
+- Keep `README.md`, `AGENTS.md` and `CHANGELOG.md` in the root. Put detailed
+  guidance in `docs/`, with version-specific technical notes in `docs/ports/`.
+  Keep GitHub templates in `.github/` and update relative links when moving docs.
 - Keep the current 26.2 and 26.3 runtime/source JARs together in the designated
   `build/libs` output folder. Do not erase the other port with `clean`; if a clean
   build is needed, isolate it or preserve and restore the other port's artifacts.

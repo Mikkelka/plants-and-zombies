@@ -1,5 +1,8 @@
 # Fork 1.6-dev.fbc1a3b6.compat1+mc26.3 (2026-11-07)
 
+- Organize detailed documentation under `docs/`: the [maintenance guide](docs/MAINTENANCE.md)
+  and [26.3 technical notes](docs/ports/26.3.md). Keep README, agent instructions
+  and this changelog in the root; keep GitHub templates in `.github/`.
 - Adopt main for current fork development. Preserve the original source on
   `codex/upstream-mirror` at `fbc1a3b6`; tags `26.2` and `26.3` preserve the
   versioned snapshots. Keep existing tags fixed and create new tags for updates.
@@ -29,7 +32,7 @@
 - Extend standalone validation for door-shield crafting, boss criteria and the
   lobbing effect. Build and 464 resource/criterion checks passed. Inspect packaged
   Minecraft/dependency metadata and nested TerraBlender; no in-game test run.
-- Preserve the 26.2 branch and its existing JARs. See `PORTING-26.3.md` for
+- Preserve the 26.2 branch and its existing JARs. See the [26.3 technical notes](docs/ports/26.3.md) for
   validation limits and the subsequent `compat1` startup fix.
 
 ## Previous fork 1.5+mc26.3
@@ -46,7 +49,7 @@
 - Extend CI coverage to data files, the port validator and build configuration.
 
 The original upstream changelog follows. The 26.2 port has a separate upstream
-baseline and validation record; see `PORTING.md`.
+baseline and validation record; see the [maintenance guide](docs/MAINTENANCE.md).
 
 ---
 
@@ -56,7 +59,7 @@ baseline and validation record; see `PORTING.md`.
 - Build against Fabric Loader 0.19.5 and Fabric API 0.162.0+26.3; update TerraBlender and optional Iris compatibility.
 - Include TerraBlender as an unmodified nested dependency.
 - Validate resource schemas, required tags, and local data references during the build.
-- See `PORTING-26.3.md` for requirements and validation coverage.
+- See the [26.3 technical notes](docs/ports/26.3.md) for requirements and validation coverage.
 
 # Changelog 1.6
 ### Additions

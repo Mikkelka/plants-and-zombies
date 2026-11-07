@@ -30,13 +30,15 @@ successful startup/use of `compat1`; broader gameplay scenarios remain unverifie
 The `compat1` build fixes the reported startup crash by registering the
 graveyard through TerraBlender's initialization entrypoint after its config is ready.
 
-See [PORTING.md](PORTING.md) for version requirements, validation status,
-CI downloads and the workflow for importing future upstream updates.
-See [CHANGELOG.md](CHANGELOG.md) for port changes and the original changelog.
+Documentation:
+
+- [Maintenance and saved versions](docs/MAINTENANCE.md): branches, tags, installation, builds and upstream updates.
+- [Minecraft 26.3 technical notes](docs/ports/26.3.md): compatibility changes, dependencies and validation limits.
+- [Changelog](CHANGELOG.md): fork changes and the original changelog.
 
 This chat now maintains development on main. Minecraft 26.2 is preserved by
 its tag; any later fix for that target starts from the tag in a separate
-worktree/branch. See [maintenance responsibilities](PORTING.md#separate-maintenance-chats).
+worktree/branch. See [maintenance responsibilities](docs/MAINTENANCE.md#separate-maintenance-chats).
 
 ---
 

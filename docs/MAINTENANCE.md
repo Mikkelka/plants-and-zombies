@@ -1,5 +1,7 @@
 # Maintaining the fork and saved versions
 
+Run commands from the repository root; build paths below are relative to that root.
+
 ## Branches and tags
 
 The user selected this workflow on 2026-11-07. Main contains current fork
@@ -8,7 +10,7 @@ previous working versions. This replaces the earlier two-port-branch workflow.
 
 | Ref | Purpose |
 | --- | --- |
-| [`main`](https://github.com/Mikkelka/plants-and-zombies/tree/main) | Current forkdevelopment, starting with our corrected Minecraft 26.3 compat1 version. |
+| [`main`](https://github.com/Mikkelka/plants-and-zombies/tree/main) | Current fork development, starting with our corrected Minecraft 26.3 compat1 version. |
 | [`codex/upstream-mirror`](https://github.com/Mikkelka/plants-and-zombies/tree/codex/upstream-mirror) | Exact mirror of `joshxviii/plants-and-zombies:26.3`, currently `fbc1a3b6`. No fork code or docs. |
 | Tag [`26.2`](https://github.com/Mikkelka/plants-and-zombies/tree/26.2) | Saved Minecraft 26.2 port at `c083f699`, mod `1.5.2+mc26.2`. |
 | Tag [`26.3`](https://github.com/Mikkelka/plants-and-zombies/tree/26.3) | Saved Minecraft 26.3 compat1 baseline, mod `1.6-dev.fbc1a3b6.compat1+mc26.3`, including this workflow migration. |
@@ -70,7 +72,7 @@ for the independently maintained 26.3 port.
 The 26.3 branch was rebuilt on 2026-11-07 after importing upstream `26.3` at
 `fbc1a3b6`. The build, 464 resource/criterion checks and JAR inspection passed, with no Minecraft
 launch or gameplay test. Existing 26.2 artifacts were preserved. See
-`PORTING-26.3.md` for the snapshot contents and compatibility fixes.
+[Minecraft 26.3 technical notes](ports/26.3.md) for the snapshot contents and compatibility fixes.
 
 The user's subsequent startup test exposed premature TerraBlender registration
 in the first snapshot (`TerraBlender.CONFIG` was null). `compat1` moves it to the
@@ -83,7 +85,7 @@ reported. `compat1` is the current working 26.3 baseline.
 
 Upstream's imported translations still contain missing/unused keys relative to
 the 449-key English file. The separate language check reports these differences;
-they are not a failure of the build/resource validation. See `PORTING-26.3.md`.
+they are not a failure of the build/resource validation. See the [26.3 validation notes](ports/26.3.md#validation).
 
 The 26.2 branch was separately updated to 1.5.2 by its maintenance chat.
 The 26.2 snapshot remains unchanged; main updates do not alter existing tags.
@@ -130,7 +132,8 @@ Review the selected upstream release/commit before merging; do not automatically
 import development content when the request is for a published release. Preserve
 the intended Minecraft/Fabric/Loom/Gradle/TerraBlender versions and version range,
 and recheck APIs, rendering, world generation, loot and advancement data. Update
-README, this document, `PORTING-26.3.md` and the fork changelog as appropriate.
+[README](../README.md), this document, the [26.3 technical notes](ports/26.3.md)
+and the [fork changelog](../CHANGELOG.md) as appropriate.
 
 Set the mod version to the imported version plus the Minecraft/build suffix.
 Use a new suffix for changed distributed builds. After build validation and
