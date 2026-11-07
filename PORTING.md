@@ -1,57 +1,53 @@
-# Maintaining the Minecraft ports
+# Maintaining the fork and saved versions
 
-## Branch structure
+## Branches and tags
 
-| Branch | Purpose |
+The user selected this workflow on 2026-11-07. Main contains current fork
+development, the original code has its own mirror branch, and tags preserve
+previous working versions. This replaces the earlier two-port-branch workflow.
+
+| Ref | Purpose |
 | --- | --- |
-| [`main`](https://github.com/Mikkelka/plants-and-zombies/tree/main) | Exact mirror of upstream `26.3`, currently `fbc1a3b6` (2026-11-07). Keep fork changes and port merges on the port branches. |
-| [`codex/fabric-26.2-v1.5`](https://github.com/Mikkelka/plants-and-zombies/tree/codex/fabric-26.2-v1.5) | Preserved Minecraft 26.2 port. Baseline `afa14f39` (1.5.2), port commit `c083f699`; update only when explicitly requested through its maintenance chat. |
-| [`codex/fabric-26.3-upstream`](https://github.com/Mikkelka/plants-and-zombies/tree/codex/fabric-26.3-upstream) | Maintained Minecraft 26.3 port. Current upstream baseline: `26.3` at `fbc1a3b6` (2026-11-07), including 1.6 development. |
+| [`main`](https://github.com/Mikkelka/plants-and-zombies/tree/main) | Current forkdevelopment, starting with our corrected Minecraft 26.3 compat1 version. |
+| [`codex/upstream-mirror`](https://github.com/Mikkelka/plants-and-zombies/tree/codex/upstream-mirror) | Exact mirror of `joshxviii/plants-and-zombies:26.3`, currently `fbc1a3b6`. No fork code or docs. |
+| Tag [`26.2`](https://github.com/Mikkelka/plants-and-zombies/tree/26.2) | Saved Minecraft 26.2 port at `c083f699`, mod `1.5.2+mc26.2`. |
+| Tag [`26.3`](https://github.com/Mikkelka/plants-and-zombies/tree/26.3) | Saved Minecraft 26.3 compat1 baseline, mod `1.6-dev.fbc1a3b6.compat1+mc26.3`, including this workflow migration. |
 
-Upstream has replaced `main` with version branches; its current default is
-`26.3`, and `26.1` remains separate. On 2026-11-07 the user selected upstream
-`26.3` as the source for the fork's `main`. It was fast-forwarded by 181 commits
-from `afa14f39` to `fbc1a3b6` and pushed, preserving exact upstream history and
-tree. Both version branches remain separate; the working 26.3 port includes
-compatibility fixes which are intentionally absent from the original mirror.
-Do not automatically repoint the mirror if upstream renames branches again.
-Keep historical archives, including the local `archive/26.3-compat3` tag.
+Tags are immutable snapshots of complete source/history, not moving aliases for
+"latest". Future updates receive new descriptive tags, for example
+`26.3-compat2` or a tag including the new mod version. The tag `26.2` is not an
+ancestor of the 26.3 main history; Git tags can preserve either development line.
+Do not merge incompatible 26.2 code into main merely to include its tag.
 
-Use the two port branches for ongoing work, including later mod releases. The
-`v1.5` suffix in the 26.2 branch name records its starting point; the current mod
-version comes from `gradle.properties`. Do not merge either port back into main
-or copy Minecraft-specific changes wholesale between the ports.
+The old `codex/fabric-26.2-v1.5` and `codex/fabric-26.3-upstream` branches remain
+as legacy references. Current development has moved to main. The latter branch
+still supplies historical draft PR #74 and does not automatically follow main.
+Do not delete those references or historical archive tags without a request.
+
+The mirror follows upstream `26.3` explicitly. Do not change its source just
+because upstream changes its default branch. It intentionally excludes our
+Fabric/initialization fixes; use the development build for the user's setup.
 
 ## Separate maintenance chats
 
-Each Minecraft version has its own maintenance chat:
+This chat maintains current development on main, presently Minecraft 26.3.
+Minecraft 26.2 is preserved for possible later use. If the user requests a 26.2
+fix, its chat should start from tag `26.2` in a separate worktree/branch.
 
-- The 26.3 chat maintains `codex/fabric-26.3-upstream` and keeps Minecraft 26.3.
-- The 26.2 chat owns the preserved `codex/fabric-26.2-v1.5` branch. Keep it
-  available and update it only if the user requests further 26.2 work.
+The current working baseline is `1.6-dev.fbc1a3b6.compat1+mc26.3`, runtime source
+`63415ad4`, upstream `fbc1a3b6`. The user confirmed that it works on 2026-11-07.
+Preserve the TerraBlender callback and other compatibility changes when importing
+upstream updates. Import changes when requested; do not automatically change the
+Minecraft target or update preserved versions.
 
-The current working baseline for this chat is
-`1.6-dev.fbc1a3b6.compat1+mc26.3`, with runtime source at `63415ad4` and upstream
-baseline `fbc1a3b6`. The user selected this as the ongoing 26.3 version on
-2026-11-07 after confirming that it works. Future updates continue from this
-branch and preserve its compatibility changes, especially the TerraBlender
-callback. This designation does not rename the branch or change Git's `main`.
+Before editing or building, check the branch, working tree and target version.
+Chats using one checkout share its active branch. Use separate worktrees for
+concurrent work and never switch a checkout another chat is using. Keep build
+artifacts, worlds, user files and untracked data safe.
 
-When the original project publishes changes, the user asks each chat separately
-to import the selected update into its existing branch. Upstream changes do not
-automatically update either port, and a new mod release does not change the
-branch's Minecraft target. `main` remains the upstream mirror.
-
-Before editing or building, check the actual branch, working tree and target
-version. Two chats using the same project directory share one active checkout;
-their branch selections are not isolated. Use separate Git worktrees for
-concurrent work, and do not switch a checkout another chat is actively using.
-
-For each requested update, follow the upstream-import and validation steps below,
-update the version/baseline records, and report the target Minecraft version,
-imported upstream commit, mod version, validation performed and output JAR.
-Commit to the intended port branch and push when requested. Continue using an
-existing upstream PR for that branch rather than opening a new PR for each fix.
+For each update, record the upstream baseline, mod version, requirements and
+validation, then commit on main. Push when requested. Tag chosen snapshots;
+create/update a PR from the intended development branch only when requested.
 
 ## Current versions and validation
 
@@ -90,7 +86,7 @@ the 449-key English file. The separate language check reports these differences;
 they are not a failure of the build/resource validation. See `PORTING-26.3.md`.
 
 The 26.2 branch was separately updated to 1.5.2 by its maintenance chat.
-This import changes only 26.3; updating either port does not update the other.
+The 26.2 snapshot remains unchanged; main updates do not alter existing tags.
 
 ## Installing a port
 
@@ -107,47 +103,53 @@ download the mod JAR, not the `-sources.jar`.
 
 ## Taking an upstream update
 
-Start with a clean working tree, verify the assigned port branch and preserve
-user files. Fetch the available updates:
+Start clean, inspect worktrees and fetch the remotes:
 
 ```powershell
-git fetch origin
+git fetch origin --prune
 git fetch upstream --tags
 ```
 
-Resolve the upstream branches first (`git ls-remote --symref upstream HEAD`).
-The selected mirror source is `upstream/26.3`; `upstream/main` no longer exists.
-Keep the selected source until the user requests a change, even if upstream's
-default branch changes later.
+In a dedicated mirror checkout, update only from the selected original branch:
 
-Import the selected upstream ref directly into the assigned port branch. Syncing
-the `main` mirror is a separate action when requested; it is not a prerequisite
-for updating a port. If syncing the mirror, use a checkout that no other chat is
-using and verify `main` is still an upstream-only mirror:
+```powershell
+git switch codex/upstream-mirror
+git merge --ff-only upstream/26.3
+git push origin codex/upstream-mirror
+```
+
+Verify that the mirror commit and tree equal the selected upstream commit. Keep
+fork changes out of the mirror. In the development checkout, when requested:
 
 ```powershell
 git switch main
-git merge --ff-only upstream/26.3
-git push origin main
+git merge codex/upstream-mirror
 ```
 
-In the port's own checkout, review and merge the chosen
-upstream release tag or commit into that branch; do not automatically take all
-of upstream main when the intended base is a published release. Record the
-selected upstream baseline in this document and the fork section of
-`CHANGELOG.md`.
+Review the selected upstream release/commit before merging; do not automatically
+import development content when the request is for a published release. Preserve
+the intended Minecraft/Fabric/Loom/Gradle/TerraBlender versions and version range,
+and recheck APIs, rendering, world generation, loot and advancement data. Update
+README, this document, `PORTING-26.3.md` and the fork changelog as appropriate.
 
-When resolving conflicts, preserve the target Minecraft version, compatible
-Fabric/Loom/Gradle/TerraBlender dependencies and `fabric.mod.json` version range.
-Recheck movement controls, advancement predicates, rendering, knockback,
-world generation and loot formats against the target Minecraft API. Keep
-upstream gameplay and assets unless a compatibility change requires otherwise.
-Minecraft 26.3 resource formats are not interchangeable with 26.2 formats.
+Set the mod version to the imported version plus the Minecraft/build suffix.
+Use a new suffix for changed distributed builds. After build validation and
+chosen manual testing, save a new annotated tag; never replace existing tags.
 
-Set `mod_version` to the imported upstream version with `+mc26.2` or `+mc26.3`.
-Update the version table and README when dependencies or the baseline change.
-Do not overwrite an already distributed version with materially different code;
-use an additional compatibility/build suffix when needed.
+## Returning to a saved version
+
+Use an isolated worktree to inspect/build an old version while main stays put:
+
+```powershell
+git worktree add --detach ../plants-and-zombies-26.2 26.2
+```
+
+Tag `26.3` works the same way. To make a fix, create a new branch in that
+worktree. Each snapshot uses its own Java/Gradle/dependency settings and build
+output; copy only the requested artifacts into the designated delivery folder.
+Tags preserve source; ready-made JAR downloads come from retained CI artifacts
+(subject to GitHub artifact retention) or a separately requested release. A tag
+alone does not attach a binary or guarantee it can be downloaded forever.
 
 ## Building and checking a port
 
@@ -187,4 +189,4 @@ validation, and retain which port/build was tested.
 
 Commit and push only the intended branch, then inspect the GitHub Actions build
 for that exact commit. Treat a queued build as pending and a completed failed
-build as a failure. Never merge a port into main to publish it.
+build as a failure. Current development is published from main; never push fork commits to the mirror.

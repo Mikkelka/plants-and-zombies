@@ -7,11 +7,16 @@ development, so this snapshot is versioned `1.6-dev.fbc1a3b6.compat1+mc26.3`.
 
 **Current 26.3 baseline:** use the `compat1` build for normal use and future
 maintenance. The user confirmed that it works after the TerraBlender startup
-fix on 2026-11-07. Continue updates on this same branch and preserve that fix.
+fix on 2026-11-07. Continue development on `main` and preserve that fix.
 
-- **This port:** [`codex/fabric-26.3-upstream`](https://github.com/Mikkelka/plants-and-zombies/tree/codex/fabric-26.3-upstream)
-- **Preserved Minecraft 26.2 port:** [`codex/fabric-26.2-v1.5`](https://github.com/Mikkelka/plants-and-zombies/tree/codex/fabric-26.2-v1.5)
-- **Exact upstream 26.3 mirror:** [`main`](https://github.com/Mikkelka/plants-and-zombies/tree/main), synchronized to `fbc1a3b6` on 2026-11-07.
+- **Current development:** [`main`](https://github.com/Mikkelka/plants-and-zombies/tree/main), currently our corrected Minecraft 26.3 version.
+- **Saved Minecraft 26.2:** tag [`26.2`](https://github.com/Mikkelka/plants-and-zombies/tree/26.2), mod `1.5.2+mc26.2`.
+- **Saved Minecraft 26.3:** tag [`26.3`](https://github.com/Mikkelka/plants-and-zombies/tree/26.3), mod `1.6-dev.fbc1a3b6.compat1+mc26.3`.
+- **Exact upstream 26.3 mirror:** [`codex/upstream-mirror`](https://github.com/Mikkelka/plants-and-zombies/tree/codex/upstream-mirror), synchronized to `fbc1a3b6` on 2026-11-07.
+
+Tags are fixed snapshots; future builds receive new tags. Use the mirror to
+fetch original updates, then merge requested changes into main while retaining
+our compatibility fixes. The older version branches remain as legacy references.
 
 Install Java 25, Fabric Loader, Fabric API for Minecraft 26.3 and Fabric
 Language Kotlin. TerraBlender is bundled. Build with
@@ -29,10 +34,9 @@ See [PORTING.md](PORTING.md) for version requirements, validation status,
 CI downloads and the workflow for importing future upstream updates.
 See [CHANGELOG.md](CHANGELOG.md) for port changes and the original changelog.
 
-Each Minecraft version has its own maintenance chat. This branch is maintained
-by the 26.3 chat; the 26.2 chat updates its separate branch. Ask the appropriate
-chat to import future upstream updates while keeping its Minecraft target. See
-[maintenance responsibilities](PORTING.md#separate-maintenance-chats).
+This chat now maintains development on main. Minecraft 26.2 is preserved by
+its tag; any later fix for that target starts from the tag in a separate
+worktree/branch. See [maintenance responsibilities](PORTING.md#separate-maintenance-chats).
 
 ---
 

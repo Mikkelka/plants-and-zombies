@@ -9,18 +9,21 @@ explicitly named `1.6-dev.fbc1a3b6.compat1+mc26.3` here, rather than a stable 1.
 
 ## Maintenance purpose
 
-`codex/fabric-26.3-upstream` is the ongoing Minecraft 26.3 maintenance branch.
+`main` is the ongoing development branch, currently targeting Minecraft 26.3.
+Tag `26.3` preserves this compat1 baseline; tag `26.2` preserves the older
+26.2 port. `codex/upstream-mirror` contains the unchanged original 26.3 source.
 The current working baseline is `1.6-dev.fbc1a3b6.compat1+mc26.3`, whose runtime
 source is commit `63415ad4`. The user confirmed it works and selected it for
 continued maintenance on 2026-11-07. Use it in preference to the initial
-`fbc1a3b6` snapshot and the older v1.5 port; keep the versioned branch name.
+`fbc1a3b6` snapshot and the older v1.5 port.
 The chat assigned to 26.3 imports requested updates from the original project
 while preserving this Minecraft target and its compatible dependencies. The
-26.2 chat independently maintains `codex/fabric-26.2-v1.5`.
+26.2 version remains available from its immutable tag for any explicitly
+requested future work in a separate worktree/branch.
 
 See [PORTING.md](PORTING.md#separate-maintenance-chats) for chat ownership,
 shared-checkout precautions, upstream updates and artifact handling. Keep the
-same branch for future mod releases and update the recorded upstream baseline,
+main development branch for future mod releases and update the recorded upstream baseline,
 mod version and validation results after each requested update.
 
 ## Requirements and build

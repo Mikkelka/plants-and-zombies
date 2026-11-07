@@ -1,5 +1,9 @@
 # Fork 1.6-dev.fbc1a3b6.compat1+mc26.3 (2026-11-07)
 
+- Adopt main for current fork development. Preserve the original source on
+  `codex/upstream-mirror` at `fbc1a3b6`; tags `26.2` and `26.3` preserve the
+  versioned snapshots. Keep existing tags fixed and create new tags for updates.
+  The previous version branches remain as legacy references.
 - Fix the user's reported startup crash: biome registration from the main mod
   initializer accessed `Regions` while `TerraBlender.CONFIG` was still null.
 - Register `PazTerraBlender` as a Kotlin `terrablender` entrypoint implementing
@@ -10,10 +14,6 @@
   The user confirmed the corrected build works on 2026-11-07 after the startup
   fix and selected it as the current 26.3 baseline for future maintenance.
   Runtime source: `63415ad4`. Broader gameplay scenarios remain unverified.
-- Record the user's branch arrangement: `main` now mirrors upstream `26.3`
-  exactly at `fbc1a3b6` (181-commit fast-forward), the corrected 26.3 port remains
-  the working version, and the 26.2 branch is preserved for possible later use.
-  Fork documentation stays on the port branch; no fork changes were added to main.
 
 ## Fork 1.6-dev.fbc1a3b6+mc26.3 (2026-11-07)
 
